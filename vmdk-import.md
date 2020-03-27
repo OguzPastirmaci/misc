@@ -6,26 +6,26 @@ Because of that, the current initramfs that will be used on OCI does not have in
 
 ## Checking virtio drivers
 
-First, please check the kernel version. It should be **3.4** and above.
+1. Please check the kernel version. It should be **3.4** and above.
 
 ```sh
 uname -a
 ```
 
-The output should look similar to this sample:
+The output should look similar to this:
 
 ```sh
 Linux ip_bash 4.14.35-1818.2.1.el7uek.x86_64 #2 SMP Mon Aug 27 21:16:31 PDT 2018 x86_64 x86_64 x86_64 GNU/Linux
 ```
 
-You should be seeing no virtio drivers on current initramfs:
+2. You should be seeing no virtio drivers on current initramfs:
 
 ```sh
 [root@localhost ~]# lsinitrd /boot/initramfs-$(uname -r).img | grep -i virtio
 [root@localhost ~]
 ```
 
-You probably have Vmware drivers loaded instead:
+3. You probably have Vmware drivers loaded instead:
 
 ```sh
 [root@localhost ~]# lsmod | grep virtio
