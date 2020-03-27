@@ -2,8 +2,6 @@ Your VM was probably running on VMware the VMware drivers were loaded instead of
 
 Because of that, the current initramfs that will be used on OCI does not have included the virtio drivers.
 
- Before following the below steps, here's a couple of other things to check.
-
 ## Checking virtio drivers
 
 1. Please check the kernel version. It should be **3.4** and above.
