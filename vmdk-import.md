@@ -1,10 +1,10 @@
-Since the VM was running on VMware the VMware drivers were loaded instead of the virtio* drivers needed by OCI.
+Your VM was probably running on VMware the VMware drivers were loaded instead of the virtio* drivers needed by OCI.
 
 Because of that, the current initramfs that will be used on OCI does not have included the virtio drivers.
 
-Let's make sure that is the case.
+ Before following the below steps, here's a couple of other things to check.
 
-
+## Checking virtio drivers
 
 First, please check the kernel version. It should be **3.4** and above.
 
@@ -25,7 +25,7 @@ You should be seeing no virtio drivers on current initramfs:
 [root@localhost ~]
 ```
 
-Vmware Drivers should loaded instead:
+You probably have Vmware drivers loaded instead:
 
 ```sh
 [root@localhost ~]# lsmod | grep virtio
@@ -45,7 +45,7 @@ drm 397988 6 ttm,drm_kms_helper,vmwgfx
 [root@localhost ~]#
 ```
 
-Possible solution
+## Possible solution
 
 1. Rebuild the initramfs with the Virtio Drivers.
 
@@ -66,5 +66,13 @@ drwxr-xr-x 2 root root 0 Feb 20 12:34 usr/lib/modules/3.10.0-862.el7.x86_64/kern
 -rw-r--r-- 1 root root 9652 Apr 11 2018 usr/lib/modules/3.10.0-862.el7.x86_64/kernel/drivers/virtio/virtio_pci.ko.xz
 -rw-r--r-- 1 root root 8264 Apr 11 2018 usr/lib/modules/3.10.0-862.el7.x86_64/kernel/drivers/virtio/virtio_ring.ko.xz
 [root@localhost ~]#
+```
+
+3. Create the image file by cloning the source volume, not by creating a snapshot. Please also make sure that the VM in vCenter is setup for BIOS boot and **not** EFI/UEFI boot.
+
+4. Reupload the image to the VM (IP of the VM changed). The SSH private key is the same. You can create a directory under `/mnt/image` and put the image there.
+
+```sh
+ssh opc@129.146.53.151 -i <private key we shared in the email earlier>
 ```
 
