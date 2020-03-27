@@ -18,14 +18,14 @@ The output should look similar to this:
 Linux ip_bash 4.14.35-1818.2.1.el7uek.x86_64 #2 SMP Mon Aug 27 21:16:31 PDT 2018 x86_64 x86_64 x86_64 GNU/Linux
 ```
 
-2. You should be seeing no virtio drivers on current initramfs:
+2. You should be seeing no virtio drivers on current initramfs. Please check the output is similar when you run the following command in your RHEL image VM.
 
 ```sh
 [root@localhost ~]# lsinitrd /boot/initramfs-$(uname -r).img | grep -i virtio
 [root@localhost ~]
 ```
 
-3. You probably have Vmware drivers loaded instead:
+3. You probably have Vmware drivers loaded instead. Please check the output is similar when you run the following 2 commands in your RHEL image VM.
 
 ```sh
 [root@localhost ~]# lsmod | grep virtio
