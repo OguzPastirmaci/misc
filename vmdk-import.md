@@ -2,6 +2,8 @@ Your VMware VM was probably running with the VMware drivers were loaded instead 
 
 Because of that, the current initramfs that will be used on OCI does not have included the virtio drivers.
 
+Please run the steps in a VM running your RHEL image that you will be exporting to OCI.
+
 ## Checking virtio drivers
 
 1. Please check the kernel version. It should be **3.4** and above.
