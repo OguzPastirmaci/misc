@@ -1,3 +1,4 @@
+```sh
 INSTANCE_POOL_ID=ocid1.instancepool.oc1.iad.aaaaaaaa6myr7vcber4i3i6qr6jboo5vhkxdokuwcr2kngi4ffo6u2czczuq
 
 # How many instances should be created or destroyed each time the command runs
@@ -13,3 +14,4 @@ oci compute-management instance-pool update --instance-pool-id $INSTANCE_POOL_ID
 # SCALE IN - Remove nodes from the pool by the number of NUMBER_OF_INSTANCES_TO_ADD_OR_REMOVE variable
 NEW_INSTANCE_POOL_SIZE=$((CURRENT_INSTANCE_POOL_SIZE + NUMBER_OF_INSTANCES_TO_ADD_OR_REMOVE))
 oci compute-management instance-pool update --instance-pool-id $INSTANCE_POOL_ID --size $NEW_INSTANCE_POOL_SIZE
+```
