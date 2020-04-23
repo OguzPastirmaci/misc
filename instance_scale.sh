@@ -8,7 +8,16 @@ AD=oVTC:US-ASHBURN-AD-3
 SHAPE=BM.HPC2.36
 RANDOM_NUMBER=$(( RANDOM % 100 ))
 
-oci compute instance launch --availability-domain $AD --subnet-id $SUBNET_ID --image-id $IMAGE_ID" --shape $SHAPE --display-name $LSF_SLAVE_PREFIX$RANDOM_NUMBER --wait-for-state RUNNING > /dev/null
+# Get the number of running instances
+# I have a very basic logic here, you can build a different/better one based on your needs
+# 1 - List all instances in the compartment
+# 2 - Show the name and status of them
+# 3 - Filter the instances that have the pre-defined prefix in their name (in our case, lsf-slave)
+# 4 - Count the number of results
+NUMBER_OF_RUNNING_INSTANCES=$(oci compute instance list --compartment-id $COMPARTMENT_ID  --output table --query "data [*].{Name:\"display-name\", STATE:\"lifecycle-state\"}" | grep $LSF_SLAVE_PREFIX | grep RUNNING | wc -l)
 
-oci compute instance list --compartment-id $COMPARTMENT_ID  --output table --query "data [*].{Name:\"display-name\", STATE:\"lifecycle-state\"}" | grep $LSF_SLAVE_PREFIX
+# Then you can create a new instance from the custom image and get its ID
+CREATED_INSTANCE_ID=$(oci compute instance launch --compartment-id $COMPARTMENT_ID --hostname-label $LSF_SLAVE_PREFIX$RANDOM_NUMBER --availability-domain $AD --subnet-id $SUBNET_ID --image-id $IMAGE_ID --shape $SHAPE --display-name $LSF_SLAVE_PREFIX$RANDOM_NUMBER --query 'data.id' --raw-output)
 
+# Get the status of the newly created instance. You can create a loop that waits until the state becomes RUNNING
+CREATED_INSTANCE_STATE=$(oci compute instance get --instance-id $CREATED_INSTANCE_ID --query data.\"lifecycle-state\" --raw-output)
