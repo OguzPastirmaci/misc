@@ -28,3 +28,6 @@ CREATED_INSTANCE_STATE=$(oci compute instance get --instance-id $CREATED_INSTANC
 # You can get the private IP or the FQDN of the newly created instance
 CREATED_INSTANCE_IP=$(oci compute instance list-vnics --instance-id $CREATED_INSTANCE_ID --compartment-id $COMPARTMENT_ID | jq -r '.data[]."private-ip"')
 CREATED_INSTANCE_FQDN=$INSTANCE_NAME.$SUBNET_DOMAIN_NAME
+
+# Deleting an instance
+oci compute instance terminate --instance-id $CREATED_INSTANCE_ID --force
