@@ -8,12 +8,7 @@ AD=oVTC:US-ASHBURN-AD-3
 SHAPE=BM.HPC2.36
 RANDOM_NUMBER=$(( RANDOM % 100 ))
 
-oci compute instance list --compartment-id $COMPARTMENT_ID | jq -r '.data[] | select(."display-name" | contains("lsf-slave"))'
- 
-oci compute instance list --compartment-id $COMPARTMENT_ID | jq -r '.data[] | select(."lifecycle-state" | contains("PROVISIONING"))'
-
 oci compute instance launch --availability-domain $AD --subnet-id $SUBNET_ID --image-id $IMAGE_ID" --shape $SHAPE --display-name $LSF_SLAVE_PREFIX$RANDOM_NUMBER --wait-for-state RUNNING > /dev/null
-
 
 oci compute instance list --compartment-id $COMPARTMENT_ID  --output table --query "data [*].{Name:\"display-name\", STATE:\"lifecycle-state\"}" | grep $LSF_SLAVE_PREFIX
 
