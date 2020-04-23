@@ -17,7 +17,10 @@ RANDOM_NUMBER=$(( RANDOM % 100 ))
 NUMBER_OF_RUNNING_INSTANCES=$(oci compute instance list --compartment-id $COMPARTMENT_ID  --output table --query "data [*].{Name:\"display-name\", STATE:\"lifecycle-state\"}" | grep $LSF_SLAVE_PREFIX | grep RUNNING | wc -l)
 
 # Then you can create a new instance from the custom image and get its ID
+# This example randomly generates a number after "lsf-slave" but you can decide how to do it
 CREATED_INSTANCE_ID=$(oci compute instance launch --compartment-id $COMPARTMENT_ID --hostname-label $LSF_SLAVE_PREFIX$RANDOM_NUMBER --availability-domain $AD --subnet-id $SUBNET_ID --image-id $IMAGE_ID --shape $SHAPE --display-name $LSF_SLAVE_PREFIX$RANDOM_NUMBER --query 'data.id' --raw-output)
 
-# Get the status of the newly created instance. You can create a loop that waits until the state becomes RUNNING
+# Get the status of the newly created instance. You can create a loop that waits until the state becomes RUNNING and then check if it started responding with for example SSH
 CREATED_INSTANCE_STATE=$(oci compute instance get --instance-id $CREATED_INSTANCE_ID --query data.\"lifecycle-state\" --raw-output)
+
+
