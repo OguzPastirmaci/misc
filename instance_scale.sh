@@ -6,7 +6,7 @@ IMAGE_ID=ocid1.image.oc1.iad.aaaaaaaa4mvgqqlhwcmwpyegvwrt3ds4hxicksfrcob2m36gdvy
 SUBNET_ID=ocid1.subnet.oc1.iad.aaaaaaaa2cmsa2cunzta2v7wj37emfpaqsi3ee5ukhvupnkrlpv3wgpmt46q
 AD=oVTC:US-ASHBURN-AD-3
 SHAPE=BM.HPC2.36
-RANDOM_NUMBER=$(( RANDOM % 100 ))
+RANDOM_NUMBER=$(( RANDOM % 10000 ))
 INSTANCE_NAME=$LSF_SLAVE_PREFIX$RANDOM_NUMBER
 SUBNET_DOMAIN_NAME=$(oci network subnet get --subnet-id $SUBNET_ID --query data.\"subnet-domain-name\"  --raw-output)
 
