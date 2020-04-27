@@ -1,8 +1,8 @@
-#1/bin/bash
+#!/bin/bash
 
 COMPARTMENT_ID=ocid1.compartment.oc1..aaaaaaaargrd7zvh6emqhlpjtuk7izopszpxgvecyhohic2lpn7j7h3ok3oq
 LSF_SLAVE_PREFIX="lsf-slave-"
-IMAGE_ID=ocid1.image.oc1.iad.aaaaaaaa4mvgqqlhwcmwpyegvwrt3ds4hxicksfrcob2m36gdvy5pvap2zbq
+IMAGE_ID=ocid1.image.oc1.iad.aaaaaaaaplpdfzgqeiqu4agc27bszxxexqtp5r6vwydvhzgsuylmjtodqoka
 SUBNET_ID=ocid1.subnet.oc1.iad.aaaaaaaa2cmsa2cunzta2v7wj37emfpaqsi3ee5ukhvupnkrlpv3wgpmt46q
 AD=oVTC:US-ASHBURN-AD-3
 SHAPE=BM.HPC2.36
