@@ -1,5 +1,7 @@
+# Check if there's any unscheduled pods
+kubectl get pods --all-namespaces --field-selector=status.phase==Pending
 
-# ADD NODE
+# Add a node
 SIZE=$(oci ce node-pool get --node-pool-id $NODE_POOL_ID --region $REGION | jq -r '.data | ."node-config-details" | .size')
 
 if [ "$SIZE" -ge "$SCALING_MAX" ]
@@ -15,7 +17,7 @@ else
 fi
 
 
-# REMOVE NODE
+# Remove a node
 SIZE=$(oci ce node-pool get --node-pool-id $NODE_POOL_ID --region $REGION | jq -r '.data | ."node-config-details" | .size')
 
 if [ "$SIZE" -le "$SCALING_MIN" ]
