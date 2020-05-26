@@ -17,7 +17,7 @@ else
    mkfs.ext4 -L datapartition /dev/nvme0n1p1
    sleep 3
    mkdir -p /nvme
-   echo "/dev/nvme0n1p1-1 /nvme ext4 defaults,noatime 0 0" | tee -a /etc/fstab
+   echo "/dev/nvme0n1p1 /nvme ext4 defaults,noatime 0 0" | tee -a /etc/fstab
    mount -a
    mkdir -p /nvme/sge/spool
    mkdir -p /nvme/tmp
