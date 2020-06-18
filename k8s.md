@@ -20,116 +20,114 @@ NAME        STATUS   ROLES   AGE   VERSION
 10.0.10.7   Ready    node    26h   v1.14.8
 ```
 
-### Basic example: Deploying a PHP Guestbook application with Redis
+### Deploying a basic application to Kubernetes
 
-We will deploy a simple, multi-tier web application using Kubernetes.
+Here's what will do:
 
-The application consists of:
-
-- A single-instance Redis master to store guestbook entries
-- Multiple replicated Redis instances to serve reads
-- Multiple web frontend instances
-- Objectives
-
-1. The guestbook application uses Redis to store its data. It writes its data to a Redis master instance and reads data from multiple Redis slave instances.
-
-We will create the Redis Master Deployment first. 
-
-Here's the YAML file that configures our deployment. This YAML has all the necessary information for deploying the container.
+- Run five instances of a Hello World application.
+- Create a Service object that exposes an external IP address.
+- Use the Service object to access the running application.
 
 
+1. Let's create a service for an application running in five pods.
+
+Here's the yaml that has everything for the configuration.
+
+You can see that we can set the number of replicas (number of pods to be deployed) with the `replicas` field in the yaml below.
 
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: redis-master
   labels:
-    app: redis
+    app.kubernetes.io/name: load-balancer-example
+  name: hello-world
 spec:
+  replicas: 5
   selector:
     matchLabels:
-      app: redis
-      role: master
-      tier: backend
-  replicas: 1
+      app.kubernetes.io/name: load-balancer-example
   template:
     metadata:
       labels:
-        app: redis
-        role: master
-        tier: backend
+        app.kubernetes.io/name: load-balancer-example
     spec:
       containers:
-      - name: master
-        image: k8s.gcr.io/redis:e2e
-        resources:
-          requests:
-            cpu: 100m
-            memory: 100Mi
+      - image: gcr.io/google-samples/node-hello:1.0
+        name: hello-world
         ports:
-        - containerPort: 6379
+        - containerPort: 8080
 ```
 
-2. Apply the Redis Master Deployment with the following command:
+2. We will apply the yaml above with the following command:
 
 ```sh
-kubectl apply -f https://k8s.io/examples/application/guestbook/redis-master-deployment.yaml
+kubectl apply -f https://k8s.io/examples/service/load-balancer-example.yaml
 ```
 
-3. Get the list of pods with the following command:
+3. Run the following command to get the status of the deployment:
+
+```sh
+kubectl get deployment
+```
+
+You should see something similar to this:
+
+```sh
+$ kubectl get deployment                
+NAME          READY   UP-TO-DATE   AVAILABLE   AGE
+hello-world   5/5     5            5           55s
+```
+
+This tells us that we have asked for 5 replicas and all of them are up and running.
+
+4. To see the individual pods that the deployment has, you can type the following command:
 
 ```sh
 kubectl get pods
 ```
 
-The response will be similar to this:
+You should see something similar to this:
 
 ```sh
 $ kubectl get pods
 NAME                           READY   STATUS    RESTARTS   AGE
-redis-master-596696dd4-f9sdh   1/1     Running   0          81s
+hello-world-7dc74ff97c-89h59   1/1     Running   0          3m36s
+hello-world-7dc74ff97c-9zr4j   1/1     Running   0          3m36s
+hello-world-7dc74ff97c-c2zq5   1/1     Running   0          3m36s
+hello-world-7dc74ff97c-n4tf8   1/1     Running   0          3m36s
+hello-world-7dc74ff97c-x4dgt   1/1     Running   0          3m36s
 ```
 
-4. The guestbook application needs to communicate to the Redis master to write its data. To enable this, we will deploy a service to expose the Redis Master.
-
-The Service yaml looks similar to the deployment yaml.
-
-```yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: redis-master
-  labels:
-    app: redis
-    role: master
-    tier: backend
-spec:
-  ports:
-  - port: 6379
-    targetPort: 6379
-  selector:
-    app: redis
-    role: master
-    tier: backend
-```
-
-5. Apply the Redis Master Service with the following command:
+5. This deployment is not accesible publicly. We need to `expose` it to make it accessible with the following command.
 
 ```sh
-kubectl apply -f https://k8s.io/examples/application/guestbook/redis-master-service.yaml
+kubectl expose deployment hello-world --type=LoadBalancer --name=my-service
 ```
 
-6. Query the list of Services to verify that the Redis Master Service is running:
+Notice that they type is `LoadBalancer`. Because we have an OKE cluster, it know how to talk to OCI APIs to create a load balancer. So Kubernetes will create a load balancer in OCI for us and attach its public IP to our service.
+
+
+6. Let see the details of our service. Run:
 
 ```sh
 kubectl get service
 ```
 
-The response will be similar to this:
+The output should be similar to this:
 
 ```sh
-$ kubectl get service                                                                     
-NAME           TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
-redis-master   ClusterIP   10.96.11.116   <none>        6379/TCP   36s
+$ kubectl get service
+NAME           TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+my-service     LoadBalancer   10.96.164.137   <pending>     8080:31178/TCP   8s
 ```
+
+The `EXTERNAL-IP` will be pending for about 30 seconds. We will see a public IP after that. Run the same command again:
+
+
+```sh
+$ kubectl get service
+NAME           TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+my-service     LoadBalancer   10.96.164.137   <pending>     8080:31178/TCP   8s
+```
+
