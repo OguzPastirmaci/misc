@@ -130,7 +130,9 @@ NAME         TYPE           CLUSTER-IP      EXTERNAL-IP       PORT(S)          A
 my-service   LoadBalancer   10.96.164.137   150.136.190.208   8080:31178/TCP   5m15s
 ```
 
-7. Open a browser tab and go to the IP that is shown under `EXTERNAL-IP` and port 8080.
+7. Now you have successfully deployed an application and exposed it publicly in Kubernetes.
+
+Open a browser tab and go to the IP that is shown under `EXTERNAL-IP` and port 8080.
 
 For example:
 
