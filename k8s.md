@@ -124,10 +124,18 @@ my-service     LoadBalancer   10.96.164.137   <pending>     8080:31178/TCP   8s
 
 The `EXTERNAL-IP` will be pending for about 30 seconds. We will see a public IP after that. Run the same command again:
 
-
 ```sh
-$ kubectl get service
-NAME           TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
-my-service     LoadBalancer   10.96.164.137   <pending>     8080:31178/TCP   8s
+kubectl get svc                
+NAME         TYPE           CLUSTER-IP      EXTERNAL-IP       PORT(S)          AGE
+my-service   LoadBalancer   10.96.164.137   150.136.190.208   8080:31178/TCP   5m15s
 ```
+
+7. Open a browser tab and go to the IP that is shown under `EXTERNAL-IP` and port 8080.
+
+For example:
+
+http://150.136.190.208:8080
+
+You should see a page that says `Hello Kubernetes!`.
+
 
