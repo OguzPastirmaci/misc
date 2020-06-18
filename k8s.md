@@ -31,7 +31,9 @@ The application consists of:
 - Multiple web frontend instances
 - Objectives
 
-1. We will create the Redis Master Deployment first. 
+1. The guestbook application uses Redis to store its data. It writes its data to a Redis master instance and reads data from multiple Redis slave instances.
+
+We will create the Redis Master Deployment first. 
 
 Here's the YAML file that configures our deployment. This YAML has all the necessary information for deploying the container.
 
@@ -87,4 +89,47 @@ The response will be similar to this:
 $ kubectl get pods
 NAME                           READY   STATUS    RESTARTS   AGE
 redis-master-596696dd4-f9sdh   1/1     Running   0          81s
+```
+
+4. The guestbook application needs to communicate to the Redis master to write its data. To enable this, we will deploy a service to expose the Redis Master.
+
+The Service yaml looks similar to the deployment yaml.
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-master
+  labels:
+    app: redis
+    role: master
+    tier: backend
+spec:
+  ports:
+  - port: 6379
+    targetPort: 6379
+  selector:
+    app: redis
+    role: master
+    tier: backend
+```
+
+5. Apply the Redis Master Service with the following command:
+
+```sh
+kubectl apply -f https://k8s.io/examples/application/guestbook/redis-master-service.yaml
+```
+
+6. Query the list of Services to verify that the Redis Master Service is running:
+
+```sh
+kubectl get service
+```
+
+The response will be similar to this:
+
+```sh
+$ kubectl get service                                                                     
+NAME           TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
+redis-master   ClusterIP   10.96.11.116   <none>        6379/TCP   36s
 ```
