@@ -15,7 +15,7 @@ https://docs.cloud.oracle.com/en-us/iaas/Content/ContEng/Tasks/contengcreatingcl
 ![Cloud shell](./cloud_shell.png)
 
 
-3. In the Cloud Shell, run the following command to see the nodes in your cluster.
+5. In the Cloud Shell, run the following command to see the nodes in your cluster.
 
 ```sh
 kubectl get nodes
