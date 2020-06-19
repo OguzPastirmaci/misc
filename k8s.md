@@ -12,7 +12,7 @@ https://docs.cloud.oracle.com/en-us/iaas/Content/ContEng/Tasks/contengcreatingcl
 
 4. Choose **Cloud Shell Access**. Click **Launch Cloud Shell**. When Cloud Shell opens, copy and paste the command that starts with `oci ce cluster create-kubeconfig....`. This will setup the authentication to access the OKE Kubernetes cluster.
 
-![Cloud shell](./cloudhsell.png)
+![Cloud shell](./cloud_shell.png)
 
 
 3. In the Cloud Shell, run the following command to see the nodes in your cluster.
