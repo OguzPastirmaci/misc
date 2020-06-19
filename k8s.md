@@ -140,4 +140,16 @@ http://150.136.190.208:8080
 
 You should see a page that says `Hello Kubernetes!`.
 
+8. Let's delete what we deployed.
 
+To delete the service:
+
+```sh
+kubectl delete services my-service
+```
+
+To delete the deployment:
+
+```sh
+kubectl delete deployment hello-world
+```
