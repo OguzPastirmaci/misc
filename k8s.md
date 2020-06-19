@@ -140,7 +140,28 @@ http://150.136.190.208:8080
 
 You should see a page that says `Hello Kubernetes!`.
 
-8. Let's delete what we deployed.
+9. Scaling out this application is also easy with Kubernetes. We deployed 5 pods initially. Let's say we want to increase the number of pods to 7. We can do that by running the following command:
+
+```sh
+kubectl scale deployment hello-world --replicas 7
+```
+
+Now we see that we have 7 pods in our deployment:
+
+```sh
+$ kubectl get pods
+NAME                           READY   STATUS    RESTARTS   AGE
+hello-world-7dc74ff97c-89h59   1/1     Running   0          21m
+hello-world-7dc74ff97c-9zr4j   1/1     Running   0          21m
+hello-world-7dc74ff97c-c2zq5   1/1     Running   0          21m
+hello-world-7dc74ff97c-d28fj   1/1     Running   0          107s
+hello-world-7dc74ff97c-n4tf8   1/1     Running   0          21m
+hello-world-7dc74ff97c-njr2m   1/1     Running   0          106s
+hello-world-7dc74ff97c-x4dgt   1/1     Running   0          21m
+```
+
+
+10. Finally, let's delete what we deployed.
 
 To delete the service:
 
