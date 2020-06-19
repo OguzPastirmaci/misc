@@ -7,6 +7,9 @@ https://docs.cloud.oracle.com/en-us/iaas/Content/ContEng/Tasks/contengcreatingcl
 
 ![Access cluster](./access.png)
 
+![Cloud shell](./cloudhsell.png)
+
+
 3. In the Cloud Shell, run the following command to see the nodes in your cluster.
 
 ```sh
