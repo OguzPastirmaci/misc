@@ -3,7 +3,7 @@
 1. Create a new Kubernetes cluster using the Quick Create option in OCI.
 https://docs.cloud.oracle.com/en-us/iaas/Content/ContEng/Tasks/contengcreatingclusterusingoke.htm#create-quick-cluster
 
-2. Access the cluster in Cloud Shell. You can access it from your local machine too but Cloud Shell is the easiest/fastest way.
+2. Access the cluster in **Cloud Shell**. You can access it from your local machine too but Cloud Shell is the easiest/fastest way.
 
 ![Access cluster](./access.png)
 
