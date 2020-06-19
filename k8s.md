@@ -99,13 +99,13 @@ hello-world-7dc74ff97c-n4tf8   1/1     Running   0          3m36s
 hello-world-7dc74ff97c-x4dgt   1/1     Running   0          3m36s
 ```
 
-5. This deployment is not accesible publicly. We need to `expose` it to make it accessible with the following command.
+5. This deployment is not accesible publicly. We need to `expose` it to make it accessible with the following command:
 
 ```sh
 kubectl expose deployment hello-world --type=LoadBalancer --name=my-service
 ```
 
-Notice that they type is `LoadBalancer`. Because we have an OKE cluster, it know how to talk to OCI APIs to create a load balancer. So Kubernetes will create a load balancer in OCI for us and attach its public IP to our service.
+Notice that they type is `LoadBalancer`. Because we have an OKE cluster, it knows how to talk to OCI APIs to create a load balancer. So Kubernetes will create a load balancer in OCI for us and attach its public IP to our service.
 
 
 6. Let see the details of our service. Run:
