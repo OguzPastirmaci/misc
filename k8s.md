@@ -5,6 +5,8 @@ https://docs.cloud.oracle.com/en-us/iaas/Content/ContEng/Tasks/contengcreatingcl
 
 2. Access the cluster in Cloud Shell. You can access it from your local machine too but Cloud Shell is the easiest/fastest way.
 
+![Access cluster](./access.png)
+
 3. In the Cloud Shell, run the following command to see the nodes in your cluster.
 
 ```sh
