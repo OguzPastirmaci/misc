@@ -1,0 +1,11 @@
+{
+    "variables": {
+        "region": "us-ashburn-1",
+        "tenancy_ocid": "",
+        "compartment_ocid": "",
+        "ad": "",
+        "bastion_ad": "",
+        "node_count": "",
+        "ssh_key": ""
+    }
+}
