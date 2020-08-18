@@ -1,4 +1,4 @@
-There 2 easy ways to add custom data to an instance running on OCI:
+There are 2 ways to add custom data to an instance running on OCI:
 
 1- Adding a tag to an instance
 
