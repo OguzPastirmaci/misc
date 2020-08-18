@@ -29,5 +29,12 @@ The second way is using the updateable extended metadata feature in OCI. This is
 
 CLI example:
 
-After you create the instance, run the following command to update it's metadata:
+1- After you create the instance, run the following command to update it's metadata:
+
+```sh
+oci compute instance update --instance-id <ID of the instance> --extended-metadata '{"cadencetestmetadatakey":"cadencetestmetadatavalue"}'
+```
+2- Run the curl command to the instance metada service again, now you will see the values in the metadata field.
+
+![Adding tag to instance](./images/instance_updated_metadata.png)
 
