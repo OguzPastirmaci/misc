@@ -19,7 +19,7 @@ You can use tags in the console, CLI, and API.
 
 ![Adding tag to instance](./images/instance_tag.png)
 
-3- SSH into the instance and curl to the OCI Instance Metadata service. It will print all metadata about the instance, including the tag you added when creating the instance. You can find more information about OCI Instance Metadata [in this link.](https://docs.cloud.oracle.com/en-us/iaas/Content/Compute/Tasks/gettingmetadata.htm)
+3- When the instance is created, SSH into it and curl to the OCI Instance Metadata service. It will print all metadata about the instance, including the tag you added when creating the instance. You can find more information about OCI Instance Metadata [in this link.](https://docs.cloud.oracle.com/en-us/iaas/Content/Compute/Tasks/gettingmetadata.htm)
 
 ```sh
 curl http://169.254.169.254/opc/v1/instance/
