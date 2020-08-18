@@ -38,3 +38,5 @@ oci compute instance update --instance-id <ID of the instance> --extended-metada
 
 ![Adding tag to instance](./images/instance_updated_metadata.png)
 
+
+You can find more info about updating instance metadata [in this link.](https://docs.cloud.oracle.com/en-us/iaas/Content/Compute/Tasks/updatinginstancemetada.htm)
