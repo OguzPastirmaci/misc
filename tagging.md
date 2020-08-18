@@ -33,7 +33,7 @@ The second way is using the updateable extended metadata feature in OCI. This is
 
 CLI example:
 
-1- After you create the instance, run the following command to update it's metadata:
+1- After you create the instance, run the following command to update it's metadata. You can use the [Cloud Shell](https://docs.cloud.oracle.com/en-us/iaas/Content/API/Concepts/cloudshellgettingstarted.htm), it has the CLI installed and authenticated.
 
 ```sh
 oci compute instance update --instance-id <ID of the instance> --extended-metadata '{"cadencetestmetadatakey":"cadencetestmetadatavalue"}'
