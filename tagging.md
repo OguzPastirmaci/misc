@@ -22,7 +22,7 @@ You can use tags in the console, CLI, and API.
 3- SSH into the instance and curl to the OCI Instance Metadata service. It will print all metadata about the instance, including the tag you added when creating the instance. You can find more information about OCI Instance Metadata [in this link.](https://docs.cloud.oracle.com/en-us/iaas/Content/Compute/Tasks/gettingmetadata.htm)
 
 ```sh
-http://169.254.169.254/opc/v1/instance/
+curl http://169.254.169.254/opc/v1/instance/
 ```
 
 ![Adding tag to instance](./images/instance_metadata_tag.png)
