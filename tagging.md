@@ -15,7 +15,7 @@ You can use tags in the console, CLI, and API.
 
 1- When creating an instance in the console, scroll all the way down and click on **Show Advanced Options**.
 
-2- In the **Show Advanced Options** menu, add a new **Tag Key** and **Tag Value**. You can choose anything for both fields. You can also choose between **Free-form tags** and **Defined Tags**. The difference is that Defined Tags can only be created by tag administrators, whereas Free Form tags can be created by any user. Choose **Free-form tags** for now.
+2- In the **Show Advanced Options** menu, add a new **Tag Key** and **Tag Value**. You can choose anything for both fields. You can also choose between **Free-form tags** and **Defined Tags**. The difference is that Defined Tags can only be created by tag administrators, whereas Free Form tags can be created by any user. Choose **Free-form tags** for now and click on **Create**.
 
 ![Adding tag to instance](./images/instance_tag.png)
 
