@@ -33,7 +33,7 @@ oci compute boot-volume-attachment list --availability-domain $AVAILABILITY_DOMA
 Output will be similar to below:
 
 ```sh
-oguz@cloudshell:~ (us-ashburn-1)$ oci compute boot-volume-attachment list --availability-domain VXpT:US-ASHBURN-AD-1 --compartment-id ocid1.compartment.oc1..aaaaaaaamgpf7b5zhfwqc3cttmhatl3eqxl6uztmhozk52h2qbh4iytjvrsa --instance-id ocid1.instance.oc1.iad.anuwcljtpwneysac7xbrzwnaranhyxynvpfkawwmdyzqj3tun6n643oenrfa
+oguz@cloudshell:~ (us-ashburn-1)$ oci compute boot-volume-attachment list --availability-domain VXpT:US-ASHBURN-AD-1 --compartment-id ocid1.compartment.oc1..aaaaaaaamgpf7k52h2qbh4iytjvrsa --instance-id ocid1.instance.oc1.iad.anuwcyzqj3tun6n643oenrfa
 {
   "data": [
     {
