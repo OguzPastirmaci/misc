@@ -60,7 +60,7 @@ oci bv boot-volume update --boot-volume-id <boot-volume-id from the previous ste
 ```
 
 
-NOTE:
+In the `--vpus-per-gb` parameter in the command above:
 
 10: Represents Balanced option.
 
