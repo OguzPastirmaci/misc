@@ -7,6 +7,16 @@ YELLOW="\033[93m"
 RED="\033[91m"
 NORMAL="\033[39m"
 
+# Check if OCI CLI is installed
+if ! [ -x "$(command -v oci)" ]; then
+  echo 'Error: OCI CLI is not installed. Please follow the instructions in this link to install: https://docs.cloud.oracle.com/iaas/Content/API/SDKDocs/cliinstall.htm' >&2
+  exit 1
+fi
+
+# Check if OCI config file exists
+[ ! -f "$OCI_CONFIG_FILE" ] && echo -e "\nOCI config file does not exist in $OCI_CONFIG_FILE" && exit 1
+
+
 REGION=$1
 TENANCY_ID=$(grep -E "^\[|ocid1.tenancy" $OCI_CONFIG_FILE|sed -n -e "/\[$PROFILE\]/,/tenancy/p"|tail -1| awk -F'=' '{ print $2 }' | sed 's/ //g')
 
@@ -29,12 +39,6 @@ do
         --compartment-id $TENANCY_ID --output table
 done
 }
-
-# Check if OCI CLI is installed
-if ! [ -x "$(command -v oci)" ]; then
-  echo 'Error: OCI CLI is not installed. Please follow the instructions in this link to install: https://docs.cloud.oracle.com/iaas/Content/API/SDKDocs/cliinstall.htm' >&2
-  exit 1
-fi
 
 if [ "$1" == "--all" ]
 then
