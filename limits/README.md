@@ -21,7 +21,7 @@ To get the E3 limits for all active regions in your tenancy:
 ./list_e3_limits.sh --all
 ```
 
-Example output:
+#### Example output
 
 ```shell
 $ ./list_e3_limits.sh us-ashburn-1
