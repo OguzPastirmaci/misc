@@ -2,6 +2,7 @@
 
 OCI_CONFIG_FILE=~/.oci/config
 PROFILE=DEFAULT
+REGION=$1
 
 YELLOW="\033[93m"
 RED="\033[91m"
@@ -16,8 +17,6 @@ fi
 # Check if OCI config file exists
 [ ! -f "$OCI_CONFIG_FILE" ] && echo -e "\nOCI config file does not exist in $OCI_CONFIG_FILE" && exit 1
 
-
-REGION=$1
 TENANCY_ID=$(grep -E "^\[|ocid1.tenancy" $OCI_CONFIG_FILE|sed -n -e "/\[$PROFILE\]/,/tenancy/p"|tail -1| awk -F'=' '{ print $2 }' | sed 's/ //g')
 
 list_limits()
