@@ -40,7 +40,7 @@ if [ "$1" == "--all" ]
 then
   REGIONS_LIST=$(oci --profile $PROFILE iam region-subscription list --query "data [].{Region:\"region-name\"}" |jq -r '.[].Region')
   
-  printf "${YELLOW}List of active regions in tenancy:${NORMAL}\n\n"
+  printf "${YELLOW}List of active regions in the tenancy:${NORMAL}\n\n"
   
   for region in $REGIONS_LIST; do echo $region; done
 
