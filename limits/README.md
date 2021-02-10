@@ -20,3 +20,59 @@ To get the E3 limits for all active regions in your tenancy:
 ```shell
 ./list_e3_limits.sh --all
 ```
+
+Example output:
+
+```shell
+$ ./list_e3_limits.sh us-ashburn-1
+
+E3 LIMITS FOR REGION: us-ashburn-1
+
+E3 Compute Limits for AD: VXpT:US-ASHBURN-AD-1
+
++-----------+------+
+| available | used |
++-----------+------+
+| 143       | 7    |
++-----------+------+
+
+E3 Memory Limits for AD: VXpT:US-ASHBURN-AD-1
+
++-----------+------+
+| available | used |
++-----------+------+
+| 2296      | 104  |
++-----------+------+
+
+E3 Compute Limits for AD: VXpT:US-ASHBURN-AD-2
+
++-----------+------+
+| available | used |
++-----------+------+
+| 149       | 1    |
++-----------+------+
+
+E3 Memory Limits for AD: VXpT:US-ASHBURN-AD-2
+
++-----------+------+
+| available | used |
++-----------+------+
+| 2384      | 16   |
++-----------+------+
+
+E3 Compute Limits for AD: VXpT:US-ASHBURN-AD-3
+
++-----------+------+
+| available | used |
++-----------+------+
+| 150       | 0    |
++-----------+------+
+
+E3 Memory Limits for AD: VXpT:US-ASHBURN-AD-3
+
++-----------+------+
+| available | used |
++-----------+------+
+| 2400      | 0    |
++-----------+------+
+```
