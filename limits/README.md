@@ -13,20 +13,20 @@ The default OCI CLI profile in the script is `DEFAULT`. If you are using a diffe
 To get the E3 limits for a single region (e.g. us-ashburn-1):
 
 ```shell
-./list_e3_limits.sh us-ashburn-1
+./list_e3_limits.sh us-ashburn-1 <COMPARTMENT ID>
 ```
 
 To get the E3 limits for all active regions in your tenancy:
 
 
 ```shell
-./list_e3_limits.sh --all
+./list_e3_limits.sh --all <COMPARTMENT ID>
 ```
 
 #### Example output
 
 ```
-$ ./list_e3_limits.sh us-ashburn-1
+$ ./list_e3_limits.sh us-ashburn-1 ocid1.compartment.oc1..aaaaaaaajhzmya
 
 E3 LIMITS FOR REGION: us-ashburn-1
 
