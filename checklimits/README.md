@@ -20,7 +20,7 @@ To get the limits of a shape for all active regions in your tenancy:
 
 
 ```shell
-./list_e3_limits.sh --all <COMPARTMENT ID> <NAME OF THE LIMIT>
+sh checklimits.sh --all <COMPARTMENT ID> <NAME OF THE LIMIT>
 ```
 
 #### Example output
