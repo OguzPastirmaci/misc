@@ -26,7 +26,7 @@ sh checklimits.sh --all <COMPARTMENT ID> <NAME OF THE LIMIT>
 #### Example output
 
 ```
-$ sh checklimits.sh us-ashburn-1 ocid1.compartment.oc1..aaaaaaaajhzmya
+$ sh checklimits.sh us-ashburn-1 ocid1.compartment.oc1..aaaaaaaajhzmya standard-e3-core-ad-count
 
 standard-e3-core-ad-count LIMITS FOR REGION: us-ashburn-1
 
