@@ -10,6 +10,13 @@ The default OCI CLI profile in the script is `DEFAULT`. If you are using a diffe
 
 #### Usage
 
+You will need the name of the limit you want to check (example: `vm-gpu3-1-count`). To list the names of the compute limits, you can use the following command:
+
+```
+oci limits value list --service-name=compute --all --compartment-id <TENANCY ID>
+```
+
+
 To get the limit of a shape for a single region (e.g. us-ashburn-1):
 
 ```shell
@@ -26,31 +33,31 @@ sh checklimits.sh --all <COMPARTMENT ID> <NAME OF THE LIMIT>
 #### Example output
 
 ```
-$ sh checklimits.sh us-ashburn-1 ocid1.compartment.oc1..aaaaaaaajhzmya standard-e3-core-ad-count
+$ sh checklimits.sh us-ashburn-1 ocid1.compartment.oc1..aaaaaaaajhzmya vm-gpu3-1-count
 
-standard-e3-core-ad-count LIMITS FOR REGION: us-ashburn-1
+vm-gpu3-1-count LIMITS FOR REGION: us-ashburn-1
 
-standard-e3-core-ad-count limits for AD: VXpT:US-ASHBURN-AD-1
-
-+-----------+------+
-| available | used |
-+-----------+------+
-| 96        | 0    |
-+-----------+------+
-
-standard-e3-core-ad-count limits for AD: VXpT:US-ASHBURN-AD-2
+vm-gpu3-1-count limits for AD: VXpT:US-ASHBURN-AD-1
 
 +-----------+------+
 | available | used |
 +-----------+------+
-| 82        | 0    |
+| 0         | 0    |
 +-----------+------+
 
-standard-e3-core-ad-count limits for AD: VXpT:US-ASHBURN-AD-3
+vm-gpu3-1-count limits for AD: VXpT:US-ASHBURN-AD-2
 
 +-----------+------+
 | available | used |
 +-----------+------+
-| 150       | 0    |
+| 10000     | 0    |
++-----------+------+
+
+vm-gpu3-1-count limits for AD: VXpT:US-ASHBURN-AD-3
+
++-----------+------+
+| available | used |
++-----------+------+
+| 132       | 0    |
 +-----------+------+
 ```
