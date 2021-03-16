@@ -1,4 +1,4 @@
-[checklimits.sh](./checklimits.sh) is a simple Shell script that lists the limits for a compute service in your OCI tenancy.
+[checklimits.sh](./checklimits.sh) is a simple Shell script that lists the limits for a service in your OCI tenancy.
 
 It uses OCI CLI, so OCI CLI needs to be installed and configured. You can follow the instructions [in this link](https://docs.oracle.com/en-us/iaas/Content/API/SDKDocs/cliinstall.htm) to learn how to install and configure OCI CLI.
 
