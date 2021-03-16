@@ -80,7 +80,7 @@ oci limits value list --service-name=compute --all --compartment-id <TENANCY ID>
 ```
 
 
-To get the limit of a shape for a single region (e.g. us-ashburn-1):
+3. To get the limit of a shape for a single region (e.g. us-ashburn-1):
 
 ```shell
 sh checklimits.sh us-ashburn-1 <COMPARTMENT ID> <NAME OF THE LIMIT>
