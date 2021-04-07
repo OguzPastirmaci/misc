@@ -6,6 +6,11 @@ Here's the instructions to convert Oracle Linux 7.9 `3.10.0-1160.2.2.el7.x86_64`
 ocid1.image.oc1.iad.aaaaaaaaf2wxqc6ee5axabpbandk6ji27oyxyicatqw5iwkrk76kecqrrdyq
 ```
 
+![Access cluster](./images/image_ocid.png)
+![Access cluster](./images/image_ocid_2.png)
+
+
+
 2- After the instance is deployed, SSH into it and run the following commands:
 
 ```
@@ -21,5 +26,6 @@ sudo reboot
 
 ```
 uname -a
+
 Linux instance-20210407-1305 3.10.0-1160.2.2.el7.x86_64 #1 SMP Thu Oct 22 09:10:02 PDT 2020 x86_64 x86_64 x86_64 GNU/Linux
 ```
