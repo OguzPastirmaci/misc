@@ -5,8 +5,8 @@ metadata:
   labels:
     chapter: jobs
 spec:
-  parallelism: 5
-  completions: 10
+  parallelism: 1000
+  completions: 2000
   template:
     metadata:
       labels:
