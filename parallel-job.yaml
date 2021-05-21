@@ -13,11 +13,7 @@ spec:
         chapter: jobs
     spec:
       containers:
-      - name: kuard
-        image: gcr.io/kuar-demo/kuard-amd64:1
+      - name: fiber-pi-estimation
+        image: calio/fiber-pi-estimation:latest
         imagePullPolicy: Always
-        args:
-        - "--keygen-enable"
-        - "--keygen-exit-on-complete"
-        - "--keygen-num-to-gen=10"
       restartPolicy: OnFailure
