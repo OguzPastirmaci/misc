@@ -1,9 +1,10 @@
+# The ID of the instance pool
 INSTANCE_POOL_ID=ocid1.instancepool.oc1.iad.aaaaaaaa6myr7vcber4i3i6qr6jboo5vhkxdokuwcr2kngi4ffo6u2czczuq
 
 # How many instances should be created or destroyed each time the command runs
 NUMBER_OF_INSTANCES_TO_ADD_OR_REMOVE=1
 
-# Get the current size of the instance pool
+# Get the current size of the instance pool with OCI CLI
 CURRENT_INSTANCE_POOL_SIZE=$(oci compute-management instance-pool get --instance-pool-id $INSTANCE_POOL_ID --query 'data.size' --raw-output)
 
 # SCALE OUT - Add new nodes to the pool by the number of NUMBER_OF_INSTANCES_TO_ADD_OR_REMOVE variable
