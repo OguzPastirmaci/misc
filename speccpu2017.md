@@ -12,10 +12,14 @@ mount -t iso9660 -o ro,exec,loop cpu2017-$VERSION.iso /mnt
 
 Install
 ```
-./install.sh
+$INSTALL_LOCATION=/home/opc/cpu2017
+cd /mnt
+./install.sh -d $INSTALL_LOCATION
+cd $INSTALL_LOCATION
+source shrc
 ```
 
-Install devtoolset-9 or change the config file to the existing devtoolset version/location
+Install devtoolset-9 or change the config file under $INSTALL_LOCATION/config that matches your arch to the existing devtoolset version/location
 
 ```
 yum install -y devtoolset-9
@@ -26,6 +30,8 @@ Test run to build - change the config file and match cores to copies
 ```
 $CORES=
 
+cd $INSTALL_LOCATION/config
+cp Example-gcc-linux-x86.cfg oguz.cfg
 runcpu --config=oguz --copies=$CORES --noreportable --iterations=1 --size=test intrate 
 ```
 
