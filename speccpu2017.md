@@ -19,7 +19,7 @@ cd $INSTALL_LOCATION
 source shrc
 ```
 
-Install devtoolset-9 or change the config file under $INSTALL_LOCATION/config that matches your arch to the existing devtoolset version/location
+Install devtoolset-9 or change the config file under $INSTALL_LOCATION/config that matches your arch to the existing devtoolset/gcc version/location
 
 ```
 yum install -y devtoolset-9
