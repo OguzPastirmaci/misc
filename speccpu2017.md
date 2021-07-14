@@ -1,9 +1,9 @@
 Download and mount ISO
 
 ```
-$USERNAME=
-$PASSWORD=
-$VERSION=1.1.8
+USERNAME=
+PASSWORD=
+VERSION=1.1.8
 
 wget --user $USERNAME --password $PASSWORD https://pro.spec.org/private/osg/benchmarks/cpu/cpu2017-$VERSION.iso
 
@@ -12,7 +12,7 @@ mount -t iso9660 -o ro,exec,loop cpu2017-$VERSION.iso /mnt
 
 Install
 ```
-$INSTALL_LOCATION=/home/opc/cpu2017
+INSTALL_LOCATION=/home/opc/cpu2017
 cd /mnt
 ./install.sh -d $INSTALL_LOCATION
 cd $INSTALL_LOCATION
@@ -28,7 +28,7 @@ yum install -y devtoolset-9
 Test run to build - change the config file and match cores to copies
 
 ```
-$CORES=
+CORES=
 
 cd $INSTALL_LOCATION/config
 cp Example-gcc-linux-x86.cfg oguz.cfg
