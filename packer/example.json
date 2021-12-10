@@ -1,0 +1,30 @@
+{
+    "builders": [
+        {
+            "name": "IAD",
+            "type": "oracle-oci",
+            "tenancy_ocid": "",
+            "user_ocid": "",
+            "compartment_ocid": "",
+            "fingerprint": "",
+            "key_file": "",
+            "region": "us-ashburn-1",
+            "availability_domain": "",
+            "subnet_ocid": "",
+            "base_image_ocid": "ocid1.image.oc1.iad.aaaaaaaa5yw4ukpgtmo2gaqhk5phkgenz26y4auuodt7pd6byie5ho6zx5kq",
+            "image_name": "packer-test-iad",
+            "shape": "VM.Standard2.1",
+            "ssh_username": "opc",
+            "ssh_timeout": "10m"
+        }
+    ],
+    "provisioners": [
+        {
+            "type": "shell",
+            "inline": [
+                "echo Hello World"
+            ],
+            "pause_before": "15s"
+        }
+    ]
+}
