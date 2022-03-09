@@ -13,6 +13,7 @@ if(![System.IO.File]::Exists("C:\Windows\Temp\7z2107-x64.exe")){
     Invoke-WebRequest -Uri $7zip_download_url -OutFile C:\Windows\Temp\7z2107-x64.exe
     C:\Windows\Temp\7z2107-x64.exe /S /D="C:\Windows\Temp\7-Zip"
     }
+
 Start-Sleep -s 10
 
 if(![System.IO.Directory]::Exists("C:\Windows\Temp\nvidia\")){
