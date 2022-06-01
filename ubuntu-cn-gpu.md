@@ -38,3 +38,24 @@ And then check the new package is installed correctly:
 sudo dpkg-query -l | grep oci-cn-auth
 ii  oci-cn-auth                           2.0.8-compute                           all          OCI cluster network authentication tool
 ```
+
+### 7 - Edit `/etc/oci-hpc/rdma-network.conf`
+
+Edit the `/etc/oci-hpc/rdma-network.conf` file and add the following block:
+
+```
+[subnet]
+modify_arp=true
+override_netconfig_netmask=255.255.0.0
+```
+
+So that the entire file looks like below:
+
+```
+[default]
+rdma_network=192.168.0.0/255.255.0.0
+overwrite_config_files=true
+[subnet]
+modify_arp=true
+override_netconfig_netmask=255.255.0.0
+```
