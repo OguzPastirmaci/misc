@@ -49,7 +49,7 @@ modify_arp=true
 override_netconfig_netmask=255.255.0.0
 ```
 
-So that the entire file looks like below:
+So that the content of the file looks like below:
 
 ```
 [default]
