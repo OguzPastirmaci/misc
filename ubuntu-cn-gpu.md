@@ -62,7 +62,7 @@ override_netconfig_netmask=255.255.0.0
 
 ### 8 - Edit `/opt/oci-hpc/oci-cn-auth/helpers/templates/wpa_supplicant-wired@interface.service`
 
-Comment out the Requires and After lines in the `[Unit]` section. So the `[Unit]` section looks like this:
+Comment out the Requires and After lines in the `[Unit]` section in `/opt/oci-hpc/oci-cn-auth/helpers/templates/wpa_supplicant-wired@interface.service`. So the `[Unit]` section looks like this:
 
 ```
 [Unit]
