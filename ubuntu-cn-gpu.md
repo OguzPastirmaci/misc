@@ -32,3 +32,9 @@ wget https://objectstorage.us-ashburn-1.oraclecloud.com/p/3Kig7h-YO-PIlYMa-2jf6B
 sudo dpkg -i oci-cn-auth_2.0.8-compute_all.deb
 ```
 
+And then check the new package is installed correctly:
+
+```
+sudo dpkg-query -l | grep oci-cn-auth
+ii  oci-cn-auth                           2.0.8-compute                           all          OCI cluster network authentication tool
+```
