@@ -24,7 +24,7 @@ Check the `/var/log/mlx-configure.log` file again. You should see some `ADVANCED
 
 ### 6 - Install the v2.0.8  `oci-cn-auth` package
 
-This step will not be needed in the next image build but necessary in this build 
+This step will not be needed in the next image build but necessary in this build:
 
 ```
 wget https://objectstorage.us-ashburn-1.oraclecloud.com/p/3Kig7h-YO-PIlYMa-2jf6BuD6yRgISYPIi_Fy6FSBpbZiS3u08HACzN5VooXNB0W/n/hpc_limited_availability/b/share/o/oci-cn-auth_2.0.8-compute_all.deb
@@ -59,3 +59,11 @@ overwrite_config_files=true
 modify_arp=true
 override_netconfig_netmask=255.255.0.0
 ```
+
+### 8 - Run the RDMA configuration tool to setup RDMA interfaces
+
+Run `sudo /sbin/oci-rdma-configure` to setup RDMA interfaces. This step might take a couple of minutes.
+
+### 9 - Check that the interfaces have 192.x IPs
+
+
