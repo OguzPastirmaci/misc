@@ -77,7 +77,7 @@ Wants=network.target
 
 Run `sudo /sbin/oci-rdma-configure` to setup RDMA interfaces. This step might take a couple of minutes.
 
-### 10 - Check that the interfaces have 192.x IPs
+### 10 - Check that the interfaces have 192.168.x.x IPs
 
 Check that the interfaces have 192.x IPs assigned.
 
