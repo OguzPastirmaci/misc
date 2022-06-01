@@ -60,10 +60,23 @@ modify_arp=true
 override_netconfig_netmask=255.255.0.0
 ```
 
-### 8 - Run the RDMA configuration tool to setup RDMA interfaces
+### 8 - Edit `/opt/oci-hpc/oci-cn-auth/helpers/templates/wpa_supplicant-wired@interface.service`
+
+Comment out the Requires and After lines in the `[Unit]` section. So the `[Unit]` section looks like this:
+
+```
+[Unit]
+Description=WPA supplicant daemon (interface- and wired driver-specific version)
+#Requires=sys-subsystem-net-devices-%i.device
+#After=sys-subsystem-net-devices-%i.device
+Before=network.target
+Wants=network.target
+```
+
+### 9 - Run the RDMA configuration tool to setup RDMA interfaces
 
 Run `sudo /sbin/oci-rdma-configure` to setup RDMA interfaces. This step might take a couple of minutes.
 
-### 9 - Check that the interfaces have 192.x IPs
+### 10 - Check that the interfaces have 192.x IPs
 
 
