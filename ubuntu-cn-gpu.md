@@ -16,7 +16,7 @@ Wait for the instances to be up an running. Then, wait until you see `INFO - suc
 
 ### 4 - Reboot the instance
 
-There's a bug that causes interfaces to be renamed. we're tracking with Canonical. Rebooting the node fixes the issue. This reboot is needed only once.
+There's a bug that causes interfaces to be renamed. We're tracking it with Canonical. Rebooting the node once before configuring the RDMA interfaces fixes the issue in the meantime.
 
 ### 5 - Check the Mellanox config log again
 
@@ -125,5 +125,5 @@ PING 192.168.14.193 (192.168.14.193) from 192.168.15.157 enp148s0f1np1: 56(84) b
 64 bytes from 192.168.14.193: icmp_seq=1 ttl=64 time=0.103 ms
 64 bytes from 192.168.14.193: icmp_seq=2 ttl=64 time=0.044 ms
 64 bytes from 192.168.14.193: icmp_seq=3 ttl=64 time=0.034 ms
-....
+...
 ```
