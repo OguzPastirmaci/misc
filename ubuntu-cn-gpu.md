@@ -1,3 +1,7 @@
+## NOTE: Below instructions are valid for the image `Ubuntu-20-OFED-2022.05.10-0`.
+
+
+
 ### 1 - Create an instance configuration with the Ubuntu CN image
 
 Create an Instance Configuration with the GPU shape.
@@ -17,6 +21,12 @@ Wait for the instances to be up an running. Then, wait until you see `INFO - suc
 ### 4 - Reboot the instance
 
 There's a bug that causes interfaces to be renamed. We're tracking it with Canonical. Rebooting the node once before configuring the RDMA interfaces fixes the issue in the meantime.
+
+Instead of rebooting from within the instance (e.g., `sudo reboot`), try rebooting from the console or CLI.
+
+CLI example:
+
+`oci compute instance action --action reset --instance-id $INSTANCE_ID`
 
 ### 5 - Check the Mellanox config log again
 
