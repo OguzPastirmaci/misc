@@ -37,7 +37,7 @@ Check the `/var/log/mlx-configure.log` file again. You should see some `ADVANCED
 This step will not be needed in the next image build but necessary in this build:
 
 ```
-wget [https://objectstorage.us-ashburn-1.oraclecloud.com/p/Y0nPGlAV6nlcp-RgKahfke46Enk6XGglk5N0Ky7eTN5JDYHjB254sbjBYHxyzoK5/n/hpc_limited_availability/b/share/o/oci-cn-auth_2.0.8-compute_all.deb](https://objectstorage.us-ashburn-1.oraclecloud.com/p/g9DE7tIfPbZwnsN5As6R5ITL2NMsjX5HWJxrPcFJS6zvyLuvJ1o4zMZTiwMMhGwr/n/hpc_limited_availability/b/share/o/oci-cn-auth_2.0.13-compute_all.deb)
+wget https://objectstorage.us-ashburn-1.oraclecloud.com/p/g9DE7tIfPbZwnsN5As6R5ITL2NMsjX5HWJxrPcFJS6zvyLuvJ1o4zMZTiwMMhGwr/n/hpc_limited_availability/b/share/o/oci-cn-auth_2.0.13-compute_all.deb
 
 sudo dpkg -i oci-cn-auth_2.0.13-compute_all.deb
 ```
