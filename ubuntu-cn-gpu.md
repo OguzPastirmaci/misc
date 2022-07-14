@@ -32,9 +32,7 @@ CLI example:
 
 Check the `/var/log/mlx-configure.log` file again. You should see some `ADVANCED_PCI_SETTINGS already set to` messages and again `INFO - successfully completed setting parameters` as the last line.
 
-### 6 - Install the v2.0.8  `oci-cn-auth` package
-
-This step will not be needed in the next image build but necessary in this build:
+### 6 - Install the v2.0.13  `oci-cn-auth` package
 
 ```
 wget https://objectstorage.us-ashburn-1.oraclecloud.com/p/g9DE7tIfPbZwnsN5As6R5ITL2NMsjX5HWJxrPcFJS6zvyLuvJ1o4zMZTiwMMhGwr/n/hpc_limited_availability/b/share/o/oci-cn-auth_2.0.13-compute_all.deb
