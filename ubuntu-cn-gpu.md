@@ -24,7 +24,7 @@ There's a bug that causes interfaces to be renamed. We're tracking it with Canon
 
 Instead of rebooting from within the instance (e.g., `sudo reboot`), reboot from the console and check the "Force reboot the instance by immediately powering off, then powering back on" box.
 
-![Force reboot](https://github.com/OguzPastirmaci/misc/blob/master/images/force_reboot.png)
+![Force reboot](https://github.com/OguzPastirmaci/misc/blob/master/images/force_reboot_instance.png)
 
 Or you can use OCI CLI.
 
