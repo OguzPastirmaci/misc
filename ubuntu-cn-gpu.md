@@ -4,7 +4,7 @@
 
 ### 1 - Create an instance configuration with the Ubuntu CN image
 
-Create an Instance Configuration with the GPU shape.
+Create an Instance Configuration with the GPU shape. Use the `Ubuntu-20-OFED-*` image as the image when creating the instance configuration.
 
 https://docs.oracle.com/en-us/iaas/Content/Compute/Tasks/creatinginstanceconfig.htm#one
 
