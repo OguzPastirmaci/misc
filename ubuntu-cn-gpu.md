@@ -22,7 +22,11 @@ Wait for the instances to be up an running. Then, wait until you see `INFO - suc
 
 There's a bug that causes interfaces to be renamed. We're tracking it with Canonical. Rebooting the node once before configuring the RDMA interfaces fixes the issue in the meantime.
 
-Instead of rebooting from within the instance (e.g., `sudo reboot`), try rebooting from the console or CLI.
+Instead of rebooting from within the instance (e.g., `sudo reboot`), reboot from the console and check the "Force reboot the instance by immediately powering off, then powering back on" box.
+
+![Force reboot](https://github.com/OguzPastirmaci/misc/blob/master/images/force_reboot.png)
+
+Or you can use OCI CLI.
 
 CLI example:
 
