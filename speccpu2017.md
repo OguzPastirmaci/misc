@@ -35,7 +35,7 @@ cp Example-gcc-linux-x86.cfg oguz.cfg
 runcpu --config=oguz --copies=$CORES --noreportable --iterations=1 --size=test intrate 
 ```
 
-Excluding some tests if they're failing to run
+Excluding some tests if they're failing to run (excluding 502 in below example)
 
 ```
 runcpu --config=oguz --copies=$CORES --noreportable --iterations=1  --size=test intrate ^502
