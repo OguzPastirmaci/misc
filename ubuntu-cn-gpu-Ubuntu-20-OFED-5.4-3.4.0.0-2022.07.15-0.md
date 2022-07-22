@@ -1,4 +1,4 @@
-## NOTE: Below instructions are valid for the image `Ubuntu-20-OFED-2022.05.10-0`.
+## NOTE: Below instructions are valid for the image `Ubuntu-20-OFED-5.4-3.4.0.0-2022.07.15-0`.
 
 
 
