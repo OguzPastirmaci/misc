@@ -1,7 +1,10 @@
 #!/bin/bash
+
 set -e
+
 echo "Developed by Christopher M Johnston"
 echo "Configures RHEL 7.x to be moved to OCI Bare Metal Infrastructure"
+
 #ln -sf /lib/systemd/system/multi-user.target /etc/systemd/system/default.target
 yum install dracut-network iscsi-initiator-utils -y
 echo "Dependencies Installed"
