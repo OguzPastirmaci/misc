@@ -1,3 +1,5 @@
+# Deploying a Kubernetes cluster on OCI with RDMA support
+
 This guide uses Nvidia's DeepOps project to deploy a Kubernetes cluster on existing nodes using Ansible. Detailed info about DeepOps can be found in its repository at https://github.com/NVIDIA/deepops.
 
 ## IMPORTANT NOTES
@@ -128,15 +130,7 @@ gpu02    Ready    <none>                 122m   v1.23.7
 mgmt01   Ready    control-plane,master   132m   v1.23.7
 ```
 
-10 - Label your nodes that has RDMA NICs.
-
-The Mellanox Kubernetes RDMA Shared Device Plugin uses NFD (Node Feature Discovery) for labeling the nodes automatically. If you used the Ubuntu OFED image for your management nodes, your nodes will be incorrectly labeled as RDMA capable. We don't want that. So label your worker nodes with another label like `oci-rdma-capable`. Do this for all of your worker nodes.
-
-```
-kubectl label node gpu01 oci-rdma-capable=true
-```
-
-11 - Deploy the config map for Mellanox RDMA Shared Device Plugin
+10 - Deploy the config map for Mellanox RDMA Shared Device Plugin
 
 Save the following file as `configmap.yaml` and deploy it using `kubectl apply -f configmap.yaml`.
 
@@ -172,7 +166,7 @@ kubectl get configmap -n kube-system |grep rdma-devices
 rdma-devices                         1      98m
 ```
 
-12 - Deploy the Mellanox RDMA Shared Device Plugin
+11 - Deploy the Mellanox RDMA Shared Device Plugin
 
 Save the following file as `rdma-ds.yaml` and deploy it using `kubectl apply -f rdma-ds.yaml`.
 
@@ -234,7 +228,7 @@ rdma-shared-dp-ds-5sk7t                      1/1     Running   0              94
 rdma-shared-dp-ds-lzjgc                      1/1     Running   0              94m    10.0.0.201     gpu01    <none>           <none>
 ```
 
-13 - Now let's test running `ib_write_bw` between two pods. Save the following file as `rdma-test.yaml` and deploy it.
+12 - Now let's test running `ib_write_bw` between two pods. Save the following file as `rdma-test.yaml` and deploy it.
 
 ```
 kubectl apply -f rdma-test.yaml
@@ -289,7 +283,7 @@ spec:
       sleep 1000000
 ```
 
-14 - Wait until both pods are in Running state.
+13 - Wait until both pods are in Running state.
 
 ```
 kubectl get pods
@@ -299,7 +293,7 @@ rdma-test-pod-1   1/1     Running   0          17h
 rdma-test-pod-2   1/1     Running   0          17h
 ```
 
-15 - After the pods are running, open two terminals and exec into them.
+14 - After the pods are running, open two terminals and exec into them.
 
 ```
 kubectl exec -it rdma-test-pod-1 -- bash
@@ -307,7 +301,7 @@ kubectl exec -it rdma-test-pod-1 -- bash
 kubectl exec -it rdma-test-pod-2 -- bash
 ```
 
-16 - Confirm that you see the RDMA interfaces inside the pods.
+15 - Confirm that you see the RDMA interfaces inside the pods.
 
 ```
 ip ad |grep rdma
@@ -319,14 +313,14 @@ ip ad |grep rdma
 .....    
 ```
 
-17 - Install the perftest package inside the pods.
+16 - Install the perftest package inside the pods.
 
 ```
 sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub
 apt update && apt install perftest -y
 ```
 
-18 - Run a basic `ib_write_bw` test between pods. Make sure the RDMA interface you use matches the RDMA IP. You can get the device/interface matching with the `ibdev2netdev` command.
+17 - Run a basic `ib_write_bw` test between pods. Make sure the RDMA interface you use matches the RDMA IP. You can get the device/interface matching with the `ibdev2netdev` command.
 
 In `rdma-test-pod-1` run:
 
