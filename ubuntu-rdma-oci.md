@@ -402,3 +402,33 @@ ansible-playbook submodules/kubespray/reset.yml
 ### Upgrading the Cluster
 
 Refer to the [Kubespray Upgrade docs](https://github.com/kubernetes-sigs/kubespray/blob/master/docs/upgrades.md) for instructions on how to upgrade the cluster.
+
+### Monitoring
+
+Deploy Prometheus and Grafana to monitor Kubernetes and cluster nodes:
+
+```bash
+./scripts/k8s/deploy_monitoring.sh
+```
+
+Available Flags:
+
+```bash
+-h      This message.
+-p      Print monitoring URLs.
+-d      Delete monitoring namespace and crds. Note, this may delete PVs storing prometheus metrics.
+-x      Disable persistent data, this deploys Prometheus with no PV backing resulting in a loss of data across reboots.
+-w      Wait and poll the grafana/prometheus/alertmanager URLs until they properly return.
+delete  Legacy positional argument for delete. Same as -d flag.
+```
+
+The services can be reached from the following addresses:
+
+- Grafana: http://\<kube-master\>:30200
+- Prometheus: http://\<kube-master\>:30500
+- Alertmanager: http://\<kube-master\>:30400
+
+DeepOps deploys monitoring services using the [prometheus-operator](https://github.com/prometheus-operator/prometheus-operator) project.
+For documentation on configuring and managing the monitoring services, please see the [prometheus-operator user guides](https://github.com/prometheus-operator/prometheus-operator/tree/master/Documentation/user-guides).
+The source for our built-in Grafana dashboards can be found in [src/dashboards](../../src/dashboards).
+
