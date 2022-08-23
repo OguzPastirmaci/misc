@@ -286,11 +286,11 @@ spec:
 13 - Wait until both pods are in Running state.
 
 ```
-kubectl get pods
+kubectl get pods -o wide
 
-NAME              READY   STATUS    RESTARTS   AGE
-rdma-test-pod-1   1/1     Running   0          17h
-rdma-test-pod-2   1/1     Running   0          17h
+NAME              READY   STATUS    RESTARTS   AGE   IP           NODE    NOMINATED NODE   READINESS GATES
+rdma-test-pod-1   1/1     Running   0          49m   10.0.0.125   gpu02   <none>           <none>
+rdma-test-pod-2   1/1     Running   0          49m   10.0.0.70    gpu01   <none>           <none>
 ```
 
 14 - After the pods are running, open two terminals and exec into the pods.
