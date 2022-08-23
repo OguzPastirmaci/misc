@@ -7,7 +7,7 @@ This guide uses Nvidia's DeepOps project to deploy a Kubernetes cluster on exist
 ### Images
 The images you use for management and worker nodes matter. This guide assumes that you use the following images:
 
-**Management:** Canonical-Ubuntu-20.04-2022.07.15-0 (OCI platform image - any Ubuntu image without the OFED drivers should work)
+**Management:** Canonical-Ubuntu-20.04-2022.07.15-0 (OCI platform image - any Ubuntu image 20.04 without the OFED drivers should work)
 
 **Worker:** Ubuntu-20-OFED-5.4-3.4.0.0-2022.07.15-0
 
