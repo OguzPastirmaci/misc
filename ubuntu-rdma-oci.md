@@ -324,6 +324,39 @@ In `rdma-test-pod-2` run:
 ib_write_bw  -F -d mlx5_3 <IP of mlx5_3 in rdma-test-pod-1> -D 10 --cpu_util --report_gbits
 ```
 
+```
+ib_write_bw -d mlx5_3 -a -F
+```
+
+You should see a result similar to below:
+
+```
+************************************
+* Waiting for client to connect... *
+************************************
+---------------------------------------------------------------------------------------
+                    RDMA_Write BW Test
+ Dual-port       : OFF		Device         : mlx5_3
+ Number of qps   : 1		Transport type : IB
+ Connection type : RC		Using SRQ      : OFF
+ CQ Moderation   : 100
+ Mtu             : 4096[B]
+ Link type       : Ethernet
+ GID index       : 2
+ Max inline data : 0[B]
+ rdma_cm QPs	 : OFF
+ Data ex. method : Ethernet
+---------------------------------------------------------------------------------------
+ local address: LID 0000 QPN 0x10107 PSN 0xb5554 RKey 0x04ad6e VAddr 0x007f8389beb000
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:192:168:07:201
+ remote address: LID 0000 QPN 0x10107 PSN 0x92e7fa RKey 0x047c3b VAddr 0x007fd6f366c000
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:192:168:07:189
+---------------------------------------------------------------------------------------
+ #bytes     #iterations    BW peak[MB/sec]    BW average[MB/sec]   MsgRate[Mpps]
+ 65536      1101500          0.00               96.25  		   0.183585
+---------------------------------------------------------------------------------------
+```
+
 ### Adding Nodes
 
 To add K8s nodes, modify the `config/inventory` file to include the new nodes under `[all]`. Then list the nodes as relevant under the `[kube-master]`, `[etcd]`, and `[kube-node]` sections. For example, if adding a new master node, list it under kube-master and etcd. A new worker node would go under kube-node.
