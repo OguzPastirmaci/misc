@@ -148,8 +148,8 @@ data:
       "periodicUpdateInterval": 300,
       "configList": [
         {
-          "resourceName": "oci-roce",
-          "rdmaHcaMax": 10,
+          "resourceName": "roce",
+          "rdmaHcaMax": 100,
           "selectors": {
             "drivers": [
               "mlx5_core"
@@ -196,7 +196,7 @@ spec:
       hostNetwork: true
       priorityClassName: system-node-critical
       nodeSelector:
-        oci-rdma-capable: "true"
+        feature.node.kubernetes.io/custom-rdma.capable: "true"
       containers:
       - image: mellanox/k8s-rdma-shared-dev-plugin
         name: k8s-rdma-shared-dp-ds
