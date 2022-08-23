@@ -21,7 +21,7 @@ This guide uses the Ubuntu OFED image without the GPU drivers and use NVIDIA GPU
 
 1 - Deploy provisioning node, Kubernetes management and worker nodes
 
-Deploy the necessary nodes prior to following the steps in this guide. This guide is based on a single management node and 2 GPU worker nodes in a cluster network.
+Deploy the necessary nodes prior to following the steps in this guide. This guide is based on a single Kubernetes management node and 2 Kubernetes GPU worker nodes in a cluster network.
 
 You can add/remove nodes after you create the cluster. As a minimum, you will need:
 
