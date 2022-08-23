@@ -233,11 +233,6 @@ rdma-shared-dp-ds-lzjgc                      1/1     Running   0              94
 Also, make sure that you use `rdma/roce: 1` in your pod spec if your pod needs to access the RDMA interfaces.
 
 ```
-resources:
-      limits:
-        rdma/roce: 1
-
-```
 kubectl apply -f rdma-test.yaml
 ```
 
