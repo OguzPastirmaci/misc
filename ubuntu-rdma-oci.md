@@ -218,3 +218,110 @@ kubectl get pods -n kube-system -o wide |grep rdma-shared-dp-ds
 rdma-shared-dp-ds-5sk7t                      1/1     Running   0              94m    10.0.0.189     gpu02    <none>           <none>
 rdma-shared-dp-ds-lzjgc                      1/1     Running   0              94m    10.0.0.201     gpu01    <none>           <none>
 ```
+
+13 - Now let's test running `ib_write_bw` between two pods. Save the following file as `rdma-test.yaml` and deploy it.
+
+```
+kubectl apply -f rdma-test.yaml
+```
+
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rdma-test-pod-1
+spec:
+  hostNetwork: true
+  restartPolicy: OnFailure
+  containers:
+  - image: mellanox/mofed-5.4-3.1.0.0:ubuntu20.04-amd64
+    name: mofed-test-ctr
+    securityContext:
+      capabilities:
+        add: [ "IPC_LOCK" ]
+    resources:
+      limits:
+        rdma/roce: 1
+    command:
+    - sh
+    - -c
+    - |
+      ls -l /dev/infiniband /sys/class/net
+      sleep 1000000
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rdma-test-pod-2
+spec:
+  hostNetwork: true
+  restartPolicy: OnFailure
+  containers:
+  - image: mellanox/mofed-5.4-3.1.0.0:ubuntu20.04-amd64
+    name: mofed-test-ctr
+    securityContext:
+      capabilities:
+        add: [ "IPC_LOCK" ]
+    resources:
+      limits:
+        rdma/roce: 1
+    command:
+    - sh
+    - -c
+    - |
+      ls -l /dev/infiniband /sys/class/net
+      sleep 1000000
+```
+
+14 - Wait until both pods are in Running state.
+
+```
+kubectl get pods
+
+NAME              READY   STATUS    RESTARTS   AGE
+rdma-test-pod-1   1/1     Running   0          17h
+rdma-test-pod-2   1/1     Running   0          17h
+```
+
+15 - After the pods are running, open two terminals and exec into them.
+
+```
+kubectl exec -it rdma-test-pod-1 -- bash
+
+kubectl exec -it rdma-test-pod-2 -- bash
+```
+
+16 - Confirm that you see the RDMA interfaces inside the pods.
+
+```
+ip ad |grep rdma
+
+2: rdma4: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 4220 qdisc mq state UP group default qlen 20000
+    inet 192.168.4.201/16 brd 192.168.255.255 scope global rdma4
+3: rdma5: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 4220 qdisc mq state UP group default qlen 20000
+    inet 192.168.5.201/16 brd 192.168.255.255 scope global rdma5
+.....    
+```
+
+17 - Install the perftest package inside the pods.
+
+```
+sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub
+apt update && apt install perftest -y
+```
+
+18 - Run a basic `ib_write_bw` test between pods. Make sure the RDMA interface you use matches the RDMA IP. You can get the device/interface matching with the `ibdev2netdev` command.
+
+In `rdma-test-pod-1` run:
+
+```
+ib_write_bw -d mlx5_3 -a -F
+```
+
+In `rdma-test-pod-2` run:
+
+```
+ib_write_bw  -F -d mlx5_3 <IP of mlx5_3 in rdma-test-pod-1> -D 10 --cpu_util --report_gbits
+```
+
