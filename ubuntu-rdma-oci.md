@@ -1,7 +1,23 @@
 This guide uses Nvidia's DeepOps project to deploy a Kubernetes cluster on existing nodes using Ansible. Detailed info about DeepOps can be found in its repository at https://github.com/NVIDIA/deepops.
 
+## IMPORTANT NOTES
 
-1 - Deploy bastion, Kubernetes management and worker nodes
+### Images
+The images you use for management and worker nodes matter. This guide assumes that you use the following images:
+
+**Management:** Canonical-Ubuntu-20.04-2022.07.15-0 (OCI platform image - any Ubuntu image without the OFED drivers should work)
+
+**Worker:** Ubuntu-20-OFED-5.4-3.4.0.0-2022.07.15-0
+
+The Kubernetes cluster uses [Node Feature Discovery (NFD)](https://github.com/kubernetes-sigs/node-feature-discovery) for labeling the nodes automatically. If you use an image with OFED drivers installed for the management nodes, NFD will incorrectly label them as RDMA capable.
+
+### GPU Driver
+
+This guide uses the Ubuntu OFED image without the GPU drivers and use NVIDIA GPU Operator to install the drivers, which will reboot the nodes after driver installation. Change the settings in `config/group_vars/k8s-cluster.yml` if you want to use the image that has the GPU drivers pre-installed.
+
+## Step-by-step instructions for deploying the cluster and enabling RDMA
+
+1 - Deploy provisioning node, Kubernetes management and worker nodes
 
 Deploy the necessary nodes prior to following the steps in this guide. This guide is based on a single management node and 2 GPU worker nodes in a cluster network.
 
@@ -9,11 +25,11 @@ You can add/remove nodes after you create the cluster. As a minimum, you will ne
 
 Minimum number of nodes:
 
-- 1 bastion/provisioning node
+- 1 provisioning node
 - 1 management node
 - 1 worker node
 
-Make sure the bastion node can SSH into the other nodes.
+Make sure the provisioning node can SSH into the other nodes.
 
 2 - Disable firewall on management and worker nodes & edit the VCN security list
 
@@ -29,11 +45,11 @@ sudo iptables -F
 
 3 - Configure the Ubuntu GPU worker nodes by following the steps [in this link.](https://github.com/OguzPastirmaci/misc/blob/master/ubuntu-cn-gpu-Ubuntu-20-OFED-5.4-3.4.0.0-2022.07.15-0.md)
 
-4 - SSH into the bastion, and clone the DeepOps repository.
+4 - SSH into the provisioning node, and clone the DeepOps repository.
 
 ```git clone https://github.com/NVIDIA/deepops.git```
 
-5 - Set up your bastion machine.
+5 - Set up your provisioning node.
 
    This will install Ansible and other software on the provisioning machine which will be used to deploy all other software to the cluster. For more information on Ansible and why we use it, consult the [Ansible Guide](../deepops/ansible.md).
 
