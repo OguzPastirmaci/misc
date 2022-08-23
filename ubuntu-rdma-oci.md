@@ -38,7 +38,6 @@ sudo iptables -F
    This will install Ansible and other software on the provisioning machine which will be used to deploy all other software to the cluster. For more information on Ansible and why we use it, consult the [Ansible Guide](../deepops/ansible.md).
 
    ```bash
-   # Install software prerequisites and copy default configuration
    ./scripts/setup.sh
    ```
 6 -  Create and edit the Ansible inventory.
@@ -325,3 +324,38 @@ In `rdma-test-pod-2` run:
 ib_write_bw  -F -d mlx5_3 <IP of mlx5_3 in rdma-test-pod-1> -D 10 --cpu_util --report_gbits
 ```
 
+### Adding Nodes
+
+To add K8s nodes, modify the `config/inventory` file to include the new nodes under `[all]`. Then list the nodes as relevant under the `[kube-master]`, `[etcd]`, and `[kube-node]` sections. For example, if adding a new master node, list it under kube-master and etcd. A new worker node would go under kube-node.
+
+Then run the Kubespray `scale.yml` playbook...
+
+```bash
+ansible-playbook -l k8s-cluster submodules/kubespray/scale.yml
+```
+
+More information on this topic may be found in the [Kubespray docs](https://github.com/kubernetes-sigs/kubespray/blob/master/docs/getting-started.md#adding-nodes).
+
+### Removing Nodes
+
+Removing nodes can be performed with Kubespray's `remove-node.yml` playbook and supplying the node names as extra vars...
+
+```bash
+ansible-playbook submodules/kubespray/remove-node.yml --extra-vars "node=nodename0,nodename1"
+```
+
+This will drain `nodename0` & `nodename1`, stop Kubernetes services, delete certificates, and finally execute the kubectl command to delete the nodes.
+
+More information on this topic may be found in the [Kubespray docs](https://github.com/kubernetes-sigs/kubespray/blob/master/docs/getting-started.md#remove-nodes).
+
+### Reset the Cluster
+
+DeepOps is largely idempotent, but in some cases, it is helpful to completely reset a cluster. KubeSpray provides a best-effort attempt at this through a playbook. The script below is recommended to be run twice as some components may not completely uninstall due to time-outs/failed dependent conditions.
+
+```bash
+ansible-playbook submodules/kubespray/reset.yml
+```
+
+### Upgrading the Cluster
+
+Refer to the [Kubespray Upgrade docs](https://github.com/kubernetes-sigs/kubespray/blob/master/docs/upgrades.md) for instructions on how to upgrade the cluster.
