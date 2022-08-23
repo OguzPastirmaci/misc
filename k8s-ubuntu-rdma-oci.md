@@ -332,7 +332,7 @@ ib_write_bw -d mlx5_3 -a -F
 In `rdma-test-pod-2` run:
 
 ```
-ib_write_bw  -F -d mlx5_3 <IP of mlx5_3 in rdma-test-pod-1> -D 10 --cpu_util --report_gbits
+ib_write_bw -F -d mlx5_3 <IP of mlx5_3 in rdma-test-pod-1> -D 10 --cpu_util --report_gbits
 ```
 
 ```
