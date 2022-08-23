@@ -170,8 +170,6 @@ rdma-devices                         1      98m
 
 Save the following file as `rdma-ds.yaml` and deploy it using `kubectl apply -f rdma-ds.yaml`.
 
-If you have labeled your nodes with something other than `oci-rdma-capable`, change it in the `nodeSelector:` part of the yaml.
-
 ```yaml
 apiVersion: apps/v1
 kind: DaemonSet
