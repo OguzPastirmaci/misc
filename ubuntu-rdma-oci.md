@@ -105,7 +105,7 @@ ansible-playbook -l k8s-cluster playbooks/k8s-cluster.yml
 9 - Verify that the Kubernetes cluster is running.
 
 ```
-(env) ubuntu@deepops-bastion:~$ kubectl get nodes
+kubectl get nodes
 
 NAME     STATUS   ROLES                  AGE    VERSION
 gpu01    Ready    <none>                 122m   v1.23.7
@@ -144,6 +144,14 @@ kind: ConfigMap
 metadata:
   name: rdma-devices
   namespace: kube-system
+```
+
+Check that the config map is there:
+
+```
+kubectl get configmap -n kube-system |grep rdma-devices
+
+rdma-devices                         1      98m
 ```
 
 12 - Deploy the Mellanox RDMA Shared Device Plugin
@@ -195,4 +203,13 @@ spec:
         - name: devs
           hostPath:
             path: /dev/
+```
+
+Check that the Daemonset is deployed correctly only on the nodes that has RDMA NICs (in our example, GPU nodes). You should see a pod running in each GPU node.
+
+```
+kubectl get pods -n kube-system -o wide |grep rdma-shared-dp-ds
+
+rdma-shared-dp-ds-5sk7t                      1/1     Running   0              94m    10.0.0.189     gpu02    <none>           <none>
+rdma-shared-dp-ds-lzjgc                      1/1     Running   0              94m    10.0.0.201     gpu01    <none>           <none>
 ```
