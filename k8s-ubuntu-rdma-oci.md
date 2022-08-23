@@ -228,9 +228,7 @@ rdma-shared-dp-ds-lzjgc                      1/1     Running   0              94
 
 12 - Now let's test running `ib_write_bw` between two pods. Save the following file as `rdma-test.yaml` and deploy it.
 
-**NOTE:** If you want to test running different pods, make sure `hostNetwork: true` is set in your spec.
-
-Also, make sure that you use `rdma/roce: 1` in your pod spec if your pod needs to access the RDMA interfaces.
+**NOTE:** If you want to test running different/your images with RDMA, make sure that in your pod spec you're setting `hostNetwork: true` and request `rdma/roce: 1` as a resource. The following example spec has both options set.
 
 ```
 kubectl apply -f rdma-test.yaml
