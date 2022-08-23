@@ -161,7 +161,7 @@ metadata:
 Check that the config map is there:
 
 ```
-kubectl get configmap -n kube-system |grep rdma-devices
+kubectl get configmap -n kube-system | grep rdma-devices
 
 rdma-devices                         1      98m
 ```
@@ -222,7 +222,7 @@ spec:
 Check that the Daemonset is deployed correctly only on the nodes that has RDMA NICs (in our example, GPU nodes). You should see a pod running in each GPU node.
 
 ```
-kubectl get pods -n kube-system -o wide |grep rdma-shared-dp-ds
+kubectl get pods -n kube-system -o wide | grep rdma-shared-dp-ds
 
 rdma-shared-dp-ds-5sk7t                      1/1     Running   0              94m    10.0.0.189     gpu02    <none>           <none>
 rdma-shared-dp-ds-lzjgc                      1/1     Running   0              94m    10.0.0.201     gpu01    <none>           <none>
@@ -304,7 +304,7 @@ kubectl exec -it rdma-test-pod-2 -- bash
 15 - Confirm that you see the RDMA interfaces inside the pods.
 
 ```
-ip ad |grep rdma
+ip ad | grep rdma
 
 2: rdma4: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 4220 qdisc mq state UP group default qlen 20000
     inet 192.168.4.201/16 brd 192.168.255.255 scope global rdma4
