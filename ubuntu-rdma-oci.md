@@ -291,7 +291,7 @@ rdma-test-pod-1   1/1     Running   0          17h
 rdma-test-pod-2   1/1     Running   0          17h
 ```
 
-14 - After the pods are running, open two terminals and exec into them.
+14 - After the pods are running, open two terminals and exec into the pods.
 
 ```
 kubectl exec -it rdma-test-pod-1 -- bash
