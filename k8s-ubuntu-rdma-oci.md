@@ -427,5 +427,5 @@ The services can be reached from the following addresses:
 
 DeepOps deploys monitoring services using the [prometheus-operator](https://github.com/prometheus-operator/prometheus-operator) project.
 For documentation on configuring and managing the monitoring services, please see the [prometheus-operator user guides](https://github.com/prometheus-operator/prometheus-operator/tree/master/Documentation/user-guides).
-The source for our built-in Grafana dashboards can be found in [src/dashboards](../../src/dashboards).
 
+![](https://github.com/OguzPastirmaci/kubernetes-oci-azure-interconnect/blob/master/images/grafana.png)
