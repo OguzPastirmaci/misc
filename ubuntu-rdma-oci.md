@@ -129,20 +129,20 @@ Save the following file as `configmap.yaml` and deploy it using `kubectl apply -
 apiVersion: v1
 data:
   config.json: |
-{
-  "periodicUpdateInterval": 300,
-  "configList": [
     {
-      "resourceName": "oci-roce",
-      "rdmaHcaMax": 10,
-      "selectors": {
-        "drivers": [
-          "mlx5_core"
-        ]
-      }
+      "periodicUpdateInterval": 300,
+      "configList": [
+        {
+          "resourceName": "oci-roce",
+          "rdmaHcaMax": 10,
+          "selectors": {
+            "drivers": [
+              "mlx5_core"
+            ]
+          }
+        }
+      ]
     }
-  ]
-}
 kind: ConfigMap
 metadata:
   name: rdma-devices
