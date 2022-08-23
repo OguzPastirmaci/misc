@@ -321,7 +321,7 @@ sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda
 apt update && apt install perftest -y
 ```
 
-17 - Run a basic `ib_write_bw` test between pods. Make sure the RDMA interface you use matches the RDMA IP. You can get the device/interface matching with the `ibdev2netdev` command.
+17 - Run a basic `ib_write_bw` test between pods. Make sure the RDMA interface you use matches the RDMA IP (192.168.x.x). You can get the device/interface matching with the `ibdev2netdev` command.
 
 In `rdma-test-pod-1` run:
 
