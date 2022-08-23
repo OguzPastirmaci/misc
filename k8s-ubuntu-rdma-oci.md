@@ -166,7 +166,7 @@ kubectl get configmap -n kube-system | grep rdma-devices
 rdma-devices                         1      98m
 ```
 
-11 - Deploy the Mellanox RDMA Shared Device Plugin.
+11 - Deploy the Mellanox RDMA Shared Device Plugin daemonset.
 
 Save the following file as `rdma-ds.yaml` and deploy it using `kubectl apply -f rdma-ds.yaml`.
 
