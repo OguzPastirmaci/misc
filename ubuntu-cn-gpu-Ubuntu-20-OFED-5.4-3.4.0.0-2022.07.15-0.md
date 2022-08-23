@@ -18,7 +18,16 @@ https://docs.oracle.com/en-us/iaas/Content/Compute/Tasks/managingclusternetworks
 
 Wait for the instances to be up an running. Then, wait until you see `INFO - successfully completed setting parameters` as the last line in `/var/log/mlx-configure.log`
 
-### 4 - Edit `/etc/oci-hpc/rdma-network.conf`
+### 4 - Disable unattended upgrades service and hold kernel updates
+
+```
+systemctl stop unattended-upgrades.service
+systemctl disable unattended-upgrades.service
+apt-get purge --yes unattended-upgrades
+apt-mark hold linux-oracle linux-headers-oracle linux-image-oracle
+```
+
+### 5 - Edit `/etc/oci-hpc/rdma-network.conf`
 
 Edit the `/etc/oci-hpc/rdma-network.conf` file and add the following block:
 
@@ -39,11 +48,11 @@ modify_arp=true
 override_netconfig_netmask=255.255.0.0
 ```
 
-### 5 - Run the RDMA configuration tool to setup RDMA interfaces
+### 6 - Run the RDMA configuration tool to setup RDMA interfaces
 
 Run `sudo /sbin/oci-rdma-configure` to setup RDMA interfaces. This step might take a couple of minutes.
 
-### 6 - Check that the interfaces have 192.168.x.x IPs
+### 7 - Check that the interfaces have 192.168.x.x IPs
 
 Check that the interfaces have 192.x IPs assigned.
 
@@ -83,7 +92,7 @@ ubuntu@inst-qua9x-ubuntu-cn-public:~$ ip ad
 ...
 ```
 
-### 7 - Test pinging another instance in the cluster network to check connectivity
+### 8 - Test pinging another instance in the cluster network to check connectivity
 
 ```
 ubuntu@inst-qua9x-ubuntu-cn-public:~$ ping -I enp148s0f1np1 192.168.14.193
