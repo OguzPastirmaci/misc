@@ -115,7 +115,7 @@ mgmt01   Ready    control-plane,master   132m   v1.23.7
 
 10 - Label your nodes that has RDMA NICs.
 
-The Mellanox Kubernetes RDMA Shared Device Plugin uses NFD (Node Feature Discovery) for labeling the nodes automatically. If you used the Ubuntu OFED image for your management nodes, your nodes will be labeled as RDMA capable. We don't want that. So label your worker nodes with another label like `oci-rdma-capable`. Do this for all of your worker nodes.
+The Mellanox Kubernetes RDMA Shared Device Plugin uses NFD (Node Feature Discovery) for labeling the nodes automatically. If you used the Ubuntu OFED image for your management nodes, your nodes will be incorrectly labeled as RDMA capable. We don't want that. So label your worker nodes with another label like `oci-rdma-capable`. Do this for all of your worker nodes.
 
 ```
 kubectl label node gpu01 oci-rdma-capable=true
@@ -158,6 +158,8 @@ rdma-devices                         1      98m
 
 Save the following file as `rdma-ds.yaml` and deploy it using `kubectl apply -f rdma-ds.yaml`.
 
+If you have labeled your nodes with something other than `oci-rdma-capable`, change it in the `nodeSelector:` part of the yaml.
+
 ```yaml
 apiVersion: apps/v1
 kind: DaemonSet
@@ -176,7 +178,7 @@ spec:
       hostNetwork: true
       priorityClassName: system-node-critical
       nodeSelector:
-        rdma: "true"
+        oci-rdma-capable: "true"
       containers:
       - image: mellanox/k8s-rdma-shared-dev-plugin
         name: k8s-rdma-shared-dp-ds
