@@ -19,7 +19,7 @@ This guide uses the Ubuntu OFED image without the GPU drivers and use NVIDIA GPU
 
 ## Step-by-step instructions for deploying the cluster and enabling RDMA
 
-1 - Deploy provisioning node, Kubernetes management and worker nodes
+1 - Deploy provisioning node, Kubernetes management and worker nodes.
 
 Deploy the necessary nodes prior to following the steps in this guide. This guide is based on a single Kubernetes management node and 2 Kubernetes GPU worker nodes in a cluster network.
 
@@ -33,7 +33,7 @@ Minimum number of nodes:
 
 Make sure the provisioning node can SSH into the other nodes.
 
-2 - Disable firewall on management and worker nodes & edit the VCN security list
+2 - Disable firewall on management and worker nodes & edit the VCN security list.
 
 This guides assumes you will allow all ports in the subnet's security list in the OCI VCN and disable iptables on all Kubernetes nodes. Please check [this link](https://github.com/NVIDIA/deepops/blob/master/docs/misc/firewall.md) for the required ports for Kubernetes.
 
@@ -107,7 +107,7 @@ kube-master
 kube-node
 ```
 
-7 -  Verify the configuration
+7 -  Verify the configuration.
 
 ```bash
 ansible all -m raw -a "hostname"
@@ -130,7 +130,7 @@ gpu02    Ready    <none>                 122m   v1.23.7
 mgmt01   Ready    control-plane,master   132m   v1.23.7
 ```
 
-10 - Deploy the config map for Mellanox RDMA Shared Device Plugin
+10 - Deploy the config map for Mellanox RDMA Shared Device Plugin.
 
 Save the following file as `configmap.yaml` and deploy it using `kubectl apply -f configmap.yaml`.
 
@@ -166,7 +166,7 @@ kubectl get configmap -n kube-system | grep rdma-devices
 rdma-devices                         1      98m
 ```
 
-11 - Deploy the Mellanox RDMA Shared Device Plugin
+11 - Deploy the Mellanox RDMA Shared Device Plugin.
 
 Save the following file as `rdma-ds.yaml` and deploy it using `kubectl apply -f rdma-ds.yaml`.
 
