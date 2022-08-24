@@ -25,8 +25,6 @@ Deploy the necessary nodes prior to following the steps in this guide. This guid
 
 You can add/remove nodes after you create the cluster. As a minimum, you will need:
 
-Minimum number of nodes:
-
 - 1 provisioning node
 - 1 management node
 - 1 worker node
@@ -35,7 +33,7 @@ Make sure the provisioning node can SSH into the other nodes.
 
 2 - Disable firewall on management and worker nodes & edit the VCN security list.
 
-This guides assumes that you allowed all ports in the subnet's security list in the OCI VCN and disable iptables on all Kubernetes nodes. Please check [this link](https://github.com/NVIDIA/deepops/blob/master/docs/misc/firewall.md) for the required ports for Kubernetes.
+This guides assumes that you allowed all ports in the subnet's security list in the OCI VCN and disabled iptables on all Kubernetes nodes. Please check [this link](https://github.com/NVIDIA/deepops/blob/master/docs/misc/firewall.md) for the required ports for Kubernetes.
 
 You can disable iptables with the following commands:
 
