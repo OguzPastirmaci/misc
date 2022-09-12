@@ -15,7 +15,7 @@ The Kubernetes cluster uses [Node Feature Discovery (NFD)](https://github.com/ku
 
 ### GPU Driver
 
-This guide uses the Ubuntu OFED image without the GPU drivers and use NVIDIA GPU Operator to install the drivers, which will reboot the nodes after driver installation. Change the settings in `config/group_vars/k8s-cluster.yml` if you want to use the image that has the GPU drivers pre-installed.
+This guide uses the Ubuntu OFED image without the GPU drivers and uses NVIDIA GPU Operator to install the drivers, which will reboot the nodes after driver installation. Change the settings in `config/group_vars/k8s-cluster.yml` if you want to use the image that has the GPU drivers pre-installed.
 
 ## Step-by-step instructions for deploying the cluster and enabling RDMA
 
