@@ -5,13 +5,13 @@ This guide uses Nvidia's DeepOps project to deploy a Kubernetes cluster on exist
 ## IMPORTANT NOTES
 
 ### Images
-The images you use for management and worker nodes matter. This guide assumes that you use the following images:
+The images you use for management and worker nodes matter. The Kubernetes cluster uses Node Feature Discovery (NFD) for labeling the nodes automatically. If you use an image with OFED drivers installed for the management nodes, NFD will incorrectly label them as RDMA capable.
+
+This guide assumes that you use the following images:
 
 **Management:** Canonical-Ubuntu-20.04-2022.07.15-0 (OCI platform image - any Ubuntu 20.04 image without the OFED drivers should work)
 
 **Worker:** Ubuntu-20-OFED-5.4-3.4.0.0-2022.07.15-0
-
-The Kubernetes cluster uses [Node Feature Discovery (NFD)](https://github.com/kubernetes-sigs/node-feature-discovery) for labeling the nodes automatically. If you use an image with OFED drivers installed for the management nodes, NFD will incorrectly label them as RDMA capable.
 
 ### GPU Driver
 
