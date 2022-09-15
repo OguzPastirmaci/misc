@@ -13,7 +13,7 @@ This guide assumes that you use the following images:
 
 **Worker:** Ubuntu-20-OFED-5.4-3.4.0.0-2022.07.15-0
 
-If you want to use an image with OFED drivers for the management nodes or don't want to use NFD, you'll need to label your nodes and then use the correct nodeSelector when deploying the deamonset.
+If you want to use an image with OFED drivers for the management nodes or don't want to use NFD, you'll need to label your nodes and then use the correct `nodeSelector` when deploying the deamonset.
 
 ### GPU Driver
 
