@@ -7,6 +7,8 @@ This guide uses Nvidia's DeepOps project to deploy a Kubernetes cluster on exist
 ### Images
 The images you use for management and worker nodes matter. The Kubernetes cluster uses Node Feature Discovery (NFD) for labeling the nodes automatically. If you use an image with OFED drivers installed for the management nodes, NFD will incorrectly label them as RDMA capable.
 
+If you want to use an image with OFED drivers or don't want to use NFD, you'll need to label your nodes and then use the correct nodeSelector when deploying the deamonset.
+
 This guide assumes that you use the following images:
 
 **Management:** Canonical-Ubuntu-20.04-2022.07.15-0 (OCI platform image - any Ubuntu 20.04 image without the OFED drivers should work)
