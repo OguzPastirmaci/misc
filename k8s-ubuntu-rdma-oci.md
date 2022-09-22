@@ -29,7 +29,7 @@ You can add/remove nodes after you create the cluster. As a minimum, you will ne
 
 - 1 provisioning node
 - 1 management node
-- 1 worker node with RDMA NICs
+- 1 GPU worker node with RDMA NICs
 
 Make sure the provisioning node can SSH into the other nodes.
 
