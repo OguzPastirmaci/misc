@@ -26,5 +26,5 @@ oci artifacts container repository create --display-name helm/helm-test-chart --
 5 - Push the chart to helm/helm-test-chart repository in specific compartment with 0.1.0 as default tag.
 
 ```
-helm push helm-test-chart-0.1.0.tgz oci://<regioncode.ocir.io>/<tenancy_namespace>/helm
+helm push helm-test-chart-0.1.0.tgz oci://<region_code.ocir.io>/<tenancy_namespace>/helm
 ```
