@@ -2,7 +2,7 @@
 
 Instead of destroying and applying each time that you need to change the number of nodes in a cluster, using the below commands is an easier way to manage the cluster from the bastion.
 
-All of the following commands can be run from the **bastion** instance. Currently, you have a total limit of 5 A100 80GB nodes in your tenancy.
+All of the following commands can be run from the **bastion** instance.
 
 The name of your current cluster is `compute-1-hpc`. That name is included in all below commands.
 
