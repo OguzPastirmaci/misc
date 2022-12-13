@@ -4,7 +4,7 @@ Instead of destroying and applying each time that you need to change the number 
 
 All of the following commands can be run from the **bastion** instance.
 
-The name of the current cluster is `compute-1-hpc`. That name is included in all below commands.
+The name of the current cluster is `compute-1-hpc`. That cluster name is included in all below commands.
 
 
 ## Adding nodes to the cluster
