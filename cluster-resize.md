@@ -1,3 +1,5 @@
+# Resizing a GPU cluster on Oracle Cloud Infrastructure
+
 Instead of destroying and applying each time that you need to change the number of nodes in a cluster, using the below commands is an easier way to manage the cluster from the bastion.
 
 All of the following commands can be run from the bastion instance. Currently, you have a total limit of 5 A100 80GB nodes in your tenancy.
