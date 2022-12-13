@@ -6,7 +6,7 @@ All of the following commands can be run from the **bastion** instance.
 
 The name of the current cluster is `compute-1-hpc`. That cluster name is included in all below commands.
 
-The logs for adding or removing node/nodes will be available in `/opt/oci-hpc/logs` on the bastion after the command finishes running.
+**NOTE:** The logs for adding or removing node/nodes will be available in `/opt/oci-hpc/logs` on the bastion after the command finishes running.
 
 
 ## Adding nodes to the cluster
