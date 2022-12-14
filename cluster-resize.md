@@ -57,18 +57,3 @@ Example:
 ```
 /opt/oci-hpc/bin/resize.sh remove_unreachable --cluster_name compute-1-hpc --nodes inst-wdwdu-compute-1-hpc inst-lotc6-compute-1-hpc
 ```
-
-### Removing nodes randomly
-
-If you don't specify any specific nodes, the command will randomly remove nodes from the cluster.
-
-```
-/opt/oci-hpc/bin/resize.sh remove <number of nodes to remove randomly> --cluster_name compute-1-hpc
-```
-
-Example:
-```
-/opt/oci-hpc/bin/resize.sh remove 2 --cluster_name compute-1-hpc
-```
-
-
