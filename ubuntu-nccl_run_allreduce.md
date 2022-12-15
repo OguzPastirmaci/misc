@@ -1,3 +1,11 @@
+Run it with the below command. Change 1 to the number of iterations you want.
+
+```
+./nccl_run_allreduce.sh 1 /etc/opt/oci-hpc/hostfile.tcp
+```
+
+
+```bash
 #!/bin/bash
 set -e
 
@@ -79,3 +87,4 @@ fi
 
 
 done
+```
