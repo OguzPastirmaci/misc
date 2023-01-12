@@ -6,6 +6,21 @@ All of the following commands can be run from the **bastion** instance.
 
 **NOTE:** The logs for adding or removing node/nodes will be available in `/opt/oci-hpc/logs` on the bastion after the command finishes running.
 
+## Listing the current nodes running in the cluster
+
+```
+/opt/oci-hpc/bin/resize.sh list
+```
+
+Example output:
+
+```
+[opc@stirring-asp-bastion ~]$ /opt/oci-hpc/bin/resize.sh list
+
+Cluster is in state:RUNNING
+inst-jkdoa-stirring-asp 172.16.5.47 ocid1.instance.oc1.eu-frankfurt-1.antheljtpwneysachkkqbeuq5lwfmvntdcif3ylebqwqzeq
+inst-q59gt-stirring-asp 172.16.4.123 ocid1.instance.oc1.eu-frankfurt-1.antheljtpwneysachlen56dtlandejcke4x4seg3gg4irq
+```
 
 ## Adding nodes to the cluster
 
