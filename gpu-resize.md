@@ -9,13 +9,13 @@ All of the following commands can be run from the **bastion** instance.
 ## Listing the current nodes running in the cluster
 
 ```
-/opt/oci-hpc/bin/resize.sh list
+/opt/oci-hpc/bin/resize.sh list --cluster_name a100
 ```
 
 Example output:
 
 ```
-[opc@stirring-asp-bastion ~]$ /opt/oci-hpc/bin/resize.sh list
+[opc@stirring-asp-bastion ~]$ /opt/oci-hpc/bin/resize.sh list --cluster_name a100
 
 Cluster is in state:RUNNING
 inst-jkdoa-stirring-asp 172.16.5.47 ocid1.instance.oc1.eu-frankfurt-1.antheljtpwneysachkkqbeuq5lwfmvntdcif3ylebqwqzeq
@@ -32,13 +32,13 @@ The command automates the following steps for you:
   -  Reconfigure services like Slurm to recognize new nodes on all nodes
 
 ```
-/opt/oci-hpc/bin/resize.sh add <number of nodes to add>
+/opt/oci-hpc/bin/resize.sh add <number of nodes to add> --cluster_name a100
 ```
 
 Example:
 
 ```
-/opt/oci-hpc/bin/resize.sh add 3
+/opt/oci-hpc/bin/resize.sh add 3 --cluster_name a100
 ```
 
 ## Removing nodes from the cluster
@@ -52,21 +52,21 @@ The command automates the following steps for you:
 ### Removing a specific node
 
 ```
-/opt/oci-hpc/bin/resize.sh remove_unreachable --nodes <node name>
+/opt/oci-hpc/bin/resize.sh remove_unreachable --nodes <node name> --cluster_name a100
 ```
 
 Example: 
 ```
-/opt/oci-hpc/bin/resize.sh remove_unreachable --nodes inst-wdwdu-compute-1-hpc
+/opt/oci-hpc/bin/resize.sh remove_unreachable --nodes inst-wdwdu-compute-1-hpc --cluster_name a100
 ```
 
 ### Removing a list of nodes (space seperated):
 
 ```
-/opt/oci-hpc/bin/resize.sh remove_unreachable --nodes <node names>
+/opt/oci-hpc/bin/resize.sh remove_unreachable --nodes <node names> --cluster_name a100
 ```
 
 Example: 
 ```
-/opt/oci-hpc/bin/resize.sh remove_unreachable --nodes inst-wdwdu-compute-1-hpc inst-lotc6-compute-1-hpc
+/opt/oci-hpc/bin/resize.sh remove_unreachable --nodes inst-wdwdu-compute-1-hpc inst-lotc6-compute-1-hpc --cluster_name a100
 ```
