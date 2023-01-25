@@ -242,6 +242,7 @@ metadata:
   name: rdma-test-pod-1
 spec:
   hostNetwork: true
+  dnsPolicy: ClusterFirstWithHostNet
   restartPolicy: OnFailure
   containers:
   - image: mellanox/mofed-5.4-3.1.0.0:ubuntu20.04-amd64
@@ -265,6 +266,7 @@ metadata:
   name: rdma-test-pod-2
 spec:
   hostNetwork: true
+  dnsPolicy: ClusterFirstWithHostNet
   restartPolicy: OnFailure
   containers:
   - image: mellanox/mofed-5.4-3.1.0.0:ubuntu20.04-amd64
