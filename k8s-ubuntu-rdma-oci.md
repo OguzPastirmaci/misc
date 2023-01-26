@@ -56,7 +56,7 @@ sudo iptables -F
    This will install Ansible and other software on the provisioning machine which will be used to deploy all other software to the cluster. For more information on Ansible and why we use it, consult the [Ansible Guide](../deepops/ansible.md).
 
    ```bash
-   ./scripts/setup.sh
+   ./deepops/scripts/setup.sh
    ```
 6 -  Create and edit the Ansible inventory.
 
