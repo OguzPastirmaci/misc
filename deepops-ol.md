@@ -21,24 +21,6 @@ gpgcheck=1
 enabled=1
 ```
 
-#### If you get an error in runc os_tree task, add the following to roles/container-engine/runc/tasks/main.yml
-
-https://github.com/kubernetes-sigs/kubespray/pull/9321/commits/b528772dfdfbaa4287c42287bd183e8a1317f1dc
-
-```
-- name: runc | check if fedora coreos
-  stat:
-    path: /run/ostree-booted
-    get_attributes: no
-    get_checksum: no
-    get_mime: no
-  register: ostree
-
-- name: runc | set is_ostree
-  set_fact:
-    is_ostree: "{{ ostree.stat.exists }}"
-```
-  
 #### Change the driver version to match what you have installed on the host (e.g. 510.108.03)
 
 `gpu_operator_driver_version` in `roles/nvidia-gpu-operator/defaults/main.yml`
@@ -63,4 +45,22 @@ case "$ID" in
         if ! type curl >/dev/null 2>&1 ; then
             sudo yum -y install curl
         fi
+```
+
+#### If you get an error in runc os_tree task, add the following to roles/container-engine/runc/tasks/main.yml
+
+https://github.com/kubernetes-sigs/kubespray/pull/9321/commits/b528772dfdfbaa4287c42287bd183e8a1317f1dc
+
+```
+- name: runc | check if fedora coreos
+  stat:
+    path: /run/ostree-booted
+    get_attributes: no
+    get_checksum: no
+    get_mime: no
+  register: ostree
+
+- name: runc | set is_ostree
+  set_fact:
+    is_ostree: "{{ ostree.stat.exists }}"
 ```
