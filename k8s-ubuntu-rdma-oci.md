@@ -144,7 +144,7 @@ data:
       "configList": [
         {
           "resourceName": "roce",
-          "rdmaHcaMax": 100,
+          "rdmaHcaMax": 16,
           "selectors": {
             "drivers": [
               "mlx5_core"
