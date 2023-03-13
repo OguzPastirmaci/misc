@@ -9,9 +9,9 @@ The images you use for management and worker nodes matter. The Kubernetes cluste
 
 This guide assumes that you use the following images:
 
-**Management:** Canonical-Ubuntu-20.04-2022.07.15-0 (OCI platform image - any Ubuntu 20.04 image without the OFED drivers should work)
+**Management:** Canonical-Ubuntu-20.04-2023.02.15-0 (OCI platform image - any Ubuntu 20.04 image without the OFED drivers should work)
 
-**Worker:** Ubuntu-20-OFED-5.4-3.4.0.0-2022.07.15-0
+**Worker:** Ubuntu-20-OFED-5.4-3.6.8.1-GPU-515-2023.01.10-0
 
 If you want to use an image with OFED drivers for the management nodes or don't want to use NFD, you'll need to label your nodes and then use the correct `nodeSelector` when deploying the deamonset.
 
