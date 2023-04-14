@@ -17,5 +17,6 @@ cat placement-configuration.json
 ```
 
 ```sh
+COMPARTMENT_ID=
 oci compute-management cluster-network create --compartment-id $COMPARTMENT_ID --instance-pools file://instance-pools.json --placement-configuration file://placement-configuration.json
 ```
