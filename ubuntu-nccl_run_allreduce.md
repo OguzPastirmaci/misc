@@ -51,11 +51,12 @@ do
 
   hostfile=$hostfile; np=$np ; iter=20;
 
-#  if [ -f /usr/mpi/gcc/openmpi-4.1.0rc5/bin/mpivars.sh ]; then
-#    source /usr/mpi/gcc/openmpi-4.1.0rc5/bin/mpivars.sh
-#  else
-#    source /opt/openmpi-4.1.3/bin/mpivars.sh
-#  fi
+  if [ -f /usr/mpi/gcc/openmpi-4.1.0rc5/bin/mpivars.sh ]; then
+    source /usr/mpi/gcc/openmpi-4.1.0rc5/bin/mpivars.sh
+  else
+    source /opt/openmpi-4.1.3/bin/mpivars.sh
+  fi
+
 first_node=`head $hostfile -n 1`
 shape=`ssh $first_node 'curl -sH "Authorization: Bearer Oracle" -L http://169.254.169.254/opc/v2/instance/' | jq .shape`
 if [ $shape == \"BM.GPU.B4.8\" ] || [ $shape == \"BM.GPU.A100-v2.8\" ]
