@@ -172,50 +172,57 @@ rdma-devices                         1      98m
 Save the following file as `rdma-ds.yaml` and deploy it using `kubectl apply -f rdma-ds.yaml`.
 
 ```yaml
-apiVersion: apps/v1
-kind: DaemonSet
+apiVersion: v1
+kind: Pod
 metadata:
-  name: rdma-shared-dp-ds
-  namespace: kube-system
+  name: rdma-test-pod-1
+  annotations:
+    k8s.v1.cni.cncf.io/networks: sriov-net
 spec:
-  selector:
-    matchLabels:
-      name: rdma-shared-dp-ds
-  template:
-    metadata:
-      labels:
-        name: rdma-shared-dp-ds
-    spec:
-      hostNetwork: true
-      priorityClassName: system-node-critical
-      nodeSelector:
-        feature.node.kubernetes.io/custom-rdma.capable: "true"
-      containers:
-      - image: mellanox/k8s-rdma-shared-dev-plugin
-        name: k8s-rdma-shared-dp-ds
-        imagePullPolicy: IfNotPresent
-        securityContext:
-          privileged: true
-        volumeMounts:
-          - name: device-plugin
-            mountPath: /var/lib/kubelet/
-          - name: config
-            mountPath: /k8s-rdma-shared-dev-plugin
-          - name: devs
-            mountPath: /dev/
-      volumes:
-        - name: device-plugin
-          hostPath:
-            path: /var/lib/kubelet/
-        - name: config
-          configMap:
-            name: rdma-devices
-            items:
-            - key: config.json
-              path: config.json
-        - name: devs
-          hostPath:
-            path: /dev/
+  restartPolicy: OnFailure
+  containers:
+  - image: oguzpastirmaci/mofed-perftest:5.4-3.6.8.1-ubuntu20.04-amd64
+    name: mofed-test-ctr
+    securityContext:
+      capabilities:
+        add: [ "IPC_LOCK" ]
+    resources: 
+      requests:
+        nvidia.com/rdma_sriov: 1
+      limits:
+        nvidia.com/rdma_sriov: 1
+    command:
+    - sh
+    - -c
+    - |
+      ls -l /dev/infiniband /sys/class/net
+      sleep 1000000
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rdma-test-pod-2
+  annotations:
+    k8s.v1.cni.cncf.io/networks: sriov-net
+spec:
+  restartPolicy: OnFailure
+  containers:
+  - image: oguzpastirmaci/mofed-perftest:5.4-3.6.8.1-ubuntu20.04-amd64
+    name: mofed-test-ctr
+    securityContext:
+      capabilities:
+        add: [ "IPC_LOCK" ]
+    resources: 
+      requests:
+        nvidia.com/rdma_sriov: "1"
+      limits:
+        nvidia.com/rdma_sriov: "1"
+    command:
+    - sh
+    - -c
+    - |
+      ls -l /dev/infiniband /sys/class/net
+      sleep 1000000
 ```
 
 Check that the Daemonset is deployed correctly only on the nodes that has RDMA NICs (in our example, GPU nodes). You should see a pod running in each GPU node.
