@@ -54,7 +54,7 @@ do
   if [ -f /usr/mpi/gcc/openmpi-4.1.0rc5/bin/mpivars.sh ]; then
     source /usr/mpi/gcc/openmpi-4.1.0rc5/bin/mpivars.sh
   else
-    source /opt/openmpi-4.1.3/bin/mpivars.sh
+    source /opt/openmpi-4.1.4/bin/mpivars.sh
   fi
 
 first_node=`head $hostfile -n 1`
