@@ -26,8 +26,11 @@ parallel-ssh -h /etc/opt/oci-hpc/hostfile.tcp "sudo systemctl restart nfs-server
 parallel-ssh -h /etc/opt/oci-hpc/hostfile.tcp "sudo umount /mnt/localdisk"
 ```
 
-(echo p; echo d; echo w) | fdisk /dev/nvme0n1
+### Delete the existing partition
 
+```
+(echo p; echo d; echo w) | fdisk /dev/nvme0n1
+```
 
 ### Create RAID 0 array
 
