@@ -1,16 +1,12 @@
 ### Unmount /nfs/scratch from all nodes
 
-**BASTION**
+**Run from bastion**
 
 ```
 sudo sed -e '/scratch/ s/^#*/#/' -i /etc/fstab
 
 sudo mount -a
-```
 
-**WORKER NODES**
-
-```
 parallel-ssh -h /etc/opt/oci-hpc/hostfile.tcp "sudo sed -e '/scratch/ s/^#*/#/' -i /etc/fstab"
 
 parallel-ssh -h /etc/opt/oci-hpc/hostfile.tcp "sudo mount -a"
@@ -25,6 +21,8 @@ parallel-ssh -h /etc/opt/oci-hpc/hostfile.tcp "sudo systemctl restart nfs-server
 
 parallel-ssh -h /etc/opt/oci-hpc/hostfile.tcp "sudo umount /mnt/localdisk"
 ```
+
+**Run from worker nodes**
 
 ### Delete the existing partition
 
