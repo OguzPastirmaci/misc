@@ -34,7 +34,8 @@ parallel-ssh -h /etc/opt/oci-hpc/hostfile.tcp "sudo umount /mnt/localdisk"
 
 ### Create RAID 0 array
 
-```mdadm --create /dev/md0 --raid-devices=4 --level=0 /dev/nvme0n1 /dev/nvme1n1 /dev/nvme2n1 /dev/nvme3n1
+```
+mdadm --create /dev/md0 --raid-devices=4 --level=0 /dev/nvme0n1 /dev/nvme1n1 /dev/nvme2n1 /dev/nvme3n1
 
 mdadm --detail --scan | sudo tee -a /etc/mdadm.conf >> /dev/null
 ```
