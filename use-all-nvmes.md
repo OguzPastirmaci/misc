@@ -41,11 +41,11 @@ mdadm --detail --scan | sudo tee -a /etc/mdadm.conf >> /dev/null
 ### Create FS
 
 ```
-Yes | parted /dev/md0 mklabel gpt
+parted /dev/md0 mklabel gpt
 
 parted -a opt /dev/md0 mkpart primary ext4 0% 100%
 
-y | mkfs.ext4 -L datapartition /dev/md0
+mkfs.ext4 -L datapartition /dev/md0
 
 mkdir -p /mnt/localdisk
 
