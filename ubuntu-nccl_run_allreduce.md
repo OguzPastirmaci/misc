@@ -72,6 +72,7 @@ fi
   # final version
   /usr/mpi/gcc/openmpi-4.1.2a1/bin/mpirun  --mca pml ucx -mca coll ^hcoll  \
   --bind-to numa \
+  --mca coll ^hcoll \
   -x NCCL_DEBUG=WARN \
   -x NCCL_IB_SL=0 \
   -x NCCL_IB_TC=41 \
