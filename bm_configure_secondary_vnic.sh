@@ -7,10 +7,11 @@ set -x
 apt -qq install -y ipcalc jq
 
 SECONDARY_VNIC_IP=$(curl -s http://169.254.169.254/opc/v1/vnics/ | jq -e -r '.[1].privateIp | select (.!=null)')
+SECONDARY_VNIC_GATEWAY=$(curl -s http://169.254.169.254/opc/v1/vnics/ | jq -e -r '.[1].virtualRouterIp | select (.!=null)')
 SECONDARY_VNIC_SUBNET_CIDR_BLOCK=$(curl -s http://169.254.169.254/opc/v1/vnics/ | jq -e -r '.[1].subnetCidrBlock | select (.!=null)')
 SECONDARY_VNIC_NETMASK=$(ipcalc --nobinary 10.0.1.0/24 | awk '/Netmask/ {print $2}')
 
-while [ -z "$SECONDARY_VNIC_IP" ] && [ -z "$SECONDARY_VNIC_SUBNET_CIDR_BLOCK" ]
+while [ -z "$SECONDARY_VNIC_IP" ] && [ -z "$SECONDARY_VNIC_GATEWAY" ]
 do 
     echo "Waiting for the secondary VNIC to be attached"
     sleep 10
