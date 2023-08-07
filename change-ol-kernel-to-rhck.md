@@ -23,7 +23,7 @@ In the above output,the entry that does not have `uek` in the name is usually th
 Using the index from the previous step, run the below command for changing the default kernel to RHCK:
 
 ```
-grubby --set-default-index=1
+sudo grubby --set-default-index=1
 ```
 
 ### Reboot the node
