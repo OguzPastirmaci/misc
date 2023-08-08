@@ -1,3 +1,13 @@
+### FOR NON-RDMA
+
+- Import the image for testing non-RDMA worker pools
+
+https://objectstorage.us-phoenix-1.oraclecloud.com/p/vxK2ALLOcJMdcCKwmDeD5v3pEAFVVOJTd6RO_f61hy1T9W6REUZYQ3e4N_AwlSwK/n/hpc_limited_availability/b/oke-images/o/RHCK-Oracle-Linux-7.9-2023.05.24-0-OKE-1.26.2-625
+
+- Deploy a cluster using the template here: https://github.com/OguzPastirmaci/misc/blob/master/oke/terraform/non-rdma.tf
+
+- Follow the instructions here for building your own GPU driver container image and deploying GPU Operator: https://github.com/OguzPastirmaci/oke-oracle-linux-gpu-operator
+
 ### FOR RDMA
 
 - Create the policy in your tenancy: https://docs.oracle.com/en-us/iaas/Content/ContEng/Tasks/contengdynamicgrouppolicyforselfmanagednodes.htm#contengprereqsforselfmanagednodes-accessreqs
@@ -9,13 +19,3 @@ https://objectstorage.ap-osaka-1.oraclecloud.com/p/akcmD2ZeEMMOLTRPIx8OB-Pd84Ifb
 - Deploy a cluster using the template here: https://github.com/OguzPastirmaci/misc/blob/master/oke/terraform/rdma.tf
 
 - Follow the instructions here for deploying GPU Operator and Network Operator: https://github.com/OguzPastirmaci/oke-rdma/tree/main
-
-### FOR NON-RDMA
-
-- Import the image for testing non-RDMA worker pools
-
-https://objectstorage.us-phoenix-1.oraclecloud.com/p/vxK2ALLOcJMdcCKwmDeD5v3pEAFVVOJTd6RO_f61hy1T9W6REUZYQ3e4N_AwlSwK/n/hpc_limited_availability/b/oke-images/o/RHCK-Oracle-Linux-7.9-2023.05.24-0-OKE-1.26.2-625
-
-- Deploy a cluster using the template here: https://github.com/OguzPastirmaci/misc/blob/master/oke/terraform/non-rdma.tf
-
-- Follow the instructions here for building your own GPU driver container image and deploying GPU Operator: https://github.com/OguzPastirmaci/oke-oracle-linux-gpu-operator
