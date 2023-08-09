@@ -45,3 +45,6 @@ sudo ./oci-utils/libexec/oci-image-cleanup -f
 ```
 
 ### Save as a custom image
+Create a custom image with the instance you made the changes with.
+
+More info [here.](https://docs.oracle.com/en-us/iaas/Content/Compute/Tasks/managingcustomimages.htm)
