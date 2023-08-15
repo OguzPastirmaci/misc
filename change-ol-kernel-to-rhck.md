@@ -29,19 +29,11 @@ sudo grubby --set-default-index=1
 ### Reboot the node
 To check that the instance boots without issues.
 
-### Run the OCI image cleanup script
-SSH into the instance again and clone the `oci-utils` repo:
-
-```
-sudo yum install -y git
-
-git clone https://github.com/oracle/oci-utils.git
-```
-
 ### Run the OCI cleanup script so SSH keys etc. are removed from the image
+SSH into the instance and run:
 
 ```
-sudo ./oci-utils/libexec/oci-image-cleanup -f
+sudo /usr/libexec/oci-image-cleanup -f
 ```
 
 ### Save as a custom image
