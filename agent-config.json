@@ -1,0 +1,16 @@
+{
+  "monitoringDisabled": false,
+  "managementDisabled": false,
+  "allPluginsDisabled": false,
+  "isManagementDisabled": false,
+  "pluginsConfig": [
+    {
+      "name": "Compute HPC RDMA Authentication",
+      "desiredState": "ENABLED"
+    },
+    {
+      "name": "Compute HPC RDMA Auto-Configuration",
+      "desiredState": "ENABLED"
+    }
+  ]
+}
