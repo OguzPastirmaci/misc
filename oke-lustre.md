@@ -22,6 +22,7 @@ cd charts/ && helm install lustre-csi-driver lustre-csi-driver/ --values lustre-
 
 ### Deploy the PV, PVC, and example pod
 ```
+cd ..
 kubectl apply -f deploy/kubernetes/base/example_pv.yaml
 kubectl apply -f deploy/kubernetes/base/example_pvc.yaml
 kubectl apply -f deploy/kubernetes/base/example_app.yaml
