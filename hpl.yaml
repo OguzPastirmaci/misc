@@ -16,10 +16,11 @@ spec:
       privileged: true
     image: nvcr.io/nvidia/hpc-benchmarks:23.10
     command: [ "/bin/bash", "-c", "--" ]
-    args: [ "while true; do sleep 30; done;" ]
+    args: [ "mpirun -allow-run-as-root -np 8 --mca pml ucx --mca btl ^openib,smcuda -mca coll_hcoll_enable 0 -x coll_hcoll_np=0 --bind-to none ./hpl.sh --dat /workspace/hpl-linux-x86_64/sample-dat/HPL-8GPUs.dat --no-multinode > /host/hpl_output" ]
     volumeMounts: 
     - mountPath: /dev/shm
       name: shm
+    - { mountPath: /host, name: root }  
     resources:
       limits:
          nvidia.com/gpu: "8"
@@ -27,4 +28,8 @@ spec:
   - name: shm
     emptyDir:
       medium: Memory
-      sizeLimit: 8Gi      
+      sizeLimit: 8Gi
+  - name: root
+    hostPath:
+      path: /
+      type: Directory
