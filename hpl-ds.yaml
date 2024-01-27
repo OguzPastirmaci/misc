@@ -41,7 +41,7 @@ spec:
           volumeMounts:
           - mountPath: /dev/shm
             name: shm
-          - { mountPath: /host, name: root }           
+          - { mountPath: /host, name: root }
           resources:
             limits:
                nvidia.com/gpu: "8"
@@ -49,4 +49,4 @@ spec:
             - /usr/bin/bash
             - -c
             - |
-              mpirun -allow-run-as-root -np 8 --mca pml ucx --mca btl ^openib,smcuda -mca coll_hcoll_enable 0 -x coll_hcoll_np=0 --bind-to none ./hpl.sh --dat /workspace/hpl-linux-x86_64/sample-dat/HPL-8GPUs.dat --no-multinode > /host/hpl_output
+              mpirun -allow-run-as-root -np 8 --mca pml ucx --mca btl ^openib,smcuda -mca coll_hcoll_enable 0 -x coll_hcoll_np=0 --bind-to none ./hpl.sh --dat /workspace/hpl-linux-x86_64/sample-dat/HPL-8GPUs.dat --no-multinode > /host/home/ubuntu/$(/host/usr/sbin/dmidecode -s system-serial-number)_hpl_output
