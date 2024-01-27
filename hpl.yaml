@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hpl
+spec:
+  restartPolicy: OnFailure
+  tolerations:
+  - key: nvidia.com/gpu
+    operator: Exists
+  - key: oguz_test
+    operator: Exists
+  containers:
+  - name: hpl
+    securityContext:
+      allowPrivilegeEscalation: true
+      privileged: true
+    image: nvcr.io/nvidia/hpc-benchmarks:23.10
+    command: [ "/bin/bash", "-c", "--" ]
+    args: [ "while true; do sleep 30; done;" ]
+    volumeMounts: 
+    - mountPath: /dev/shm
+      name: shm
+    resources:
+      limits:
+         nvidia.com/gpu: "8"
+  volumes:  
+  - name: shm
+    emptyDir:
+      medium: Memory
+      sizeLimit: 8Gi      
