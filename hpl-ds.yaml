@@ -1,0 +1,52 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: hpl-block12
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: hpl-block12
+  template:
+    metadata:
+      labels:
+        app: hpl-block12
+    spec:
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+      - key: oguz_test
+        operator: Exists
+      terminationGracePeriodSeconds: 0
+      nodeSelector:
+        blockname: block12
+      volumes:
+      - name: shm
+        emptyDir:
+          medium: Memory
+          sizeLimit: 8Gi
+      - name: root
+        hostPath:
+          path: /
+          type: Directory
+      containers:
+        - name: hpl
+          image: nvcr.io/nvidia/hpc-benchmarks:23.10
+          imagePullPolicy: Always
+          securityContext:
+            privileged: true
+            capabilities:
+              add: [CAP_SYS_ADMIN]
+          volumeMounts:
+          - mountPath: /dev/shm
+            name: shm
+          - { mountPath: /host, name: root }           
+          resources:
+            limits:
+               nvidia.com/gpu: "8"
+          command:
+            - /usr/bin/bash
+            - -c
+            - |
+              mpirun -allow-run-as-root -np 8 --mca pml ucx --mca btl ^openib,smcuda -mca coll_hcoll_enable 0 -x coll_hcoll_np=0 --bind-to none ./hpl.sh --dat /workspace/hpl-linux-x86_64/sample-dat/HPL-8GPUs.dat --no-multinode > /host/hpl_output
