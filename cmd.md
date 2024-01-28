@@ -1,6 +1,6 @@
 ### Get IDs of instances in a cluster network
 ```sh
-oci compute-management cluster-network list-instances --cluster-network-id $CLUSTER_NETWORK_ID -c $COMPARTMENT_ID | jq -r '.data[].id'
+oci compute-management cluster-network list-instances --all --cluster-network-id $CLUSTER_NETWORK_ID -c $COMPARTMENT_ID | jq -r '.data[].id'
 ```
 
 ### Get GPUs and VFs of BM GPU instances in OKE
