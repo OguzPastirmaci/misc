@@ -29,13 +29,13 @@ Writing manifest to image destination
 Storing signatures
 ```
 
-### Now the image is pulled to the FSS shared folder. You can import/copy it to any other worker node
+### Now the image is pulled to the FSS shared folder. You can import/copy it to any other worker node.
 
 ```
 skopeo copy dir:/mnt/share/images/busybox containers-storage:busybox:latest
 ```
 
-Check that the image is imported
+Check that the image is imported. On your worker node:
 ```
 crictl images
 
