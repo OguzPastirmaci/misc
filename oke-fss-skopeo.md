@@ -7,8 +7,8 @@ https://docs.oracle.com/en-us/iaas/Content/File/Tasks/create-file-system.htm#top
 https://docs.oracle.com/en-us/iaas/Content/File/Tasks/mountingunixstyleos.htm#mountingFS
 
 > [!NOTE]  
-> This guide assumes you mounted FSS to /mnt/share
-> You can select different throughput levels for your mount target. Select the one that would give you enough performance: 1 Gbps, 20 Gbps, 40 Gbps, 80 Gbps
+> This guide assumes you mounted FSS to `/mnt/share`. You can select different throughput levels for your mount target. Select the one that would give you enough performance: 1 Gbps, 20 Gbps, 40 Gbps, 80 Gbps.
+
 
 ### 3. Install `skopeo` in your worker nodes and create a dir under /mnt/share (we'll use /mnt/share/images as the example)
 ```
