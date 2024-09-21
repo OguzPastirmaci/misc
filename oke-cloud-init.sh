@@ -10,6 +10,18 @@ done
 
 apt-get update && apt-get install -y oci-oke-node-all*
 
+# NVME setup
+if [ -e '/dev/nvme0n1' ]; then
+    echo "/dev/nvme0n1 found, configuring it for crio"
+    mkdir -p /var/lib/oke-crio
+    parted -a opt --script /dev/nvme0n1 mklabel gpt mkpart primary 0% 100%
+    mkfs.ext4 /dev/nvme0n1p1
+    mount /dev/nvme0n1p1 /var/lib/oke-crio
+else
+    echo "/dev/nvme0n1 not found"
+    mkdir -p /var/lib/oke-crio
+fi
+
 # Edit storage.conf to use the first Nvme drive (if it exists) for container images
 cat <<EOF > /etc/containers/storage.conf
 [storage]
