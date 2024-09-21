@@ -1,8 +1,13 @@
+  GNU nano 6.2                                                                       /var/run/oke-init.sh *
 #!/bin/bash
 
 add-apt-repository -y 'deb [trusted=yes] https://odx-oke.objectstorage.us-sanjose-1.oci.customer-oci.com/n/odx-oke/b/okn-repositories/o/prod/ubuntu-jammy/kubernetes-1.29 stable main'
 
-apt-get -o DPkg::Lock::Timeout=60 update && apt-get -o DPkg::Lock::Timeout=60 install -y oci-oke-node-all*
+while fuser /var/{lib/{dpkg,apt/lists},cache/apt/archives}/lock >/dev/null 2>&1; do
+   sleep 1
+done
+
+apt-get update && apt-get install -y oci-oke-node-all*
 
 cat <<EOF > /etc/containers/storage.conf
 [storage]
@@ -10,7 +15,7 @@ cat <<EOF > /etc/containers/storage.conf
 driver = "overlay"
 # Temporary storage location
 runroot = "/var/run/containers/storage"
-# Primary read/write location of container storage 
+# Primary read/write location of container storage
 graphroot = "/var/lib/oke-crio"
 EOF
 
