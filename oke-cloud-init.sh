@@ -15,7 +15,7 @@ add-apt-repository -y "deb [trusted=yes] $oke_package_repo stable main"
 
 apt-get -y -o DPkg::Lock::Timeout=-1 update
 
-apt-get -y -o DPkg::Lock::Timeout=-1 install oci-oke-node-all-$oke_package_version
+apt-get -y -o DPkg::Lock::Timeout=-1 install $oke_package_name
 
 # Use the first Nvme drive (/dev/nvme0n1) for CRI-O if it exists
 #if [ -e '/dev/nvme0n1' ]; then
