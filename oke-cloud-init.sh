@@ -10,9 +10,9 @@ add-apt-repository -y 'deb [trusted=yes] https://odx-oke.objectstorage.us-sanjos
 
 apt-get update && apt-get install -y oci-oke-node-all*
 
-# NVME setup
+# Use the first Nvme drive (/dev/nvme0n1) for CRI-O
 if [ -e '/dev/nvme0n1' ]; then
-    echo "/dev/nvme0n1 found, configuring it for crio"
+    echo "/dev/nvme0n1 found, configuring it for CRI-O"
     mkdir -p /var/lib/oke-crio
     parted -a opt --script /dev/nvme0n1 mklabel gpt mkpart primary 0% 100%
     mkfs.ext4 /dev/nvme0n1p1
