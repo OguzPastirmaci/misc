@@ -10,7 +10,7 @@ done
 
 apt-get update && apt-get install -y oci-oke-node-all*
 
-# Edit storage.conf for using the first Nvme drive for container images
+# Edit storage.conf to use the first Nvme drive (if it exists) for container images
 cat <<EOF > /etc/containers/storage.conf
 [storage]
 # Default storage driver
