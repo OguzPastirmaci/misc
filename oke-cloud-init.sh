@@ -17,6 +17,7 @@ if [ -e '/dev/nvme0n1' ]; then
     parted -a opt --script /dev/nvme0n1 mklabel gpt mkpart primary 0% 100%
     mkfs.ext4 /dev/nvme0n1p1
     mount /dev/nvme0n1p1 /var/lib/oke-crio
+    echo "/dev/nvme0n1p1 /var/lib/oke-crio ext4 rw,noatime,nofail 0 2" | tee -a /etc/fstab
 else
     echo "/dev/nvme0n1 not found"
     mkdir -p /var/lib/oke-crio
