@@ -4,13 +4,18 @@
 #while fuser /var/{lib/{dpkg,apt/lists},cache/apt/archives}/lock >/dev/null 2>&1; do
 #   sleep 1
 #done
+distrib_codename=$(lsb_release -c -s)
+oke_package_version=$1
+kubernetes_version=$2
+oke_package_name="oci-oke-node-all-$oke_package_version"
+oke_package_repo="https://odx-oke.objectstorage.us-sanjose-1.oci.customer-oci.com/n/odx-oke/b/okn-repositories/o/prod/ubuntu-$distrib_codename/kubernetes-$oke_package_version"
 
 # Add OKE Ubuntu package repo
-add-apt-repository -y 'deb [trusted=yes] https://odx-oke.objectstorage.us-sanjose-1.oci.customer-oci.com/n/odx-oke/b/okn-repositories/o/prod/ubuntu-jammy/kubernetes-1.29 stable main'
+add-apt-repository -y "deb [trusted=yes] $oke_package_repo stable main"
 
 apt-get -y -o DPkg::Lock::Timeout=-1 update
 
-apt-get -y -o DPkg::Lock::Timeout=-1 install oci-oke-node-all*
+apt-get -y -o DPkg::Lock::Timeout=-1 install oci-oke-node-all-$oke_package_version
 
 # Use the first Nvme drive (/dev/nvme0n1) for CRI-O if it exists
 #if [ -e '/dev/nvme0n1' ]; then
