@@ -5,8 +5,8 @@
 #   sleep 1
 #done
 distrib_codename=$(lsb_release -c -s)
-oke_package_version=$1
-kubernetes_version=$2
+kubernetes_version=$1
+oke_package_version="${kubernetes_version:0:4}"
 oke_package_name="oci-oke-node-all-$oke_package_version"
 oke_package_repo="https://odx-oke.objectstorage.us-sanjose-1.oci.customer-oci.com/n/odx-oke/b/okn-repositories/o/prod/ubuntu-$distrib_codename/kubernetes-$oke_package_version"
 
