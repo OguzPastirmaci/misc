@@ -4,7 +4,7 @@ add-apt-repository -y 'deb [trusted=yes] https://odx-oke.objectstorage.us-sanjos
 
 apt update && apt install -y oci-oke-node-all*
 
-cat << EOF > /etc/containers/storage.conf
+cat <<EOF > /etc/containers/storage.conf
 [storage]
 # Default storage driver
 driver = "overlay"
