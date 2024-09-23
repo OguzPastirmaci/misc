@@ -124,7 +124,9 @@ Run the following commands. It will show the IP that you will use in the next ot
 ```
 MLX_DEVICE_NAME=$(ibdev2netdev | grep rdma0 | awk '{print $1}')
 RDMA0_IP=$(ip -f inet addr show rdma0 | sed -En -e 's/.*inet ([0-9.]+).*/\1/p')
+
 echo -e "\nThe IP of RDMA0 is to use in rdma-test-pod-2 is: $RDMA0_IP\n"
+
 ib_write_bw -F -x 3 --report_gbits -R -T 41 -q 4 -d $MLX_DEVICE_NAME
 ```
  
@@ -148,6 +150,7 @@ Run the following commands to start the test. Make sure you change the first com
 RDMA0_IP_OF_POD1=<ENTER THE IP FROM THE PREVIOUS STEP>
 
 MLX_DEVICE_NAME=$(ibdev2netdev | grep rdma0 | awk '{print $1}')
+
 ib_write_bw -F -x 3 --report_gbits -R -T 41 -q 4 -d $MLX_DEVICE_NAME $RDMA0_IP_OF_POD1
 ```
 
