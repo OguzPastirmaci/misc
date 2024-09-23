@@ -11,13 +11,14 @@ echo $oke_package_name
 oke_package_repo="https://odx-oke.objectstorage.us-sanjose-1.oci.customer-oci.com/n/odx-oke/b/okn-repositories/o/prod/ubuntu-$distrib_codename/kubernetes-$oke_package_repo_version"
 echo $oke_package_repo
 
+# Add OKE Ubuntu package repo
+add-apt-repository -y "deb [trusted=yes] $oke_package_repo stable main"
+
+
 # Wait for apt lock and install the package
 while fuser /var/{lib/{dpkg,apt/lists},cache/apt/archives}/lock >/dev/null 2>&1; do
    sleep 1
 done
-
-# Add OKE Ubuntu package repo
-add-apt-repository -y "deb [trusted=yes] $oke_package_repo stable main"
 
 apt-get -y update
 
