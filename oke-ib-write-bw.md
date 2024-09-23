@@ -117,26 +117,22 @@ rdma-test-pod-2   1/1     Running   0          64m
 Exec into the test pods, and run the following commands to run a test with `ib_write_bw` using RDMA CM.
 
 #### rdma-test-pod-1 
-We will use this pod as the server for `ib_write_bw`.
+You will use this pod as the server for `ib_write_bw`.
 
-a - Get the IP of `rdma0` by running `ip -f inet addr show rdma0 | sed -En -e 's/.*inet ([0-9.]+).*/\1/p'`. Example: `10.224.5.57`.
-
-b - Get the RDMA device name of the `rdma0` interface with: `ibdev2netdev | grep rdma0`.
-In this example, it's `mlx5_5`.
+Run the following commands. It will show the IP that you will use in the next other pod and start the `ib_write_bw` server.
 
 ```
-ibdev2netdev | grep rdma0
-
-mlx5_5 port 1 ==> rdma0 (Up)
+MLX_DEVICE_NAME=$(ibdev2netdev | grep rdma0 | awk '{print $1}')
+RDMA0_IP=$(ip -f inet addr show rdma0 | sed -En -e 's/.*inet ([0-9.]+).*/\1/p')
+echo -e "\nThe IP of RDMA0 is to use in rdma-test-pod-2 is: $RDMA0_IP\n"
+ib_write_bw -F -x 3 --report_gbits -R -T 41 -q 4 -d $MLX_DEVICE_NAME
 ```
-  
-c - Run the following command to start `ib_write_bw` as server. Use the device name from the previous step for <MLX DEVICE NAME>.
-
-```ib_write_bw -F -x 3 --report_gbits -R -T 41 -q 4 -d <MLX_DEVICE_NAME>```
-
+ 
 Example output:
 ```
-ib_write_bw -F -x 3 --report_gbits -R -T 41 -q 4 -d mlx5_5
+The IP of RDMA0 is to use in rdma-test-pod-2 is: 10.224.5.57
+
+$ ib_write_bw -F -x 3 --report_gbits -R -T 41 -q 4 -d $MLX_DEVICE_NAME
 
 ************************************
 * Waiting for client to connect... *
@@ -144,25 +140,23 @@ ib_write_bw -F -x 3 --report_gbits -R -T 41 -q 4 -d mlx5_5
 ```
 
 #### rdma-test-pod-2
-We will use this pod as the client for `ib_write_bw`.
+You will use this pod as the client for `ib_write_bw`.
 
-a - Get the RDMA device name of the `rdma0` interface with: `ibdev2netdev | grep rdma0`.
-In this example, it's `mlx5_5`.
+Run the following commands to start the test. Make sure you change the first command with the IP you have from the above step.
 
 ```
-ibdev2netdev | grep rdma0
+RDMA0_IP_OF_POD1=<ENTER THE IP FROM THE PREVIOUS STEP>
 
-mlx5_5 port 1 ==> rdma0 (Up)
-```
-
-b - Run the following command to start the test. Use the device name from the previous step for <MLX DEVICE NAME>, and <IB_WRITE_BW_SERVER_IP> For <IB_WRITE_BW_SERVER_IP>, use the IP you have from `rdma-test-pod-1` (10.224.5.57 in this example).
-```
-ib_write_bw -F -x 3 --report_gbits -R -T 41 -q 4 -d <MLX_DEVICE_NAME> <IB_WRITE_BW_SERVER_IP>
+MLX_DEVICE_NAME=$(ibdev2netdev | grep rdma0 | awk '{print $1}')
+ib_write_bw -F -x 3 --report_gbits -R -T 41 -q 4 -d $MLX_DEVICE_NAME $RDMA0_IP_OF_POD1
 ```
 
 Example output:
 ```
-ib_write_bw -F -x 3 --report_gbits -R -T 41 -q 4 -d mlx5_5 10.224.5.57
+$ RDMA0_IP_OF_POD1=10.224.5.57
+$ MLX_DEVICE_NAME=$(ibdev2netdev | grep rdma0 | awk '{print $1}')
+
+$ ib_write_bw -F -x 3 --report_gbits -R -T 41 -q 4 -d $MLX_DEVICE_NAME $RDMA0_IP_OF_POD1
 ---------------------------------------------------------------------------------------
                     RDMA_Write BW Test
  Dual-port       : OFF		Device         : mlx5_5
@@ -177,21 +171,21 @@ ib_write_bw -F -x 3 --report_gbits -R -T 41 -q 4 -d mlx5_5 10.224.5.57
  rdma_cm QPs	 : ON
  Data ex. method : rdma_cm 	TOS    : 41
 ---------------------------------------------------------------------------------------
- local address: LID 0000 QPN 0x008e PSN 0x9ef22b
+ local address: LID 0000 QPN 0x0093 PSN 0xbf9bfe
  GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:224:04:233
- local address: LID 0000 QPN 0x008f PSN 0xab2839
+ local address: LID 0000 QPN 0x0094 PSN 0xab0910
  GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:224:04:233
- local address: LID 0000 QPN 0x0090 PSN 0xd78f
+ local address: LID 0000 QPN 0x0095 PSN 0x28bd1a
  GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:224:04:233
- local address: LID 0000 QPN 0x0091 PSN 0xe132
+ local address: LID 0000 QPN 0x0096 PSN 0x5c7f61
  GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:224:04:233
- remote address: LID 0000 QPN 0x008e PSN 0xf9fcb7
+ remote address: LID 0000 QPN 0x0093 PSN 0x62655e
  GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:224:05:57
- remote address: LID 0000 QPN 0x008f PSN 0xf86dd5
+ remote address: LID 0000 QPN 0x0094 PSN 0x6706f0
  GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:224:05:57
- remote address: LID 0000 QPN 0x0090 PSN 0x41a2fb
+ remote address: LID 0000 QPN 0x0095 PSN 0xcb157a
  GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:224:05:57
- remote address: LID 0000 QPN 0x0091 PSN 0xea862e
+ remote address: LID 0000 QPN 0x0096 PSN 0x626041
  GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:224:05:57
 ---------------------------------------------------------------------------------------
  #bytes     #iterations    BW peak[Gb/sec]    BW average[Gb/sec]   MsgRate[Mpps]
