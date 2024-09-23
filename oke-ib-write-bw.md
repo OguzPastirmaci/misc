@@ -117,10 +117,84 @@ rdma-test-pod-2   1/1     Running   0          64m
 Exec into the test pods, and run the following commands to run a test with `ib_write_bw` using RDMA CM.
 
 #### rdma-test-pod-1 
-We will use this node as the server for `ib_write_bw`.
+We will use this pod as the server for `ib_write_bw`.
 
-1 - Get the IP of `rdma0` by running `ip -f inet addr show rdma0 | sed -En -e 's/.*inet ([0-9.]+).*/\1/p'`. Example IP: `10.224.4.233`.
-2 - Run the following command to start `ib_write_bw` as server: `ib_write_bw -F -x 3 --report_gbits -R -T 41 -q 4 -d mlx5_5`
+a - Get the IP of `rdma0` by running `ip -f inet addr show rdma0 | sed -En -e 's/.*inet ([0-9.]+).*/\1/p'`. Example: `10.224.5.57`.
 
+b - Get the RDMA device name of the `rdma0` interface with: `ibdev2netdev | grep rdma0`.
+In this example, it's `mlx5_5`.
 
+```
+ibdev2netdev | grep rdma0
+
+mlx5_5 port 1 ==> rdma0 (Up)
+```
+  
+b - Run the following command to start `ib_write_bw` as server. Use the device name from the previous step for <MLX DEVICE NAME>.
+  ```ib_write_bw -F -x 3 --report_gbits -R -T 41 -q 4 -d <MLX_DEVICE_NAME>```
+
+Example output:
+```
+ib_write_bw -F -x 3 --report_gbits -R -T 41 -q 4 -d mlx5_5
+
+************************************
+* Waiting for client to connect... *
+************************************
+```
+
+#### rdma-test-pod-2
+We will use this pod as the client for `ib_write_bw`.
+
+a - Get the RDMA device name of the `rdma0` interface with: `ibdev2netdev | grep rdma0`.
+In this example, it's `mlx5_5`.
+
+```
+ibdev2netdev | grep rdma0
+
+mlx5_5 port 1 ==> rdma0 (Up)
+```
+
+b - Run the following command to start the test. Use the device name from the previous step for <MLX DEVICE NAME>, and <IB_WRITE_BW_SERVER_IP> For <IB_WRITE_BW_SERVER_IP>, use the IP you have from `rdma-test-pod-1` (10.224.5.57 in this example).
+```
+ib_write_bw -F -x 3 --report_gbits -R -T 41 -q 4 -d <MLX_DEVICE_NAME> <IB_WRITE_BW_SERVER_IP>
+```
+
+Example output:
+```
+ib_write_bw -F -x 3 --report_gbits -R -T 41 -q 4 -d mlx5_5 10.224.5.57
+---------------------------------------------------------------------------------------
+                    RDMA_Write BW Test
+ Dual-port       : OFF		Device         : mlx5_5
+ Number of qps   : 4		Transport type : IB
+ Connection type : RC		Using SRQ      : OFF
+ TX depth        : 128
+ CQ Moderation   : 100
+ Mtu             : 4096[B]
+ Link type       : Ethernet
+ GID index       : 3
+ Max inline data : 0[B]
+ rdma_cm QPs	 : ON
+ Data ex. method : rdma_cm 	TOS    : 41
+---------------------------------------------------------------------------------------
+ local address: LID 0000 QPN 0x008e PSN 0x9ef22b
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:224:04:233
+ local address: LID 0000 QPN 0x008f PSN 0xab2839
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:224:04:233
+ local address: LID 0000 QPN 0x0090 PSN 0xd78f
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:224:04:233
+ local address: LID 0000 QPN 0x0091 PSN 0xe132
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:224:04:233
+ remote address: LID 0000 QPN 0x008e PSN 0xf9fcb7
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:224:05:57
+ remote address: LID 0000 QPN 0x008f PSN 0xf86dd5
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:224:05:57
+ remote address: LID 0000 QPN 0x0090 PSN 0x41a2fb
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:224:05:57
+ remote address: LID 0000 QPN 0x0091 PSN 0xea862e
+ GID: 00:00:00:00:00:00:00:00:00:00:255:255:10:224:05:57
+---------------------------------------------------------------------------------------
+ #bytes     #iterations    BW peak[Gb/sec]    BW average[Gb/sec]   MsgRate[Mpps]
+ 65536      20000            98.01              98.01  		   0.186932
+---------------------------------------------------------------------------------------
+```
 
