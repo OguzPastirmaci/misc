@@ -130,7 +130,7 @@ ibdev2netdev | grep rdma0
 mlx5_5 port 1 ==> rdma0 (Up)
 ```
   
-b - Run the following command to start `ib_write_bw` as server. Use the device name from the previous step for <MLX DEVICE NAME>.
+c - Run the following command to start `ib_write_bw` as server. Use the device name from the previous step for <MLX DEVICE NAME>.
   ```ib_write_bw -F -x 3 --report_gbits -R -T 41 -q 4 -d <MLX_DEVICE_NAME>```
 
 Example output:
