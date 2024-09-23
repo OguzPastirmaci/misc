@@ -10,6 +10,8 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: rdma-test-pod-1
+  labels:
+    app: rdma-test-pods
 spec:
   hostNetwork: true
   tolerations: [{ operator: "Exists" }]
@@ -28,6 +30,13 @@ spec:
             - BM.Optimized3.36
             - BM.HPC.E5.144
             - BM.HPC2.36
+  topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: DoNotSchedule
+      labelSelector:
+        matchLabels:
+          app: rdma-test-pods
   dnsPolicy: ClusterFirstWithHostNet
   volumes:
   - { name: devinf, hostPath: { path: /dev/infiniband }}
@@ -59,6 +68,8 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: rdma-test-pod-2
+  labels:
+    app: rdma-test-pods
 spec:
   hostNetwork: true
   tolerations: [{ operator: "Exists" }]
@@ -77,6 +88,13 @@ spec:
             - BM.Optimized3.36
             - BM.HPC.E5.144
             - BM.HPC2.36
+  topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: DoNotSchedule
+      labelSelector:
+        matchLabels:
+          app: rdma-test-pods
   dnsPolicy: ClusterFirstWithHostNet
   volumes:
   - { name: devinf, hostPath: { path: /dev/infiniband }}
