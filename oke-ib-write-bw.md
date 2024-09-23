@@ -14,7 +14,9 @@ metadata:
     app: rdma-test-pods
 spec:
   hostNetwork: true
-  tolerations: [{ operator: "Exists" }]
+  tolerations:
+  - key: nvidia.com/gpu
+    operator: Exists
   affinity:
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
@@ -72,7 +74,9 @@ metadata:
     app: rdma-test-pods
 spec:
   hostNetwork: true
-  tolerations: [{ operator: "Exists" }]
+  tolerations:
+  - key: nvidia.com/gpu
+    operator: Exists  
   affinity:
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
