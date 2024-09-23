@@ -14,7 +14,6 @@ echo $oke_package_repo
 # Add OKE Ubuntu package repo
 add-apt-repository -y "deb [trusted=yes] $oke_package_repo stable main"
 
-
 # Wait for apt lock and install the package
 while fuser /var/{lib/{dpkg,apt/lists},cache/apt/archives}/lock >/dev/null 2>&1; do
    sleep 1
