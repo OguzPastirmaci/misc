@@ -153,7 +153,7 @@ ib_write_bw -F -x 3 --report_gbits -R -T 41 -q 4 -d $MLX_DEVICE_NAME
 ```
  
 Example output:
-```
+```console
 The IP of RDMA0 is to use in rdma-test-pod-2 is: 10.224.5.57
 
 $ ib_write_bw -F -x 3 --report_gbits -R -T 41 -q 4 -d $MLX_DEVICE_NAME
