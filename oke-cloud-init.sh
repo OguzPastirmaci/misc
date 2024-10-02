@@ -20,15 +20,15 @@ apt-get -y update
 apt-get -y install $oke_package_name
 
 # TEMPORARY REQUIREMENT: Edit storage.conf to use the first Nvme drive (if it exists) for container images
-cat <<EOF > /etc/containers/storage.conf
-[storage]
-# Default storage driver
-driver = "overlay"
-# Temporary storage location
-runroot = "/var/run/containers/storage"
-# Primary read/write location of container storage
-graphroot = "/var/lib/oke-crio"
-EOF
+#cat <<EOF > /etc/containers/storage.conf
+#[storage]
+## Default storage driver
+#driver = "overlay"
+## Temporary storage location
+#runroot = "/var/run/containers/storage"
+## Primary read/write location of container storage
+#graphroot = "/var/lib/oke-crio"
+#EOF
 
 # TEMPORARY REQUIREMENT: Edit registries.conf to add unqualified registries
 cat <<EOF > /etc/containers/registries.conf
@@ -37,4 +37,4 @@ short-name-mode = "permissive"
 EOF
 
 # OKE bootstrap
-oke bootstrap --manage-gpu-services
+oke bootstrap
