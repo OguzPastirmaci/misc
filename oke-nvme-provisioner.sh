@@ -6,7 +6,6 @@ shopt -s nullglob
 level="${1:-0}"
 pattern="${2:-/dev/nvme*n1}"
 mount_primary="${3:-/mnt/nvme}"
-#prepare_for_local_pv="${4:-true}"
 mount_extra=(/var/lib/{containers,kubelet,openebs})
 
 # Enumerate NVMe devices, exit if absent
