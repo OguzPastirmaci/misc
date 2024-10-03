@@ -55,14 +55,6 @@ for mount in "${mount_extra[@]}"; do
   echo "$mount_primary $mount none defaults,bind 0 2" | tee -a /etc/fstab.new
 done
 
-if [ "$prepare_for_local_pv" = true ] ; then
-    name="local-provisioner"
-    mount="$mount_primary/$name"
-    mountpoint -q "$mount" || mount -vB "$mount_primary/$name" "$mount" || :
-    echo "$mount_primary $mount none defaults,bind 0 2" | tee -a /etc/fstab.new
-    mkdir -m 0755 -p "$mount"
-fi
-
 mv -v /etc/fstab.new /etc/fstab # update persisted filesystem mounts
 mdadm --detail --scan --verbose >> /etc/mdadm/mdadm.conf
 
