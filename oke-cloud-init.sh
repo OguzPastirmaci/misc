@@ -7,6 +7,8 @@ oke_package_repo_version="${oke_package_version:0:4}"
 oke_package_name="oci-oke-node-all-$oke_package_version"
 oke_package_repo="https://odx-oke.objectstorage.us-sanjose-1.oci.customer-oci.com/n/odx-oke/b/okn-repositories/o/prod/ubuntu-$distrib_codename/kubernetes-$oke_package_repo_version"
 
+touch /var/log/inittest1
+
 # Add OKE Ubuntu package repo
 add-apt-repository -y "deb [trusted=yes] $oke_package_repo stable main"
 
