@@ -1627,5 +1627,5 @@ data:
     fi
 kind: ConfigMap
 metadata:
-  name: oke-gpu-rdma-npd-config
+  name: node-problem-detector-config
   namespace: kube-system
