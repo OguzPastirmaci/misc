@@ -21,7 +21,7 @@ stride=$((chunk/bs)) # chunk size / block size
 eff_count=$count # $level == 0
 if [[ $level == 10 ]]; then eff_count=$((count/2)); fi
 # If count is lower than 4 and level is 10, swtich to level=0
-if [[ $level == 10 && $count -lt 4 ]]; then eff_count=$count; fi
+if [[ $level == 10 && $count -lt 4 ]]; then level=0 && eff_count=$count; fi
 # if [[ $level == 5 ]]; then eff_count=$((count-1)); fi
 # if [[ $level == 6 ]]; then eff_count=$((count-2)); fi
 stripe=$((eff_count*stride)) # number of data disks * stride
