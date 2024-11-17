@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2086,SC2174
-set -o errexit -o nounset -o pipefail
+set -o errexit -o nounset -o pipefail -x
 shopt -s nullglob
 
 level="${1:-0}"
 pattern="${2:-/dev/nvme*n1}"
 mount_primary="${3:-/mnt/nvme}"
-#prepare_for_local_pv="${4:-true}"
 mount_extra=(/var/lib/{containers,kubelet,openebs})
 
 # Enumerate NVMe devices, exit if absent
@@ -21,8 +20,10 @@ count=${#devices[@]}; bs=4; chunk=256
 stride=$((chunk/bs)) # chunk size / block size
 eff_count=$count # $level == 0
 if [[ $level == 10 ]]; then eff_count=$((count/2)); fi
-if [[ $level == 5 ]]; then eff_count=$((count-1)); fi
-if [[ $level == 6 ]]; then eff_count=$((count-2)); fi
+# If count is lower than 4 and level is 10, swtich to level=0
+if [[ $level == 10 && $count -lt 4 ]]; then eff_count=$count; fi
+# if [[ $level == 5 ]]; then eff_count=$((count-1)); fi
+# if [[ $level == 6 ]]; then eff_count=$((count-2)); fi
 stripe=$((eff_count*stride)) # number of data disks * stride
 
 echo -e "Creating RAID${level} filesystem mounted under ${mount_primary} with $count devices:\n  ${devices[*]}" >&2
@@ -54,14 +55,6 @@ for mount in "${mount_extra[@]}"; do
   mountpoint -q "$mount" || mount -vB "$mount_primary/$name" "$mount" || :
   echo "$mount_primary $mount none defaults,bind 0 2" | tee -a /etc/fstab.new
 done
-
-if [ "$prepare_for_local_pv" = true ] ; then
-    name="local-provisioner"
-    mount="$mount_primary/$name"
-    mountpoint -q "$mount" || mount -vB "$mount_primary/$name" "$mount" || :
-    echo "$mount_primary $mount none defaults,bind 0 2" | tee -a /etc/fstab.new
-    mkdir -m 0755 -p "$mount"
-fi
 
 mv -v /etc/fstab.new /etc/fstab # update persisted filesystem mounts
 mdadm --detail --scan --verbose >> /etc/mdadm/mdadm.conf
