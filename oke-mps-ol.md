@@ -1,13 +1,11 @@
+### Enable Nvidia GPU device plugin add-on
+
+```
+oci ce cluster install-addon --cluster-id <cluster-id> --addon-name NvidiaGpuPlugin --region <region>
+```
+
 ### Disable OKE GPU device plugin
 Add the `oci.oraclecloud.com/disable-gpu-device-plugin=true` label to your nodes via either the node pool labels or after the cluster is deployed.
-
-### Install the NVIDIA Container Toolkit
-```sh
-curl -s -L https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo | \
-sudo tee /etc/yum.repos.d/nvidia-container-toolkit.repo
-
-sudo yum install -y nvidia-container-toolkit
-```
 
 ### Configure settings for `crio`
 OKE uses `crio` as the runtime. Running the below command with create the settings file for crio.
@@ -18,7 +16,7 @@ sudo nvidia-ctk runtime configure --runtime=crio --set-as-default --config=/etc/
 
 ### Restart `crio`
 ```sh
-sudo yum install -y nvidia-container-toolkit
+sudo systemctl restart crio
 ```
 
 ### Add the Nvidia GPU device plugin Helm repo
