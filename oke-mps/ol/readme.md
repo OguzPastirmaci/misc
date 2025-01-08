@@ -4,7 +4,7 @@ Add the `oci.oraclecloud.com/disable-gpu-device-plugin=true` label to your nodes
 
 ### Install the Nvidia Container Toolkit to the instance
 ```sh
-sudo yum install nvidia-container-toolkit
+sudo yum install -y nvidia-container-toolkit
 ```
 
 ### Configure settings for `crio` in the instance
