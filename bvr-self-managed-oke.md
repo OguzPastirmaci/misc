@@ -47,3 +47,9 @@ update_instance_details = oci.core.models.UpdateInstanceDetails()
 update_instance_details.source_details = update_instance_source_details
 update_instance_response = computeClient.update_instance(instance_id, update_instance_details)
 ```
+
+#### Change the instance configuration of the Cluster Network
+Update the instance configuration of your Cluster Network's underlying Instance Pool with the same image you used above. So that once you finished upgrading your nodes with Boot Volume Replacement, any new nodes you add to your cluster will have the correct image.
+
+https://docs.oracle.com/en-us/iaas/Content/Compute/Tasks/update-cluster-network-instance-configuration.htm
+
