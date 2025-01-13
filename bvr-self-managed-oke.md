@@ -51,5 +51,10 @@ update_instance_response = computeClient.update_instance(instance_id, update_ins
 #### Change the instance configuration of the Cluster Network
 Update the instance configuration of your Cluster Network's underlying Instance Pool with the same image you used above. So that once you finished upgrading your nodes with Boot Volume Replacement, any new nodes you add to your cluster will have the correct image.
 
-https://docs.oracle.com/en-us/iaas/Content/Compute/Tasks/update-cluster-network-instance-configuration.htm
+If you're using Terraform, you can update your worker pool's properties to update the instance config.
+
+If you're not using Terraform (web console etc.), here's the instructions: https://docs.oracle.com/en-us/iaas/Content/Compute/Tasks/update-cluster-network-instance-configuration.htm
+
+> [!IMPORTANT]  
+> Make sure you have a valid cloud init in your new instance configuration if you're not using Terraform.
 
