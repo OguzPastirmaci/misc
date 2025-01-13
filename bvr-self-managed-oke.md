@@ -56,5 +56,5 @@ If you're using Terraform, you can update your worker pool's properties to updat
 If you're not using Terraform (web console etc.), here's the instructions: https://docs.oracle.com/en-us/iaas/Content/Compute/Tasks/update-cluster-network-instance-configuration.htm
 
 > [!IMPORTANT]  
-> Make sure you have a valid cloud init in your new instance configuration if you're not using Terraform.
+> Make sure you have a valid cloud init in your new instance configuration if you're not using Terraform. Here's more information: https://docs.oracle.com/en-us/iaas/Content/ContEng/Tasks/contengcloudinitforselfmanagednodes.htm
 
