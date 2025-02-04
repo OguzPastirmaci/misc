@@ -97,6 +97,9 @@ operator:
     operator: "Equal"
     value: ""
     effect: "NoSchedule"
+  - key: h100
+    operator: Exists
+    effect: NoSchedule    
   annotations:
     openshift.io/scc: restricted-readonly
   affinity:
@@ -586,6 +589,9 @@ node-feature-discovery:
     - key: nvidia.com/gpu
       operator: Exists
       effect: NoSchedule
+    - key: h100
+      operator: Exists
+      effect: NoSchedule  
     config:
       sources:
         pci:
@@ -607,4 +613,3 @@ node-feature-discovery:
       # resourceLabels: ["nvidia.com/feature-1","nvidia.com/feature-2"]
       # enableTaints: false
       # labelWhiteList: "nvidia.com/gpu"
-
