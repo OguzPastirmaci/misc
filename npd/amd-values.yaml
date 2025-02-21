@@ -311,7 +311,7 @@ settings:
             }
         ]
         }
-        oke-amd-badpages.json: |
+    oke-amd-badpages.json: |
         {
         "plugin": "custom",
         "pluginConfig": {
