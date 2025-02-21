@@ -1498,10 +1498,6 @@ settings:
         then
             echo "${ERROR_MSG#* }"
             exit $NONOK
-        elif [ "$ERROR_MSG" == "" ] && [ "$UNKNOWN_MSG" != "" ]
-        then
-            echo $UNKNOWN_MSG
-            exit $UNKNOWN
         else
             echo "No errors found"
             exit $OK
@@ -1528,10 +1524,6 @@ settings:
         then
             echo "${ERROR_MSG#* }"
             exit $NONOK
-        elif [ "$ERROR_MSG" == "" ] && [ "$UNKNOWN_MSG" != "" ]
-        then
-            echo $UNKNOWN_MSG
-            exit $UNKNOWN
         else
             echo "No errors found"
             exit $OK
