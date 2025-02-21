@@ -1362,7 +1362,9 @@ settings:
         logging.basicConfig(level="INFO", format='%(asctime)s - %(levelname)s - %(message)s')
         logger = logging.getLogger('nhc')
 
-    oke_amd_ecc.sh: |
+    oke_amd_ecc.py: |
+        #!/usr/bin/env python3
+
         import json
         import subprocess
         
@@ -1391,7 +1393,9 @@ settings:
             print("All GPUs are within the acceptable error threshold.")
             exit(0)
 
-    oke_amd_badpages.sh: |
+    oke_amd_badpages.py: |
+        #!/usr/bin/env python3
+
         import json
         import subprocess
         
@@ -1472,6 +1476,66 @@ settings:
             echo "No errors found"
             exit $OK
         fi    
+
+    oke_amd_badpages.sh: |
+        #!/bin/bash
+        
+        readonly OK=0
+        readonly NONOK=1
+        readonly UNKNOWN=2
+        
+        healthcheck_type="amd_badpages"
+        healtcheck_log_file=/host/tmp/oke-latest-${healthcheck_type}-healthcheck.log
+
+        cp ./custom-config/oke_amd_badpages.py /host/tmp
+
+        chroot /host bash -c "/tmp/oke_amd_badpages.py > /tmp/oke-latest-${healthcheck_type}-healthcheck.log 2>&1"
+
+        ERROR_MSG=$(cat "$healtcheck_log_file" | grep "Error:")
+        UNKNOWN_MSG=$(cat "$healtcheck_log_file" | grep -o 'Skipping.*')
+        
+        if [ "$ERROR_MSG" != "" ]
+        then
+            echo "${ERROR_MSG#* }"
+            exit $NONOK
+        elif [ "$ERROR_MSG" == "" ] && [ "$UNKNOWN_MSG" != "" ]
+        then
+            echo $UNKNOWN_MSG
+            exit $UNKNOWN
+        else
+            echo "No errors found"
+            exit $OK
+        fi    
+
+    oke_amd_ecc.sh: |
+        #!/bin/bash
+        
+        readonly OK=0
+        readonly NONOK=1
+        readonly UNKNOWN=2
+        
+        healthcheck_type="amd_ecc"
+        healtcheck_log_file=/host/tmp/oke-latest-${healthcheck_type}-healthcheck.log
+
+        cp ./custom-config/oke_amd_ecc.py /host/tmp
+
+        chroot /host bash -c "/tmp/oke_amd_ecc.py > /tmp/oke-latest-${healthcheck_type}-healthcheck.log 2>&1"
+
+        ERROR_MSG=$(cat "$healtcheck_log_file" | grep "Error:")
+        UNKNOWN_MSG=$(cat "$healtcheck_log_file" | grep -o 'Skipping.*')
+        
+        if [ "$ERROR_MSG" != "" ]
+        then
+            echo "${ERROR_MSG#* }"
+            exit $NONOK
+        elif [ "$ERROR_MSG" == "" ] && [ "$UNKNOWN_MSG" != "" ]
+        then
+            echo $UNKNOWN_MSG
+            exit $UNKNOWN
+        else
+            echo "No errors found"
+            exit $OK
+        fi            
 
   log_monitors:
     - /config/kernel-monitor.json
