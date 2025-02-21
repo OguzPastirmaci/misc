@@ -1451,7 +1451,7 @@ settings:
         # Some GPU checks are not available on AMD shapes yet
         if [ $shape = "BM.GPU.MI300X.8" ] && ([ $healthcheck_type = "gpu-ecc" ] || [ $healthcheck_type = "gpu-bus" ] || [ $healthcheck_type = "gpu-remap" ])
         then
-            echo "Healtcheck is not available on $shape shape"
+            echo "Healthcheck is not available on $shape shape"
             exit $UNKNOWN
         else
             chroot /host bash -c "/tmp/oke_healthcheck.py --short --$healthcheck_type > /tmp/oke-latest-${healthcheck_type}-healthcheck.log 2>&1"            
@@ -1490,6 +1490,8 @@ settings:
     - /custom-config/oke-rdma-wpa-auth.json
     - /custom-config/oke-rdma-rttcc.json
     - /custom-config/oke-oca-version.json
+    - /custom-config/oke-amd-ecc.json
+    - /custom-config/oke-amd-badpages.json
 
   # Any extra arguments to append to node-problem-detector command
   # - "--port 20526"
