@@ -16,8 +16,8 @@ spec:
       serviceAccountName: node-role-labeler
       terminationGracePeriodSeconds: 1
       tolerations: [{ operator: "Exists" }]
-      #nodeSelector:
-      #  kubernetes.io/hostname:
+      nodeSelector:
+        nvidia.com/gpu: true
       hostNetwork: true
       volumes:
         - { name: bin, emptyDir: {} }
