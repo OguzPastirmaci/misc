@@ -17,7 +17,7 @@ spec:
       terminationGracePeriodSeconds: 1
       tolerations: [{ operator: "Exists" }]
       nodeSelector:
-        nvidia.com/gpu: true
+        nvidia.com/gpu: "true"
       hostNetwork: true
       volumes:
         - { name: bin, emptyDir: {} }
