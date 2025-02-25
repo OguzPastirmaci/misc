@@ -2,22 +2,22 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: role-label
+  name: node-role-labeler
   namespace: kube-system
 spec:
   selector:
     matchLabels:
-      app: role-label
+      app: node-role-labeler
   template:
     metadata:
       labels:
-        app: role-label
+        app: node-role-labeler
     spec:
       serviceAccountName: node-role-labeler
       terminationGracePeriodSeconds: 1
       tolerations: [{ operator: "Exists" }]
       nodeSelector:
-        nvidia.com/gpu: "true"
+         nvidia.com/gpu: "true"
       hostNetwork: true
       volumes:
         - { name: bin, emptyDir: {} }
@@ -30,7 +30,7 @@ spec:
           command: ["bash", "-c", "cp -v /usr/local/bin/{jq,kubectl} /mnt/"]
           volumeMounts: [{ name: bin, mountPath: /mnt }]
       containers:
-        - name: role-label
+        - name: node-role-labeler
           image: oraclelinux:9-slim
           command: ["/bin/bash"]
           resources:
