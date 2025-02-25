@@ -1,0 +1,29 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: node-role-labeler
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: node-role-labeler-role
+rules:
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "watch", "list", "patch", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: node-role-labeler-role-binding
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: node-role-labeler-role
+subjects:
+  - kind: ServiceAccount
+    name: node-role-labeler
+    namespace: kube-system
