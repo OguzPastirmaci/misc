@@ -1653,7 +1653,7 @@ metrics:
     additionalRelabelings: []
     metricRelabelings: []
   prometheusRule:
-    enabled: false
+    enabled: true
     defaultRules:
       create: true
       disabled: []
