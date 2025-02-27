@@ -3,6 +3,7 @@ set -x
 
 distrib_codename=$(lsb_release -c -s)
 kubernetes_version=$1
+override_hostnames=$2
 oke_package_version="${kubernetes_version:1}"
 oke_package_repo_version="${oke_package_version:0:4}"
 oke_package_name="oci-oke-node-all-$oke_package_version"
@@ -21,5 +22,11 @@ apt-get -y update
 
 apt-get -y install $oke_package_name
 
-# OKE bootstrap with hostname instead of IP for node names
-oke bootstrap --kubelet-extra-args "--hostname-override $(hostname)"
+# OKE bootstrap
+if [ "$override_hostnames" == true ]; then
+    oke bootstrap --kubelet-extra-args "--hostname-override $(hostname)"
+else
+    oke bootstrap
+fi
+
+
