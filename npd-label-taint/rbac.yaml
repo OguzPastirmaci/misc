@@ -2,13 +2,13 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: node-role-labeler
+  name: npd-taint
   namespace: kube-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: node-role-labeler-role
+  name: npd-taint-role
 rules:
   - apiGroups: [""]
     resources: ["nodes"]
@@ -17,13 +17,13 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: node-role-labeler-role-binding
+  name: npd-taint-role-binding
   namespace: kube-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: node-role-labeler-role
+  name: npd-taint-role
 subjects:
   - kind: ServiceAccount
-    name: node-role-labeler
+    name: npd-taint
     namespace: kube-system
