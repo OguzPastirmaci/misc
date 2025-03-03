@@ -51,7 +51,7 @@ for mount in "${mount_extra[@]}"; do
   name=$(basename "$mount")
   mkdir -m 0755 -p "$mount_primary/$name"
   mountpoint -q "$mount" || mount -vB "$mount_primary/$name" "$mount" || :
-  echo "$mount_primary $mount none defaults,bind,x-systemd.before=kubelet.service 0 2" | tee -a /etc/fstab.new
+  echo "$mount_primary $mount none defaults,bind,x-systemd.before=kubelet.service,x-systemd.before=crio.service,x-systemd.requires-mounts-for=$mount_primary 0 2" | tee -a /etc/fstab.new
 done
 
 mv -v /etc/fstab.new /etc/fstab # update persisted filesystem mounts
