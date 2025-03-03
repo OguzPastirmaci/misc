@@ -1,0 +1,57 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: npd-taint
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: npd-taint
+  template:
+    metadata:
+      labels:
+        app: npd-taint
+    spec:
+      serviceAccountName: npd-taint
+      terminationGracePeriodSeconds: 1
+      tolerations: [{ operator: "Exists" }]
+      nodeSelector:
+         nvidia.com/gpu: "true"
+      hostNetwork: true
+      volumes:
+        - { name: bin, emptyDir: {} }
+        - { name: root, hostPath: { path: "/" } }
+        - { name: dev, hostPath: { path: "/dev" } }
+      initContainers:
+        - name: kubectl-jq
+          image: aga.ocir.io/hpc_limited_availability/oke/kubectl:latest
+          imagePullPolicy: Always
+          command: ["bash", "-c", "cp -v /usr/local/bin/{jq,kubectl} /mnt/"]
+          volumeMounts: [{ name: bin, mountPath: /mnt }]
+      containers:
+        - name: npd-taint
+          image: oraclelinux:9-slim
+          command: ["/bin/bash"]
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+          volumeMounts:
+            - { name: root, mountPath: /host }
+            - { name: bin, mountPath: /b }
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          args:
+            - "-ec"
+            - |
+              /b/kubectl label nodes $NODE_NAME --overwrite "node-role.kubernetes.io/gpu=gpu" || echo "Failed" >&2
+              while :; do sleep 1; done
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 100%
