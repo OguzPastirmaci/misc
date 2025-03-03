@@ -48,8 +48,14 @@ spec:
           args:
             - "-ec"
             - |
-              /b/kubectl label nodes $NODE_NAME --overwrite "node-role.kubernetes.io/gpu=gpu" || echo "Failed" >&2
-              while :; do sleep 1; done
+              NODES_WITH_ISSUES=$(/b/kubectl get nodes -o json | /b/jq -r '.items[]
+              | select (.metadata.labels."nvidia.com/gpu" == "true" or .metadata.labels."amd.com/gpu" == "true")
+              | { name: .metadata.name, ocid: .spec.providerID, serial: .metadata.labels["oci.oraclecloud.com/host.serial_number"], error: .status.conditions[]
+              | select(.reason | test("^(Gpu|Rdma|Oca).*HasIssues$")) | .message }
+              | "\(.name)\t\(.ocid)\t\(.serial)\t\(.error)"' | awk ' { print $1 }')
+              
+              /b/kubectl label nodes $NODE_NAME --overwrite "npd=issue" || echo "Failed" >&2
+              while :; do sleep 60; done
   updateStrategy:
     type: RollingUpdate
     rollingUpdate:
