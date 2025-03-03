@@ -54,7 +54,7 @@ spec:
               | select(.reason | test("^(Gpu|Rdma|Oca).*HasIssues$")) | .message }
               | "\(.name)\t\(.ocid)\t\(.serial)\t\(.error)"' | awk ' { print $1 }')
               
-              /b/kubectl label nodes $NODE_NAME --overwrite "npd=issue" || echo "Failed" >&2
+              /b/kubectl taint nodes $NODE_NAME "npd=node_has_issues:NoSchedule" || echo "Failed" >&2
               while :; do sleep 60; done
   updateStrategy:
     type: RollingUpdate
