@@ -43,7 +43,6 @@ else
 fi
 
 mkdir -m 0755 -p "$mount_primary" "${mount_extra[@]}"
-mountpoint -q "$mount_primary" || mount -v -o rw,noatime,nofail "$md_device" "$mount_primary" || :
 dev_uuid=$(blkid -s UUID -o value "${md_device}")
   mount_unit_name="$(systemd-escape --path --suffix=mount "${mount_primary}")"
   cat > "/etc/systemd/system/${mount_unit_name}" << EOF
