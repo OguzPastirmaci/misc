@@ -46,16 +46,16 @@ fi
 mkdir -m 0755 -p "$mount_primary" "${mount_extra[@]}"
 dev_uuid=$(blkid -s UUID -o value "${md_device}")
 mount_unit_name="$(systemd-escape --path --suffix=mount "${mount_primary}")"
-  cat > "/etc/systemd/system/${mount_unit_name}" << EOF
-  [Unit]
-  Description=Mount local NVMe RAID for OKE
-  [Mount]
-  What=UUID=${dev_uuid}
-  Where=${mount_primary}
-  Type=ext4
-  Options=defaults,noatime
-  [Install]
-  WantedBy=multi-user.target
+cat > "/etc/systemd/system/${mount_unit_name}" << EOF
+    [Unit]
+    Description=Mount local NVMe RAID for OKE
+    [Mount]
+    What=UUID=${dev_uuid}
+    Where=${mount_primary}
+    Type=ext4
+    Options=defaults,noatime
+    [Install]
+    WantedBy=multi-user.target
 EOF
   systemd-analyze verify "${mount_unit_name}"
   systemctl enable "${mount_unit_name}" --now
