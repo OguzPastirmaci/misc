@@ -5,98 +5,6 @@ settings:
   # https://github.com/kubernetes/node-problem-detector/tree/master/config
   # settings.custom_monitor_definitions -- Custom plugin monitor config files
   custom_monitor_definitions:
-    oke-gpu-ecc.json: |
-        {
-        "plugin": "custom",
-        "pluginConfig": {
-            "invoke_interval": "300s",
-            "timeout": "30s",
-            "max_output_length": 80,
-            "concurrency": 1,
-            "enable_message_change_based_condition_update": false
-        },
-        "source": "oke-gpu-ecc.json",
-        "metricsReporting": true,
-        "conditions": [
-            {
-            "type": "GpuEcc",
-            "reason": "GpuEccHasNoIssues",
-            "message": "No ECC issues detected with GPUs"
-            }
-        ],
-        "rules": [
-            {
-            "type": "permanent",
-            "condition": "GpuEcc",
-            "reason": "GpuEccHasIssues",
-            "path": "./custom-config/oke_healthcheck.sh",
-            "args": [ "gpu-ecc" ],
-            "timeout": "30s"
-            }
-        ]
-        }
-    oke-gpu-remap.json: |
-        {
-        "plugin": "custom",
-        "pluginConfig": {
-            "invoke_interval": "300s",
-            "timeout": "30s",
-            "max_output_length": 80,
-            "concurrency": 1,
-            "enable_message_change_based_condition_update": false
-        },
-        "source": "oke-gpu-remap.json",
-        "metricsReporting": true,
-        "conditions": [
-            {
-            "type": "GpuRowRemap",
-            "reason": "GpuRowRemapHasNoIssues",
-            "message": "No Row Remapping issues detected with GPUs"
-            }
-        ],
-        "rules": [
-            {
-            "type": "permanent",
-            "condition": "GpuRowRemap",
-            "reason": "GpuRowRemapHasIssues",
-            "path": "./custom-config/oke_healthcheck.sh",
-            "args": [ "gpu-row-remap" ],        
-            "timeout": "30s"
-            }
-        ]
-        }
-
-    oke-gpu-bus.json: |
-        {
-        "plugin": "custom",
-        "pluginConfig": {
-            "invoke_interval": "300s",
-            "timeout": "30s",
-            "max_output_length": 80,
-            "concurrency": 1,
-            "enable_message_change_based_condition_update": false
-        },
-        "source": "oke-gpu-bus.json",
-        "metricsReporting": true,
-        "conditions": [
-            {
-            "type": "GpuBus",
-            "reason": "GpuBusHasNoIssues",
-            "message": "No GPU Bus issues detected with GPUs"
-            }
-        ],
-        "rules": [
-            {
-            "type": "permanent",
-            "condition": "GpuBus",
-            "reason": "GpuBusHasIssues",
-            "path": "./custom-config/oke_healthcheck.sh",
-            "args": [ "gpu-bus" ],        
-            "timeout": "30s"
-            }
-        ]
-        }
-    
     oke-gpu-count.json: |
         {
         "plugin": "custom",
@@ -1537,9 +1445,6 @@ settings:
     # Node Problem Detector
     # - /custom-config/docker-monitor-filelog.json
   custom_plugin_monitors:
-    - /custom-config/oke-gpu-ecc.json
-    - /custom-config/oke-gpu-remap.json
-    - /custom-config/oke-gpu-bus.json
     - /custom-config/oke-gpu-count.json
     - /custom-config/oke-rdma-link.json
     - /custom-config/oke-rdma-link-flapping.json
