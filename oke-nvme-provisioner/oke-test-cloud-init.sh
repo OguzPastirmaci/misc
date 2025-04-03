@@ -21,5 +21,7 @@ apt-get -y update
 
 apt-get -y install $oke_package_name
 
+touch /var/run/oke-test-done
+
 # OKE bootstrap
 oke bootstrap
