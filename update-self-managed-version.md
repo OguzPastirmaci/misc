@@ -21,7 +21,7 @@ sudo apt autoremove -y
 sudo rm /etc/apt/sources.list.d/archive_uri-https_odx-oke_objectstorage_us-sanjose-1_oci_customer-oci_com_n_odx-oke_b_okn-repositories_o_prod_ubuntu-jammy_kubernetes-1_31-jammy.list
 ```
 
-### Install the new image
+### Install the new package and bootstrap
 ```
 sudo add-apt-repository -y "deb [trusted=yes] https://odx-oke.objectstorage.us-sanjose-1.oci.customer-oci.com/n/odx-oke/b/okn-repositories/o/prod/ubuntu-jammy/kubernetes-1.30 stable main"
 
