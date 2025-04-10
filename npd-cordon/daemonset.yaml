@@ -49,13 +49,17 @@ spec:
             - "-ec"
             - |
               NODES_WITH_ISSUES=$(kubectl get nodes -o json | jq -r '.items[]
-             | select (.metadata.labels."nvidia.com/gpu" == "true" or .metadata.labels."amd.com/gpu" == "true")
-             | { name: .metadata.name, ocid: .spec.providerID, serial: .metadata.labels["oci.oraclecloud.com/host.serial_number"], error: .status.conditions[]
-             | select(.reason | test("^(Gpu|Rdma|Oca).*HasIssues$")) | .message }
-             | "\(.name)"')
+              | select (.metadata.labels."nvidia.com/gpu" == "true" or .metadata.labels."amd.com/gpu" == "true")
+              | { name: .metadata.name, ocid: .spec.providerID, serial: .metadata.labels["oci.oraclecloud.com/host.serial_number"], error: .status.conditions[]
+              | select(.reason | test("^(Gpu).*HasIssues$")) | .message }
+              | "\(.name)"')
               
+              if echo $NODES_WITH_ISSUES | grep -wq $NODE; then
+                  /b/kubectl cordon $NODE
+              else
+                  echo "Node has no issues"
+              fi              
              
-              /b/kubectl cordon nodes $NODES_WITH_ISSUES "npd=node_has_issues:NoSchedule" || echo "Failed" >&2
               while :; do sleep 60; done
   updateStrategy:
     type: RollingUpdate
