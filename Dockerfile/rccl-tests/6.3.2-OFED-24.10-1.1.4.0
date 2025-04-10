@@ -1,6 +1,6 @@
 ## base docker image
 ARG ROCM_IMAGE_NAME=rocm/dev-ubuntu-22.04
-ARG ROCM_IMAGE_TAG=latest
+ARG ROCM_IMAGE_TAG=6.3.2
 FROM "${ROCM_IMAGE_NAME}:${ROCM_IMAGE_TAG}"
 
 ## rccl repo
