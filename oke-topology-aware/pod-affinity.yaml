@@ -15,7 +15,7 @@ spec:
       affinity:
         podAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 80
+            - weight: 90
               podAffinityTerm:
                 labelSelector:
                   matchExpressions:
@@ -24,7 +24,7 @@ spec:
                       values:
                         - pod-affinity-app
                 topologyKey: oci.oraclecloud.com/rdma.local_block_id
-            - weight: 50
+            - weight: 70
               podAffinityTerm:
                 labelSelector:
                   matchExpressions:
