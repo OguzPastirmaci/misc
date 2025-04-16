@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-affinity-example
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: node-affinity-app
+  template:
+    metadata:
+      labels:
+        app: node-affinity-app
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: oci.oraclecloud.com/rdma.local_block_id
+                    operator: In
+                    values:
+                      - 5tjxbt5s6ua
+            - weight: 70
+              preference:
+                matchExpressions:
+                  - key: oci.oraclecloud.com/rdma.network_block_id
+                    operator: In
+                    values:
+                      - 7xmzl5p5wba
+      containers:
+        - name: nginx
+          image: nginx
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
