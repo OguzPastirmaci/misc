@@ -15,7 +15,7 @@ spec:
       affinity:
         nodeAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 100
+            - weight: 90
               preference:
                 matchExpressions:
                   - key: oci.oraclecloud.com/rdma.local_block_id
