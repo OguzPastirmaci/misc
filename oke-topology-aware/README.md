@@ -1,7 +1,7 @@
 ## Using network locality when scheduling jobs in OKE
 
 > [!IMPORTANT]  
-> To use the instructions in this guide, you must have a dedicated capacity pool. If you don't have a dedicated pool, `rdmaTopologyData` in OCI metadata service and node labels in OKE will not be available.
+> To use the instructions in this guide, you must have a dedicated capacity pool and you must create a capacity topology. Otherwise, `rdmaTopologyData` in OCI metadata service and node labels in OKE will not be available.
 
 When you have a dedicated capacity pool with bare metal GPU shapes, the following information will be available in the metadata service:
 
@@ -19,7 +19,7 @@ Local Block is the first latency band (Tier-0), Network Block is the second late
 
 Running a job using the nodes in the same Local Block will provide the best performance. Because the number of nodes in a Local Block is limited, depending on the number of nodes you have, the number of your concurrent jobs running, and the size of your jobs, you might need to use the nodes from another Local Block in the same Network Block.
 
-When this information is available, OKE will add the following labels to your nodes:
+When this information is available, OKE will add the following labels to your nodes during bootstrapping:
 
 ```
 oci.oraclecloud.com/rdma.host_id
@@ -39,7 +39,6 @@ oci.oraclecloud.com/rdma.network_block_id=7xmzl4p4wba
 ```
 
 ## Using node affinity
-When using node affinity, you use the values of `oci.oraclecloud.com/rdma.local_block_id` and `oci.oraclecloud.com/rdma.network_block_id`.
 
 ```yaml
 apiVersion: apps/v1
