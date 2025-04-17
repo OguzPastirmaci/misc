@@ -1,6 +1,7 @@
-## 1. Drain the node
+## 1. Drain the node and delete it from the clustr
 ```
 kubectl drain <NODE> --ignore-daemonsets
+kubectl delete <NODE>
 ```
 
 ## 2. Use boot volume replacement to update the image of the node
