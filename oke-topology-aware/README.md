@@ -1,9 +1,9 @@
 ## Using network locality when scheduling jobs in OKE
 
 > [!IMPORTANT]  
-> To use the instructions in this guide, you need to have a dedicated pool. If you don't have a dedicated pool, `rdmaTopologyData` in OCI metadata service and node labels in OKE will not be available.
+> To use the instructions in this guide, you must have a dedicated capacity pool. If you don't have a dedicated pool, `rdmaTopologyData` in OCI metadata service and node labels in OKE will not be available.
 
-When you have a dedicated pool with bare metal GPU shapes, the following information will be available in the metadata service:
+When you have a dedicated capacity pool with bare metal GPU shapes, the following information will be available in the metadata service:
 
 ```
 curl -H 'Authorization: Bearer Oracle' http://169.254.169.254/opc/v2/host/rdmaTopologyData
