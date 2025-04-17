@@ -34,7 +34,7 @@ oci.oraclecloud.com/rdma.hpc_island_id
 oci.oraclecloud.com/rdma.local_block_id
 oci.oraclecloud.com/rdma.network_block_id
 ```
-The labels are hashes of the information available in instance metadata and they will be different than the OCIDs above.
+The values of the labels are hashes of the information available in instance metadata and they will be different than the OCIDs above.
 
 Example:
 ```
