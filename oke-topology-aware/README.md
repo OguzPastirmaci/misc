@@ -87,3 +87,55 @@ spec:
               memory: "256Mi"
 ```
 
+## Using pod affinity
+```yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pod-affinity-example
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: pod-affinity-app
+  template:
+    metadata:
+      labels:
+        app: pod-affinity-app
+    spec:
+      affinity:
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 90
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - pod-affinity-app
+                topologyKey: oci.oraclecloud.com/rdma.local_block_id
+            - weight: 70
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - pod-affinity-app
+                topologyKey: oci.oraclecloud.com/rdma.network_block_id
+      containers:
+        - name: nginx
+          image: nginx
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+```
+
