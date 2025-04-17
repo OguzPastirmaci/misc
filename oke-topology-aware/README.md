@@ -39,7 +39,7 @@ The labels are hashes of the information available in instance metadata and they
 Example:
 ```
 oci.oraclecloud.com/rdma.host_id=ab3zs7y7v7q
-oci.oraclecloud.com/rdma.hpc_island_id=af6ubvouuyq
+oci.oraclecloud.com/rdma.hpc_island_id=af7ubvouuyq
 oci.oraclecloud.com/rdma.local_block_id=4tjxbt4s6ua
 oci.oraclecloud.com/rdma.network_block_id=7xmzl4p4wba
 ```
@@ -71,20 +71,27 @@ spec:
       affinity:
         nodeAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 90
+            - weight: 100
               preference:
                 matchExpressions:
                   - key: oci.oraclecloud.com/rdma.local_block_id
                     operator: In
                     values:
                       - 5tjxbt5s6ua
-            - weight: 70
+            - weight: 50
               preference:
                 matchExpressions:
                   - key: oci.oraclecloud.com/rdma.network_block_id
                     operator: In
                     values:
                       - 7xmzl5p5wba
+            - weight: 25
+              preference:
+                matchExpressions:
+                  - key: oci.oraclecloud.com/rdma.hpc_island_id
+                    operator: In
+                    values:
+                      - af7ubvouuyq      
       containers:
         - name: nginx
           image: nginx
