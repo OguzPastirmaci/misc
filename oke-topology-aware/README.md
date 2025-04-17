@@ -3,7 +3,7 @@
 > [!IMPORTANT]  
 > To use the instructions in this guide, you must have a dedicated capacity pool and you must create a capacity topology. Otherwise, `rdmaTopologyData` in OCI metadata service and node labels in OKE will not be available.
 
-When you have a dedicated capacity pool with bare metal GPU shapes, the following information will be available in the metadata service:
+When you have a dedicated capacity pool and a capacity topology created for the availability domain, the following information will be available in the metadata service for bare metal GPU shapes:
 
 ```
 curl -H 'Authorization: Bearer Oracle' http://169.254.169.254/opc/v2/host/rdmaTopologyData
