@@ -1,4 +1,4 @@
-## 1. Drain the node and delete it from the clustr
+## 1. Drain the node and delete it from the cluster
 ```
 kubectl drain <NODE> --ignore-daemonsets
 kubectl delete <NODE>
