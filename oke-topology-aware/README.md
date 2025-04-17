@@ -3,7 +3,7 @@
 > [!IMPORTANT]  
 > To use the instructions in this guide, you must have a dedicated capacity pool and you must create a capacity topology. Otherwise, `rdmaTopologyData` in instance metadata service and related node labels in OKE will not be available.
 
-### What is network locality?
+## What is network locality?
 Generative AI workloads drive a different set of engineering tradeoffs than traditional cloud workloads. So, we designed a purpose-built GenAI network tailored to the needs of the best-of-breed Generative AI workloads.
 
 When possible, running a job using the nodes in the same Local Block will provide the best performance. Because the number of nodes in a Local Block is limited; depending on the number of nodes you have, the number of your concurrent jobs running, and the size of your jobs, you might need to use the nodes from another Local Block in the same Network Block or from another Network Block.
@@ -25,7 +25,7 @@ curl -H 'Authorization: Bearer Oracle' http://169.254.169.254/opc/v2/host/rdmaTo
   "customerNetworkBlock": "ocid1.computenetworkblock.oc1.iad.anuwclddsdef..."
 ```
 
-### How do I use network locality information when running workloads on OKE?
+## How do I use network locality information when running workloads on OKE?
 When the locality information is available in the instance metadata service, OKE will add the following labels to your nodes during bootstrapping:
 
 ```
