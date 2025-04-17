@@ -100,7 +100,7 @@ spec:
 ```
 
 ### Using pod affinity
-When using pod affinity, because you're relying on the `topologyKey` instead of node labels, you don't need to provide the values for the `oci.oraclecloud.com/rdma.local_block_id` and `oci.oraclecloud.com/rdma.network_block_id` labels.
+When using pod affinity, because you're relying on the `topologyKey` instead of node labels, you don't need to provide the values for the `oci.oraclecloud.com/rdma.local_block_id`, `oci.oraclecloud.com/rdma.network_block_id`, and `oci.oraclecloud.com/rdma.hpc_island_id` labels.
 
 ```yaml
 apiVersion: apps/v1
@@ -120,7 +120,7 @@ spec:
       affinity:
         podAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 90
+            - weight: 100
               podAffinityTerm:
                 labelSelector:
                   matchExpressions:
@@ -129,7 +129,7 @@ spec:
                       values:
                         - pod-affinity-app
                 topologyKey: oci.oraclecloud.com/rdma.local_block_id
-            - weight: 70
+            - weight: 50
               podAffinityTerm:
                 labelSelector:
                   matchExpressions:
@@ -138,6 +138,15 @@ spec:
                       values:
                         - pod-affinity-app
                 topologyKey: oci.oraclecloud.com/rdma.network_block_id
+            - weight: 25
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - pod-affinity-app
+                topologyKey: oci.oraclecloud.com/rdma.hpc_island_id                
       containers:
         - name: nginx
           image: nginx
@@ -150,5 +159,6 @@ spec:
             limits:
               cpu: "500m"
               memory: "256Mi"
+
 ```
 
