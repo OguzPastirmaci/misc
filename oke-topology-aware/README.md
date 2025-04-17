@@ -51,7 +51,7 @@ Note that because we're using soft rules (`preferredDuringSchedulingIgnoredDurin
 You can use hard rules instead (`requiredDuringSchedulingIgnoredDuringExecution`), but that means the scheduler can't schedule the pod unless the rules are met. So your jobs might not start depending on node availability.
 
 ### Using node affinity
-When using node affinity, you will need to provide the values of the `oci.oraclecloud.com/rdma.local_block_id` and `oci.oraclecloud.com/rdma.network_block_id` labels. Instead of hardcoding them, you can use tools like `sed` or `yq` to change them when you're scheduling jobs. Or if you're using Helm, you can templatize those values.
+When using node affinity, you will need to provide the values of the `oci.oraclecloud.com/rdma.local_block_id`, `oci.oraclecloud.com/rdma.network_block_id`, and `oci.oraclecloud.com/rdma.hpc_island_id` labels. Instead of hardcoding them, you can use tools like `sed` or `yq` to change them when you're scheduling jobs. Or if you're using Helm, you can templatize those values.
 
 ```yaml
 apiVersion: apps/v1
