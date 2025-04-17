@@ -12,7 +12,7 @@ Local Block is the first latency band (Tier-0), Network Block is the second late
 
 ![OCI Cluster Network Fabric](./tiers.png)
 
-### What type of network tier information will I have?
+## What type of network tier information will I have?
 When you have a dedicated capacity pool and a capacity topology created for the availability domain, the following information will be available in the instance metadata service for bare metal GPU shapes:
 
 ```
