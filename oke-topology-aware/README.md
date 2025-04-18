@@ -169,3 +169,94 @@ spec:
 
 ```
 
+### Using `kueue`
+You will need to enable the feature gate for Topology Aware Scheduling (TAS) in Kueue. Tas is currently in alpha state since Kueue v0.9.
+
+The following example uses `node.kubernetes.io/instance-type: "BM.GPU.H100.8"` to select H100s, but you can use any label that exists on all your nodes.
+
+#### Create a Topology
+```yaml
+apiVersion: kueue.x-k8s.io/v1alpha1
+kind: Topology
+metadata:
+  name: "oci-topology"
+spec:
+  levels:
+  - nodeLabel: "oci.oraclecloud.com/rdma.hpc_island_id"
+  - nodeLabel: "oci.oraclecloud.com/rdma.network_block_id"
+  - nodeLabel: "oci.oraclecloud.com/rdma.local_block_id"
+  - nodeLabel: "kubernetes.io/hostname"
+```
+
+#### Create a Resource Flavor
+```yaml
+kind: ResourceFlavor
+apiVersion: kueue.x-k8s.io/v1beta1
+metadata:
+  name: "tas-flavor"
+spec:
+  nodeLabels:
+    node.kubernetes.io/instance-type: "BM.GPU.H100.8"
+  topologyName: "oci-topology"
+```
+
+#### Create a Cluster Queue
+```yaml
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ClusterQueue
+metadata:
+  name: "tas-cluster-queue"
+spec:
+  namespaceSelector: {}
+  resourceGroups:
+  - coveredResources: ["cpu", "memory"]
+    flavors:
+    - name: "tas-flavor"
+      resources:
+      - name: "cpu"
+        nominalQuota: 100
+      - name: "memory"
+        nominalQuota: 100Gi
+```
+
+#### Create a Local Queue
+```yaml
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: LocalQueue
+metadata:
+  name: tas-user-queue
+spec:
+  clusterQueue: tas-cluster-queue
+```
+
+#### Run example job
+`kueue.x-k8s.io/podset-preferred-topology` indicates that a PodSet requires Topology Aware Scheduling, but scheduling all pods within pods on nodes within the same topology domain is a preference rather than requirement. The levels are evaluated one-by-one going up from the level indicated by the annotation. If the PodSet cannot fit within a given topology domain then the next topology level up is considered. If the PodSet cannot fit at the highest topology level, then it gets admitted as distributed among multiple topology domains.
+
+```yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  generateName: tas-sample-preferred
+  labels:
+    kueue.x-k8s.io/queue-name: tas-user-queue
+spec:
+  parallelism: 2
+  completions: 2
+  completionMode: Indexed
+  template:
+    metadata:
+      annotations:
+        kueue.x-k8s.io/podset-preferred-topology: "oci.oraclecloud.com/rdma.local_block_id"
+    spec:
+      containers:
+      - name: dummy-job
+        image: registry.k8s.io/e2e-test-images/agnhost:2.53
+        args: ["pause"]
+        resources:
+          requests:
+            cpu: "1"
+            memory: "200Mi"
+      restartPolicy: Never
+```
+
+
