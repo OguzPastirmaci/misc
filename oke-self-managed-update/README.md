@@ -33,7 +33,7 @@ oci compute instance update --from-json file://boot-volume-replace.json --instan
 ```python
 
 image_id="<IMAGE_ID>"
-instance_id="<INSTANCE_ID>"
+node_ocid="<INSTANCE_ID>"
 
 import oci
 update_instance_source_details = oci.core.models.UpdateInstanceSourceViaImageDetails()
