@@ -1,0 +1,30 @@
+## template: jinja
+#cloud-config
+
+{% if ds is defined and ds.metadata is defined and 'oke-k8version' in ds.metadata %}
+  {% set raw_version = ds.metadata['oke-k8version'] %}
+{% else %}
+  {% set raw_version = 'v1.32.1' %}
+{% endif %}
+
+{% set version_major_minor = raw_version.lstrip('v').split('.')[0] ~ '.' ~ raw_version.lstrip('v').split('.')[1] %}
+{% set version_full = raw_version.lstrip('v') %}
+
+{% if distro_release == 'noble' %}
+apt:
+  sources_list: |
+    Types: deb
+    URIs: https://odx-oke.objectstorage.us-sanjose-1.oci.customer-oci.com/n/odx-oke/b/okn-repositories/o/prod/ubuntu-noble/kubernetes-{{ version_major_minor }}
+    Suites: $RELEASE
+    Components: main
+    Trusted: yes
+{% elif distro_release == 'jammy' %}
+apt:
+  sources:
+    oke-node:
+      source: 'deb [trusted=yes] https://odx-oke.objectstorage.us-sanjose-1.oci.customer-oci.com/n/odx-oke/b/okn-repositories/o/prod/ubuntu-noble/kubernetes-{{ version_major_minor }} stable main'
+packages:
+  - oci-oke-node-all-{{ version_full }}
+runcmd:
+  - oke bootstrap
+{%- endif %}
