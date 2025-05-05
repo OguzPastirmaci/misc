@@ -1,11 +1,7 @@
 ## template: jinja
 #cloud-config
 
-{% if ds is defined and ds.metadata is defined and 'oke-k8version' in ds.metadata %}
-  {% set raw_version = ds.metadata['oke-k8version'] %}
-{% else %}
-  {% set raw_version = 'v1.32.1' %}
-{% endif %}
+{% set raw_version = 'v1.32.1' %}
 
 {% set version_major_minor = raw_version.lstrip('v').split('.')[0] ~ '.' ~ raw_version.lstrip('v').split('.')[1] %}
 {% set version_full = raw_version.lstrip('v') %}
