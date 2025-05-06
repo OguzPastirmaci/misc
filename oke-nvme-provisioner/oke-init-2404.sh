@@ -10,7 +10,7 @@ oke_package_name="oci-oke-node-all-$oke_package_version"
 oke_package_repo="https://odx-oke.objectstorage.us-sanjose-1.oci.customer-oci.com/n/odx-oke/b/okn-repositories/o/prod/ubuntu-$VERSION_CODENAME/kubernetes-$oke_package_repo_version"
 
 # Add OKE Ubuntu package repo
-tee -a /etc/apt/sources.list.d/oke-node-client.sources <<EOF
+tee /etc/apt/sources.list.d/oke-node-client.sources <<EOF
 Enabled: yes
 Types: deb
 URIs: https://odx-oke.objectstorage.us-sanjose-1.oci.customer-oci.com/n/odx-oke/b/okn-repositories/o/prod/ubuntu-$VERSION_CODENAME/kubernetes-$oke_package_repo_version
