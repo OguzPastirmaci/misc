@@ -6,7 +6,7 @@
 {% set version_major_minor = raw_version.lstrip('v').split('.')[0] ~ '.' ~ raw_version.lstrip('v').split('.')[1] %}
 {% set version_full = raw_version.lstrip('v') %}
 
-{% if ds.metadata['distro_release'] == 'noble' %}
+{% if distro_release == 'noble' %}
 apt:
   sources_list: |
     Types: deb
