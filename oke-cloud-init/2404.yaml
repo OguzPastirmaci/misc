@@ -16,3 +16,4 @@ packages:
  - oci-oke-node-all-{{ ds.metadata.oke-k8version.lstrip('v') }}
 runcmd:
  - oke bootstrap
+{%- endif %}
