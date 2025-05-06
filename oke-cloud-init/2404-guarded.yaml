@@ -14,7 +14,7 @@ apt:
     Suites: $RELEASE
     Components: main
     Trusted: yes
-{% elif ds.metadata['distro_release'] == 'jammy' %}
+{% elif distro_release == 'jammy' %}
 apt:
   sources:
     oke-node:
