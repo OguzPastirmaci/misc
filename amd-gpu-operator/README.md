@@ -29,13 +29,10 @@ helm install amd-gpu-operator rocm/gpu-operator-charts \
 kubectl apply -f https://raw.githubusercontent.com/OguzPastirmaci/misc/refs/heads/master/amd-gpu-operator/BM.GPU.MI300X.8-device-config.yaml
 ```   
 
-4.  Patch `devicePlugin` to add the tolerations.
+4.  Patch the CRs to add tolerations.
 
 ```
-kubectl patch deviceconfig luma-test-deviceconfig \
-  -n amd-gpu-operator \
-  --type merge \
-  -p '
+kubectl patch deviceconfig test-deviceconfig -n amd-gpu-operator --type merge -p '
 spec:
   devicePlugin:
     devicePluginTolerations:
@@ -43,18 +40,18 @@ spec:
         operator: "Equal"
         value: "present"
         effect: "NoSchedule"
-'
-```
-
-5. Patch `testRunner` to add the tolerations.
-
-```
-kubectl patch deviceconfig luma-test-deviceconfig \
-  -n amd-gpu-operator \
-  --type merge \
-  -p '
-spec:
+    nodeLabellerTolerations:
+      - key: "amd.com/gpu"
+        operator: "Equal"
+        value: "present"
+        effect: "NoSchedule"
   testRunner:
+    tolerations:
+      - key: "amd.com/gpu"
+        operator: "Equal"
+        value: "present"
+        effect: "NoSchedule"
+  metricsExporter:
     tolerations:
       - key: "amd.com/gpu"
         operator: "Equal"
