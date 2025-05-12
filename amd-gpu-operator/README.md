@@ -1,7 +1,26 @@
+1. Install Cert-Manager
+```
+helm repo add jetstack https://charts.jetstack.io --force-update
+
+helm install cert-manager jetstack/cert-manager \
+  --namespace cert-manager \
+  --create-namespace \
+  --version v1.15.1 \
+  --set crds.enabled=true
+```
+
 1. Install AMD GPU Operator
 
 ```
-helm install amd-gpu-operator rocm/gpu-operator-charts   --namespace amd-gpu-operator   --create-namespace   -f https://raw.githubusercontent.com/OguzPastirmaci/misc/refs/heads/master/amd-gpu-operator/values.yaml
+helm repo add rocm https://rocm.github.io/gpu-operator
+helm repo update
+
+helm install amd-gpu-operator rocm/gpu-operator-charts \
+  --namespace amd-gpu-operator \
+  --create-namespace \
+  --version=v1.2.2 \
+  -f https://raw.githubusercontent.com/OguzPastirmaci/misc/refs/heads/master/amd-gpu-operator/values.yaml
+
 ```
 
 2. Create the device config for BM.GPU.MI300X.8.
