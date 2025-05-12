@@ -9,7 +9,7 @@ helm install cert-manager jetstack/cert-manager \
   --set crds.enabled=true
 ```
 
-1. Install AMD GPU Operator
+2. Install AMD GPU Operator
 
 ```
 helm repo add rocm https://rocm.github.io/gpu-operator
@@ -23,13 +23,13 @@ helm install amd-gpu-operator rocm/gpu-operator-charts \
 
 ```
 
-2. Create the device config for BM.GPU.MI300X.8.
+3. Create the device config for BM.GPU.MI300X.8.
 
 ```
 kubectl apply -f https://raw.githubusercontent.com/OguzPastirmaci/misc/refs/heads/master/amd-gpu-operator/BM.GPU.MI300X.8-device-config.yaml
 ```   
 
-3.  Patch `devicePlugin` to add the tolerations.
+4.  Patch `devicePlugin` to add the tolerations.
 
 ```
 kubectl patch deviceconfig luma-test-deviceconfig \
@@ -46,7 +46,7 @@ spec:
 '
 ```
 
-4. Patch `testRunner` to add the tolerations.
+5. Patch `testRunner` to add the tolerations.
 
 ```
 kubectl patch deviceconfig luma-test-deviceconfig \
