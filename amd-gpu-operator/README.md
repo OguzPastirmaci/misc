@@ -1,4 +1,16 @@
-1. Install Cert-Manager
+1. Disable OKE AMD device plugin
+```
+kubectl get nodes -l node.kubernetes.io/instance-type=BM.GPU.MI300X.8 -o name \
+| xargs -I {} kubectl label {} oci.oraclecloud.com/disable-gpu-device-plugin=true
+```
+
+2. Delete the current AMD device plugin daemonset
+
+```
+kubectl delete ds amdgpu-device-plugin-daemonset -n kube-system
+```
+
+3. Install Cert-Manager
 ```
 helm repo add jetstack https://charts.jetstack.io --force-update
 
@@ -9,7 +21,7 @@ helm install cert-manager jetstack/cert-manager \
   --set crds.enabled=true
 ```
 
-2. Install AMD GPU Operator
+4. Install AMD GPU Operator
 
 ```
 helm repo add rocm https://rocm.github.io/gpu-operator
@@ -23,13 +35,13 @@ helm install amd-gpu-operator rocm/gpu-operator-charts \
 
 ```
 
-3. Create the device config for BM.GPU.MI300X.8.
+5. Create the device config for BM.GPU.MI300X.8.
 
 ```
 kubectl apply -f https://raw.githubusercontent.com/OguzPastirmaci/misc/refs/heads/master/amd-gpu-operator/BM.GPU.MI300X.8-device-config.yaml
 ```   
 
-4.  Patch the CRs to add tolerations.
+6.  Patch the CRs to add tolerations.
 
 ```
 kubectl patch deviceconfig bm.gpu.mi300x.8 -n amd-gpu-operator --type merge -p '
