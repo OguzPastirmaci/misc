@@ -32,7 +32,7 @@ kubectl apply -f https://raw.githubusercontent.com/OguzPastirmaci/misc/refs/head
 4.  Patch the CRs to add tolerations.
 
 ```
-kubectl patch deviceconfig test-deviceconfig -n amd-gpu-operator --type merge -p '
+kubectl patch deviceconfig bm.gpu.mi300x.8 -n amd-gpu-operator --type merge -p '
 spec:
   devicePlugin:
     devicePluginTolerations:
