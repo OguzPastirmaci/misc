@@ -1,7 +1,7 @@
 1. Disable OKE AMD device plugin
 ```
 kubectl get nodes -l node.kubernetes.io/instance-type=BM.GPU.MI300X.8 -o name \
-| xargs -I {} kubectl label {} oci.oraclecloud.com/disable-gpu-device-plugin=true
+| xargs -I {} kubectl label {} oci.oraclecloud.com/disable-gpu-device-plugin=true --overwrite
 ```
 
 2. Delete the current AMD device plugin daemonset
