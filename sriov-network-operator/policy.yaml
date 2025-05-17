@@ -1,0 +1,17 @@
+apiVersion: sriovnetwork.openshift.io/v1
+kind: SriovNetworkNodePolicy
+metadata:
+  name: policy-1
+  namespace: sriov-network-operator
+spec:
+  deviceType: netdevice
+  mtu: 4220
+  nicSelector:
+    rootDevices:
+    - 0000:98:00.0
+    vendor: "15b3"
+  nodeSelector:
+    node.kubernetes.io/instance-type: "BM.Optimized3.36"
+  numVfs: 1
+  priority: 90
+  resourceName: mellanoxnics
