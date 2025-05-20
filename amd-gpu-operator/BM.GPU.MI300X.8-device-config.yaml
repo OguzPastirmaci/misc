@@ -1,7 +1,7 @@
 apiVersion: amd.com/v1alpha1
 kind: DeviceConfig
 metadata:
-  name: bm.gpu.mi300x.8
+  name: bm-gpu-mi300x-8
   # use the namespace where AMD GPU Operator is running
   namespace: amd-gpu-operator
 spec:
