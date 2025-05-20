@@ -32,7 +32,7 @@ spec:
             - |
               set -e -o pipefail; trap 'exit=1' SIGINT
               chroot /host /usr/bin/bash -ex <<EOF
-                snap refresh oracle-cloud-agent --channel 1.51.x/stable
+                snap refresh oracle-cloud-agent --channel 1.51.x/stable --amend
                 snap restart oracle-cloud-agent
               EOF
               while :; do { [[ $exit ]] && break; }; sleep 1; done
