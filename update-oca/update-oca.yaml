@@ -1,0 +1,38 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: update-oca
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: update-oca
+  template:
+    metadata:
+      labels:
+        app: update-oca
+    spec:
+      priorityClassName: system-node-critical
+      hostNetwork: true
+      tolerations: [{ operator: "Exists" }]
+      terminationGracePeriodSeconds: 0
+      volumes: [{ name: root, hostPath: { path: "/" }}]
+      containers:
+        - name: update-oca
+          image: oraclelinux:9
+          imagePullPolicy: Always
+          securityContext:
+            privileged: true
+          volumeMounts: [{ name: root, mountPath: /host }]
+          resources: {}
+          command:
+            - /usr/bin/bash
+            - -c
+            - |
+              set -e -o pipefail; trap 'exit=1' SIGINT
+              chroot /host /usr/bin/bash -ex <<EOF
+                snap refresh oracle-cloud-agent --channel 1.51.x/stable
+                snap restart oracle-cloud-agent
+              EOF
+              while :; do { [[ $exit ]] && break; }; sleep 1; done
