@@ -1,0 +1,20 @@
+apiVersion: sriovnetwork.openshift.io/v1
+kind: SriovNetwork
+metadata:
+  name: "example-sriov-network"
+  namespace: nvidia-network-operator
+spec:
+  vlan: 0
+  networkNamespace: "default"
+  resourceName: "mlnxnics"
+  ipam: |-
+    {
+      "datastore": "kubernetes",
+      "kubernetes": {
+        "kubeconfig": "/etc/cni/net.d/whereabouts.d/whereabouts.kubeconfig"
+      },
+      "log_file": "/tmp/whereabouts.log",
+      "log_level": "debug",
+      "type": "whereabouts",
+      "range": "192.168.101.0/24"
+    }
