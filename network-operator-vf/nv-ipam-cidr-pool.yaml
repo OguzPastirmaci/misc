@@ -1,0 +1,16 @@
+apiVersion: nv-ipam.nvidia.com/v1alpha1
+kind: CIDRPool
+metadata:
+  name: pool1
+  namespace: nvidia-network-operator
+spec:
+  cidr: 192.168.0.0/16
+  gatewayIndex: 1
+  perNodeNetworkPrefix: 24
+  nodeSelector:
+    nodeSelectorTerms:
+    - matchExpressions:
+      - key: node.kubernetes.io/instance-type
+        operator: In
+        values:
+        - "BM.GPU.B4.8"
