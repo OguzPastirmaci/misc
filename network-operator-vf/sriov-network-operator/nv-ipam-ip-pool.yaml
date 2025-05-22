@@ -4,6 +4,6 @@ metadata:
   name: my-pool
   namespace: nvidia-network-operator
 spec:
-  subnet: 192.168.0.0/24
+  subnet: 192.168.0.0/16
   perNodeBlockSize: 100
   gateway: 192.168.0.1
