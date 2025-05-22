@@ -1,7 +1,7 @@
 apiVersion: sriovnetwork.openshift.io/v1
 kind: SriovNetwork
 metadata:
-  name: "example-sriov-network"
+  name: "example-sriov-network-nv-ipam"
   namespace: nvidia-network-operator
 spec:
   vlan: 0
