@@ -1,0 +1,21 @@
+apiVersion: mellanox.com/v1alpha1
+kind: NicClusterPolicy
+metadata:
+   name: nic-cluster-policy
+spec:
+   secondaryNetwork:
+     cniPlugins:
+       image: plugins
+       repository: ghcr.io/k8snetworkplumbingwg
+       version: v1.5.0
+       imagePullSecrets: []
+     multus:
+       image: multus-cni
+       repository: ghcr.io/k8snetworkplumbingwg
+       version: v4.1.0
+       imagePullSecrets: []
+   nvIpam:
+     image: nvidia-k8s-ipam
+     repository: ghcr.io/mellanox
+     version: v0.3.7
+     enableWebhook: false
