@@ -85,7 +85,7 @@ spec:
       template:
         metadata:
           annotations:
-            k8s.v1.cni.cncf.io/networks: oci-rdma-sriov,oci-rdma-sriov,oci-rdma-sriov,oci-rdma-sriov,oci-rdma-sriov,oci-rdma-sriov,oci-rdma-sriov,oci-rdma-sriov,oci-rdma-sriov,oci-rdma-sriov,oci-rdma-sriov,oci-rdma-sriov,oci-rdma-sriov,oci-rdma-sriov,oci-rdma-sriov,oci-rdma-sriov
+            k8s.v1.cni.cncf.io/networks: example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool
         spec:
           containers:
             - name: mpiworker
@@ -104,11 +104,11 @@ spec:
               resources:
                 requests:
                   nvidia.com/gpu: 8
-                  nvidia.com/sriov_rdma_vf: 16
+                  nvidia.com/mlnxnics: 16
                   ephemeral-storage: 1Gi
                 limits:
                   nvidia.com/gpu: 8
-                  nvidia.com/sriov_rdma_vf: 16
+                  nvidia.com/mlnxnics: 16
                   ephemeral-storage: 1Gi
               volumeMounts:
               - mountPath: /dev/shm
