@@ -93,7 +93,7 @@ spec:
                 - /bin/bash
                 - -c
                 - sleep infinity;
-              image: oguzpastirmaci/mofed-perftest:5.4-3.6.8.1-ubuntu20.04-amd64
+              image: iad.ocir.io/hpc_limited_availability/nccl-tests:pytorch-25.03-nccl-2.26.2-1
               securityContext:
                 capabilities:
                   add: ["IPC_LOCK"]
