@@ -6,7 +6,7 @@ metadata:
 spec:
   maxUnavailable: "100%"
   nodeSelector:
-    - matchExpressions:
+    matchExpressions:
       - key: node.kubernetes.io/instance-type
         operator: In
         values:
