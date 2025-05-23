@@ -78,7 +78,7 @@ controller:
       requiredDuringSchedulingIgnoredDuringExecution:
         nodeSelectorTerms:
         - matchExpressions:
-          - key: "node-role.kubernetes.io/control-plane"
+          - key: "node-role.kubernetes.io/node"
             operator: "Exists"
 
 kubeletPlugin:
