@@ -73,6 +73,11 @@ spec:
         - matchExpressions:
           - key: nvidia.com/gpu.clique
             operator: Exists
+  tolerations:
+  - key: "nvidia.com/gpu"
+    value: "present"
+    operator: "Equal"
+    effect: "NoSchedule"
   containers:
   - name: ctr
     image: ubuntu:22.04
