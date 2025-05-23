@@ -92,7 +92,7 @@ spec:
               command:
                 - /bin/bash
                 - -c
-                - sleep infinity;
+                - mkdir -p /var/run/sshd; /usr/sbin/sshd -D;
               image: iad.ocir.io/hpc_limited_availability/nccl-tests:pytorch-25.03-nccl-2.26.2-1
               securityContext:
                 capabilities:
