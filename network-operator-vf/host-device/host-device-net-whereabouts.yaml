@@ -12,11 +12,7 @@ spec:
       "kubernetes": {
         "kubeconfig": "/etc/cni/net.d/whereabouts.d/whereabouts.kubeconfig"
       },
-      "range": "192.168.3.225/28",
-      "exclude": [
-       "192.168.3.229/30",
-       "192.168.3.236/32"
-      ],
+      "range": "192.168.0.0/16",
       "log_file": "/var/log/whereabouts.log",
       "log_level": "info"
     }
