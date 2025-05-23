@@ -1,0 +1,12 @@
+apiVersion: mellanox.com/v1alpha1
+kind: HostDeviceNetwork
+metadata:
+  name: hostdev-net
+spec:
+  networkNamespace: "default"
+  resourceName: "hostdev"
+  ipam: |-
+    {
+      "type": "nv-ipam",
+      "poolName": "my-pool"
+    }
