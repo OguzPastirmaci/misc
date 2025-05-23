@@ -85,15 +85,15 @@ spec:
       template:
         metadata:
           annotations:
-            k8s.v1.cni.cncf.io/networks: example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool
+            k8s.v1.cni.cncf.io/networks: oci-rdma-sriov,oci-rdma-sriov,oci-rdma-sriov,oci-rdma-sriov,oci-rdma-sriov,oci-rdma-sriov,oci-rdma-sriov,oci-rdma-sriov,oci-rdma-sriov,oci-rdma-sriov,oci-rdma-sriov,oci-rdma-sriov,oci-rdma-sriov,oci-rdma-sriov,oci-rdma-sriov,oci-rdma-sriov
         spec:
           containers:
             - name: mpiworker
               command:
                 - /bin/bash
                 - -c
-                - mkdir -p /var/run/sshd; /usr/sbin/sshd -D;
-              image: iad.ocir.io/hpc_limited_availability/nccl-tests:pytorch-25.03-nccl-2.26.2-1
+                - sleep infinity;
+              image: oguzpastirmaci/mofed-perftest:5.4-3.6.8.1-ubuntu20.04-amd64
               securityContext:
                 capabilities:
                   add: ["IPC_LOCK"]
@@ -104,11 +104,11 @@ spec:
               resources:
                 requests:
                   nvidia.com/gpu: 8
-                  nvidia.com/mlnxnics: 16
+                  nvidia.com/sriov_rdma_vf: 16
                   ephemeral-storage: 1Gi
                 limits:
                   nvidia.com/gpu: 8
-                  nvidia.com/mlnxnics: 16
+                  nvidia.com/sriov_rdma_vf: 16
                   ephemeral-storage: 1Gi
               volumeMounts:
               - mountPath: /dev/shm

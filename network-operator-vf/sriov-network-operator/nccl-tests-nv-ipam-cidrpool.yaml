@@ -85,7 +85,7 @@ spec:
       template:
         metadata:
           annotations:
-            k8s.v1.cni.cncf.io/networks: example-sriov-network-nv-ipam-cidrpool,example-sriov-network-nv-ipam-cidrpool,example-sriov-network-nv-ipam-cidrpool,example-sriov-network-nv-ipam-cidrpool,example-sriov-network-nv-ipam-cidrpool,example-sriov-network-nv-ipam-cidrpool,example-sriov-network-nv-ipam-cidrpool,example-sriov-network-nv-ipam-cidrpool,example-sriov-network-nv-ipam-cidrpool,example-sriov-network-nv-ipam-cidrpool,example-sriov-network-nv-ipam-cidrpool,example-sriov-network-nv-ipam-cidrpool,example-sriov-network-nv-ipam-cidrpool,example-sriov-network-nv-ipam-cidrpool,example-sriov-network-nv-ipam-cidrpool,example-sriov-network-nv-ipam-cidrpool
+            k8s.v1.cni.cncf.io/networks: example-sriov-network-nv-ipam-cidrpool-2,example-sriov-network-nv-ipam-cidrpool-2,example-sriov-network-nv-ipam-cidrpool-2,example-sriov-network-nv-ipam-cidrpool-2,example-sriov-network-nv-ipam-cidrpool-2,example-sriov-network-nv-ipam-cidrpool-2,example-sriov-network-nv-ipam-cidrpool-2,example-sriov-network-nv-ipam-cidrpool-2,example-sriov-network-nv-ipam-cidrpool-2,example-sriov-network-nv-ipam-cidrpool-2,example-sriov-network-nv-ipam-cidrpool-2,example-sriov-network-nv-ipam-cidrpool-2,example-sriov-network-nv-ipam-cidrpool-2,example-sriov-network-nv-ipam-cidrpool-2,example-sriov-network-nv-ipam-cidrpool-2
         spec:
           containers:
             - name: mpiworker
