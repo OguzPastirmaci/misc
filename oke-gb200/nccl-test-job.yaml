@@ -68,6 +68,11 @@ spec:
                     values:
                     - mpi-worker
                 topologyKey: nvidia.com/gpu.clique
+            tolerations:
+            - key: "nvidia.com/gpu"
+            value: "present"
+            operator: "Equal"
+            effect: "NoSchedule"      
           containers:
           - name: mpi-worker
             image: ghcr.io/coreweave/nccl-tests:12.8.1-devel-ubuntu22.04-nccl2.26.2-1-0708d2e
