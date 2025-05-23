@@ -61,7 +61,7 @@ oci --region ${REGION} compute-management instance-configuration create --compar
         },
         {
           "name": "Management Agent",
-          "desiredState": "DISABLED"
+          "desiredState": "ENABLED"
         },
         {
           "name": "Custom Logs Monitoring",
@@ -89,7 +89,7 @@ oci --region ${REGION} compute-management instance-configuration create --compar
         },
         {
           "name": "Cloud Guard Workload Protection",
-          "desiredState": "ENABLED"
+          "desiredState": "DISABLED"
         },
         {
           "name": "Block Volume Management",
