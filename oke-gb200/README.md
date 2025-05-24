@@ -12,11 +12,11 @@ cn_id=cn.id
 #### Permisions: (any-user can be replaced by the group launching the cluster)
 
 ```python
-Allow any-user to use compute-hpc-islands in tenancy	Row with I.D. Allow any-user to use compute-hpc-islands in tenancy
-Allow any-user to use compute-network-blocks in tenancy	Row with I.D. Allow any-user to use compute-network-blocks in tenancy
-Allow any-user to use compute-local-blocks in tenancy	Row with I.D. Allow any-user to use compute-local-blocks in tenancy
-Allow any-user to use compute-bare-metal-hosts in tenancy	Row with I.D. Allow any-user to use compute-bare-metal-hosts in tenancy
-Allow any-user to use compute-gpu-memory-fabrics in tenancy	Row with I.D. Allow any-user to use compute-gpu-memory-fabrics in tenancy
+Allow any-user to use compute-hpc-islands in tenancy
+Allow any-user to use compute-network-blocks in tenancy
+Allow any-user to use compute-local-blocks in tenancy
+Allow any-user to use compute-bare-metal-hosts in tenancy
+Allow any-user to use compute-gpu-memory-fabrics in tenancy
 ```
 #### Gather the memory fabric ID
 
