@@ -138,3 +138,129 @@ kubectl apply -f imex-channel-injection.yaml
 computedomain.resource.nvidia.com/imex-channel-injection created
 pod/imex-channel-injection created
 ```
+
+```console
+kubectl get pods -n nvidia-dra-driver-gpu -l resource.nvidia.com/computeDomain
+
+NAME                                 READY   STATUS    RESTARTS   AGE
+imex-channel-injection-vmvtq-h7wls   1/1     Running   0          75s
+```
+
+```console
+kubectl logs imex-channel-injection
+
+total 0
+drwxr-xr-x 2 root root     60 May 24 05:59 .
+drwxr-xr-x 6 root root    380 May 24 05:59 ..
+crw-rw-rw- 1 root root 234, 0 May 24 05:59 channel0
+```
+
+```console
+kubectl delete -f imex-channel-injection.yaml
+
+computedomain.resource.nvidia.com "imex-channel-injection" deleted
+pod "imex-channel-injection" deleted
+```
+
+### RUN NCCL-tests
+
+#### Install MPI Operator
+```console
+kubectl create -f https://github.com/kubeflow/mpi-operator/releases/download/v0.6.0/mpi-operator.yaml
+```
+
+#### Run NCCL-tests
+```console
+cat <<EOF > nccl-test-job.yaml
+---
+apiVersion: resource.nvidia.com/v1beta1
+kind: ComputeDomain
+metadata:
+  name: nccl-test-compute-domain
+spec:
+  numNodes: 2
+  channel:
+    resourceClaimTemplate:
+      name: nccl-test-compute-domain-channel
+ 
+---
+apiVersion: kubeflow.org/v2beta1
+kind: MPIJob
+metadata:
+  name: nccl-test
+spec:
+  slotsPerWorker: 4
+  launcherCreationPolicy: WaitForWorkersReady
+  runPolicy:
+    cleanPodPolicy: Running
+  sshAuthMountPath: /root/.ssh
+  mpiReplicaSpecs:
+    Launcher:
+      replicas: 1
+      template:
+        metadata:
+          labels:
+            nccl-test-replica: mpi-launcher
+        spec:
+          containers:
+          - name: mpi-launcher
+            image: ghcr.io/coreweave/nccl-tests:12.8.1-devel-ubuntu22.04-nccl2.26.2-1-0708d2e
+            command: ["bash", "-c"]
+            args:
+              - |
+                mpirun \
+                --bind-to none \
+                --map-by ppr:4:node \
+                --mca coll ^hcoll \
+                -x NCCL_DEBUG=INFO \
+                -x NCCL_MNNVL_ENABLE=1 \
+                -x NCCL_CUMEM_ENABLE=1 \
+                -x NCCL_IB_HCA="^mlx5" \
+                -x NCCL_NVLS_ENABLE=1 \
+                -x NCCL_SOCKET_IFNAME=eth0 \
+                -np 8 \
+                /opt/nccl-tests/build/all_reduce_perf -b 8 -e 32G -f 2 -g 1
+            env:
+              - name: OMPI_ALLOW_RUN_AS_ROOT
+                value: "1"
+              - name: OMPI_ALLOW_RUN_AS_ROOT_CONFIRM
+                value: "1"
+    Worker:
+      replicas: 2
+      template:
+        metadata:
+          labels:
+            nccl-test-replica: mpi-worker
+        spec:
+          affinity:
+            podAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+              - labelSelector:
+                  matchExpressions:
+                  - key: nccl-test-replica
+                    operator: In
+                    values:
+                    - mpi-worker
+                topologyKey: nvidia.com/gpu.clique
+          containers:
+          - name: mpi-worker
+            image: ghcr.io/coreweave/nccl-tests:12.8.1-devel-ubuntu22.04-nccl2.26.2-1-0708d2e
+            command: ["/usr/sbin/sshd"]
+            args: ["-De"]
+            env:
+              - name: OMPI_ALLOW_RUN_AS_ROOT
+                value: "1"
+              - name: OMPI_ALLOW_RUN_AS_ROOT_CONFIRM
+                value: "1"
+            resources:
+              limits:
+                nvidia.com/gpu: 4
+              claims:
+              - name: compute-domain-channel
+          resourceClaims:
+          - name: compute-domain-channel
+            resourceClaimTemplateName: nccl-test-compute-domain-channel
+EOF
+```
+
+
