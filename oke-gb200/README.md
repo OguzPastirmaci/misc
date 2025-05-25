@@ -182,7 +182,7 @@ spec:
   channel:
     resourceClaimTemplate:
       name: nccl-test-compute-domain-channel
- 
+
 ---
 apiVersion: kubeflow.org/v2beta1
 kind: MPIJob
@@ -204,7 +204,7 @@ spec:
         spec:
           containers:
           - name: mpi-launcher
-            image: ghcr.io/coreweave/nccl-tests:12.8.1-devel-ubuntu22.04-nccl2.26.2-1-0708d2e
+            image: iad.ocir.io/hpc_limited_availability/nccl-tests:pytorch-25.03-nccl-2.26.6-1
             command: ["bash", "-c"]
             args:
               - |
@@ -212,14 +212,14 @@ spec:
                 --bind-to none \
                 --map-by ppr:4:node \
                 --mca coll ^hcoll \
-                -x NCCL_DEBUG=INFO \
+                -x NCCL_DEBUG=WARN \
                 -x NCCL_MNNVL_ENABLE=1 \
                 -x NCCL_CUMEM_ENABLE=1 \
-                -x NCCL_IB_HCA="^mlx5" \
+                -x NCCL_IB_HCA==mlx5_0,mlx5_1,mlx5_3,mlx5_4 \
                 -x NCCL_NVLS_ENABLE=1 \
                 -x NCCL_SOCKET_IFNAME=eth0 \
                 -np 8 \
-                /opt/nccl-tests/build/all_reduce_perf -b 8 -e 32G -f 2 -g 1
+                /workspace/nccl-tests/build/all_reduce_perf -b 8 -e 32G -f 2 -g 1
             env:
               - name: OMPI_ALLOW_RUN_AS_ROOT
                 value: "1"
@@ -244,9 +244,11 @@ spec:
                 topologyKey: nvidia.com/gpu.clique
           containers:
           - name: mpi-worker
-            image: ghcr.io/coreweave/nccl-tests:12.8.1-devel-ubuntu22.04-nccl2.26.2-1-0708d2e
-            command: ["/usr/sbin/sshd"]
-            args: ["-De"]
+            image: iad.ocir.io/hpc_limited_availability/nccl-tests:pytorch-25.03-nccl-2.26.6-1
+            command:
+              - /bin/bash
+              - -c
+              - mkdir -p /var/run/sshd; /usr/sbin/sshd -D;
             env:
               - name: OMPI_ALLOW_RUN_AS_ROOT
                 value: "1"
@@ -263,4 +265,52 @@ spec:
 EOF
 ```
 
+```console
+kubectl logs --tail=20 -f -l job-name=nccl-test-launcher
 
+nccl-test-worker-0:60:109 [0] NCCL INFO Connected all rings, use ring PXN 0 GDR 1
+           8             2     float     sum      -1    21.57    0.00    0.00      0    21.24    0.00    0.00      0
+          16             4     float     sum      -1    21.06    0.00    0.00      0    20.90    0.00    0.00      0
+          32             8     float     sum      -1    21.99    0.00    0.00      0    21.77    0.00    0.00      0
+          64            16     float     sum      -1    24.87    0.00    0.00      0    24.70    0.00    0.00      0
+         128            32     float     sum      -1    26.53    0.00    0.01      0    26.21    0.00    0.01      0
+         256            64     float     sum      -1    26.77    0.01    0.02      0    26.31    0.01    0.02      0
+         512           128     float     sum      -1    27.06    0.02    0.03      0    26.83    0.02    0.03      0
+        1024           256     float     sum      -1    27.39    0.04    0.07      0    26.93    0.04    0.07      0
+        2048           512     float     sum      -1    27.89    0.07    0.13      0    27.36    0.07    0.13      0
+        4096          1024     float     sum      -1    27.96    0.15    0.26      0    27.67    0.15    0.26      0
+        8192          2048     float     sum      -1    28.26    0.29    0.51      0    28.05    0.29    0.51      0
+       16384          4096     float     sum      -1    28.49    0.57    1.01      0    28.13    0.58    1.02      0
+       32768          8192     float     sum      -1    28.93    1.13    1.98      0    28.87    1.13    1.99      0
+       65536         16384     float     sum      -1    29.95    2.19    3.83      0    29.35    2.23    3.91      0
+      131072         32768     float     sum      -1    30.64    4.28    7.49      0    30.09    4.36    7.62      0
+      262144         65536     float     sum      -1    30.58    8.57   15.00      0    30.18    8.69   15.20      0
+      524288        131072     float     sum      -1    30.86   16.99   29.73      0    30.54   17.17   30.04      0
+     1048576        262144     float     sum      -1    32.18   32.58   57.02      0    31.49   33.30   58.28      0
+     2097152        524288     float     sum      -1    35.89   58.44  102.27      0    34.74   60.37  105.65      0
+     4194304       1048576     float     sum      -1    52.72   79.55  139.22      0    52.39   80.06  140.10      0
+     8388608       2097152     float     sum      -1    67.94  123.47  216.07      0    68.24  122.92  215.12      0
+    16777216       4194304     float     sum      -1    102.8  163.15  285.52      0    100.5  166.96  292.18      0
+    33554432       8388608     float     sum      -1    159.5  210.38  368.17      0    157.8  212.69  372.21      0
+    67108864      16777216     float     sum      -1    265.3  252.91  442.59      0    264.6  253.66  443.90      0
+   134217728      33554432     float     sum      -1    386.9  346.95  607.15      0    384.4  349.19  611.07      0
+   268435456      67108864     float     sum      -1    698.9  384.07  672.13      0    697.3  384.95  673.67      0
+   536870912     134217728     float     sum      -1   1314.7  408.37  714.65      0   1314.0  408.58  715.02      0
+  1073741824     268435456     float     sum      -1   2544.0  422.06  738.61      0   2549.1  421.23  737.15      0
+  2147483648     536870912     float     sum      -1   4557.5  471.20  824.59      0   4557.1  471.24  824.67      0
+  4294967296    1073741824     float     sum      -1   9015.4  476.40  833.71      0   9019.7  476.18  833.31      0
+  8589934592    2147483648     float     sum      -1    17887  480.23  840.41      0    17885  480.29  840.50      0
+ 17179869184    4294967296     float     sum      -1    35549  483.27  845.72      0    35568  483.01  845.27      0
+ 34359738368    8589934592     float     sum      -1    70981  484.07  847.12      0    70956  484.24  847.42      0
+nccl-test-worker-0:61:113 [1] NCCL INFO comm 0xbae114ae20b0 rank 1 nranks 8 cudaDev 1 busId 901000 - Destroy COMPLETE
+nccl-test-worker-1:62:114 [2] NCCL INFO comm 0xb1a0b3217270 rank 6 nranks 8 cudaDev 2 busId 1801000 - Destroy COMPLETE
+nccl-test-worker-1:61:115 [1] NCCL INFO comm 0xb32f014e00f0 rank 5 nranks 8 cudaDev 1 busId 901000 - Destroy COMPLETE
+nccl-test-worker-0:62:116 [2] NCCL INFO comm 0xb94bc7fa3350 rank 2 nranks 8 cudaDev 2 busId 1801000 - Destroy COMPLETE
+nccl-test-worker-0:60:114 [0] NCCL INFO comm 0xb39ac578e8e0 rank 0 nranks 8 cudaDev 0 busId 801000 - Destroy COMPLETE
+nccl-test-worker-0:63:115 [3] NCCL INFO comm 0xb3e5a8f93ba0 rank 3 nranks 8 cudaDev 3 busId 1901000 - Destroy COMPLETE
+nccl-test-worker-1:63:113 [3] NCCL INFO comm 0xc72d0ce64500 rank 7 nranks 8 cudaDev 3 busId 1901000 - Destroy COMPLETE
+nccl-test-worker-1:60:112 [0] NCCL INFO comm 0xaf585d78bbe0 rank 4 nranks 8 cudaDev 0 busId 801000 - Destroy COMPLETE
+# Out of bounds values : 0 OK
+# Avg bus bandwidth    : 260.778
+#
+```
