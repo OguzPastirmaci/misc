@@ -1,3 +1,7 @@
+> [!IMPORTANT]  
+> Your cluster needs to have v1.32+ and the `DynamicResourceAllocation` feature gate must be enabled on the cluster. Reach out to your cloud architect to enable it (needs a ticket with OKE).
+> Once it's enabled, you will need to start kubelet with `--feature-gates=DynamicResourceAllocation=true`.
+
 #### Create a Compute Cluster
 Can be done from the console or in python: 
 
