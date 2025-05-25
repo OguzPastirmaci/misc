@@ -224,7 +224,7 @@ spec:
                 -x NCCL_IB_DISABLE=1 \
                 -x NCCL_SOCKET_IFNAME=eth0 \
                 -np $NP \
-                /workspace/nccl-tests/build/all_reduce_perf -b 8 -e 32G -f 2 -g 1; sleep 10000;
+                /workspace/nccl-tests/build/all_reduce_perf -b 8 -e 32G -f 2 -g 1
     Worker:
       replicas: 2
       template:
