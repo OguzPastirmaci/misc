@@ -208,23 +208,23 @@ spec:
             command: ["bash", "-c"]
             args:
               - |
-                mpirun \
+                NUM_GPUS=4
+                NUM_HOSTS=$(sed -n '$=' /etc/mpi/hostfile)
+                NP=$(($NUM_HOSTS*$NUM_GPUS))
+                mpirun --allow-run-as-root \
                 --bind-to none \
                 --map-by ppr:4:node \
                 --mca coll ^hcoll \
                 -x NCCL_DEBUG=WARN \
                 -x NCCL_MNNVL_ENABLE=1 \
                 -x NCCL_CUMEM_ENABLE=1 \
+                -x NCCL_NET_PLUGIN=sys \
                 -x NCCL_IB_HCA==mlx5_0,mlx5_1,mlx5_3,mlx5_4 \
                 -x NCCL_NVLS_ENABLE=1 \
+                -x NCCL_IB_DISABLE=1 \
                 -x NCCL_SOCKET_IFNAME=eth0 \
-                -np 8 \
-                /workspace/nccl-tests/build/all_reduce_perf -b 8 -e 32G -f 2 -g 1
-            env:
-              - name: OMPI_ALLOW_RUN_AS_ROOT
-                value: "1"
-              - name: OMPI_ALLOW_RUN_AS_ROOT_CONFIRM
-                value: "1"
+                -np $NP \
+                /workspace/nccl-tests/build/all_reduce_perf -b 8 -e 32G -f 2 -g 1; sleep 10000;
     Worker:
       replicas: 2
       template:
@@ -249,11 +249,6 @@ spec:
               - /bin/bash
               - -c
               - mkdir -p /var/run/sshd; /usr/sbin/sshd -D;
-            env:
-              - name: OMPI_ALLOW_RUN_AS_ROOT
-                value: "1"
-              - name: OMPI_ALLOW_RUN_AS_ROOT_CONFIRM
-                value: "1"
             resources:
               limits:
                 nvidia.com/gpu: 4
@@ -265,9 +260,13 @@ spec:
 EOF
 ```
 
+Wait until the `nccl-test-launcher` pod is in `Running` state, it might take a couple of minutes. Seeing warnings that say `Failed to prepare dynamic resources: NodePrepareResources failed: rpc error: code = DeadlineExceeded desc = context deadline exceeded` in the `nccl-test-worker` pods is normal.
+
 ```console
 kubectl logs --tail=20 -f -l job-name=nccl-test-launcher
+```
 
+```console
 nccl-test-worker-0:60:109 [0] NCCL INFO Connected all rings, use ring PXN 0 GDR 1
            8             2     float     sum      -1    21.57    0.00    0.00      0    21.24    0.00    0.00      0
           16             4     float     sum      -1    21.06    0.00    0.00      0    20.90    0.00    0.00      0
