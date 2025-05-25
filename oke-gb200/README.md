@@ -88,7 +88,7 @@ NODE            CLIQUE
 
 #### Run a simple test to validate IMEX daemons are started and IMEX channels are injected
 
-```console
+```
 cat <<EOF > imex-channel-injection.yaml
 ---
 apiVersion: resource.nvidia.com/v1beta1
@@ -170,7 +170,7 @@ kubectl create -f https://github.com/kubeflow/mpi-operator/releases/download/v0.
 ```
 
 #### Run NCCL-tests
-```console
+```
 cat <<EOF > nccl-test-job.yaml
 ---
 apiVersion: resource.nvidia.com/v1beta1
