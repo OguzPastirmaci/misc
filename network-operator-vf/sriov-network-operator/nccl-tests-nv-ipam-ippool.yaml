@@ -83,8 +83,7 @@ spec:
       template:
         metadata:
           annotations:
-            k8s.v1.cni.cncf.io/networks: example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool
-        spec:
+            k8s.v1.cni.cncf.io/networks: example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool
           containers:
             - name: mpiworker
               command:
