@@ -16,9 +16,9 @@ spec:
              "resourceName": "hostdev",
              "selectors": {
                "vendors": ["15b3"],
-               "devices": ["101a"],
+               "devices": [],
                "drivers": [],
-               "pfNames": [],
+               "pfNames": ["rdma*"],
                "pciAddresses": [],
                "rootDevices": [],
                "linkTypes": [],
