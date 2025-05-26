@@ -2,14 +2,14 @@ apiVersion: k8s.cni.cncf.io/v1
 kind: NetworkAttachmentDefinition
 metadata:
   annotations:
-    k8s.v1.cni.cncf.io/resourceName: nvidia.com/mlnxnics
-  name: example-sriov-network-nv-ipam-ippool-2
+    k8s.v1.cni.cncf.io/resourceName: nvidia.com/hostdev
+  name: hostdev-net
   namespace: default
 spec:
   config: |-
     {
       "cniVersion": "1.0.0",
-      "name": "example-sriov-network-nv-ipam-ippool-2",
+      "name": "hostdev-net",
       "plugins": [
         {
           "type": "sriov",
