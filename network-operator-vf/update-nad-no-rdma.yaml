@@ -3,35 +3,13 @@ kind: NetworkAttachmentDefinition
 metadata:
   annotations:
     k8s.v1.cni.cncf.io/resourceName: nvidia.com/mlnxnics
-  creationTimestamp: "2025-05-23T07:14:29Z"
-  generation: 1
-  name: example-sriov-network-nv-ipam-ippool
+  name: example-sriov-network-nv-ipam-ippool-2
   namespace: default
-  resourceVersion: "195642"
-  uid: 3bd65e43-b582-4764-b8c1-aa89f28fc5e2
-spec:
-  config: |-
-    {
-        "cniVersion": "1.0.0",
-        "name": "example-sriov-network-nv-ipam-ippool",
-        "type": "sriov",
-        "vlan": 0,
-        "vlanQoS": 0,
-        "logLevel": "info",
-        "ipam": {
-            "type": "nv-ipam",
-            "poolName": "my-pool"
-        }
-    },
-
-
-
-
 spec:
   config: |-
     {
       "cniVersion": "1.0.0",
-      "name": "example-sriov-network-nv-ipam-ippool",
+      "name": "example-sriov-network-nv-ipam-ippool-2",
       "plugins": [
         {
           "type": "sriov",
@@ -52,7 +30,6 @@ spec:
           },
           "mtu": 4220
         },
-        { "type": "rdma" },
         { "type": "sbr" }
       ]
     }
