@@ -74,7 +74,7 @@ spec:
               resources:
                 requests:
                   cpu: 2
-                  memory: 128Mi
+                  memory: 128Mi 
                   ephemeral-storage: 16Gi
           restartPolicy: OnFailure
     - replicas: 2
@@ -83,7 +83,7 @@ spec:
       template:
         metadata:
           annotations:
-            k8s.v1.cni.cncf.io/networks: example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool,example-sriov-network-nv-ipam-ippool
+            k8s.v1.cni.cncf.io/networks: example-sriov-network-nv-ipam-ippool-2,example-sriov-network-nv-ipam-ippool-2,example-sriov-network-nv-ipam-ippool-2,example-sriov-network-nv-ipam-ippool-2,example-sriov-network-nv-ipam-ippool-2,example-sriov-network-nv-ipam-ippool-2,example-sriov-network-nv-ipam-ippool-2,example-sriov-network-nv-ipam-ippool-2,example-sriov-network-nv-ipam-ippool-2,example-sriov-network-nv-ipam-ippool-2,example-sriov-network-nv-ipam-ippool-2,example-sriov-network-nv-ipam-ippool-2,example-sriov-network-nv-ipam-ippool-2,example-sriov-network-nv-ipam-ippool-2,example-sriov-network-nv-ipam-ippool-2,example-sriov-network-nv-ipam-ippool-2
         spec:
           containers:
             - name: mpiworker
