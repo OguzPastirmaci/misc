@@ -1,0 +1,58 @@
+apiVersion: k8s.cni.cncf.io/v1
+kind: NetworkAttachmentDefinition
+metadata:
+  annotations:
+    k8s.v1.cni.cncf.io/resourceName: nvidia.com/mlnxnics
+  creationTimestamp: "2025-05-23T07:14:29Z"
+  generation: 1
+  name: example-sriov-network-nv-ipam-ippool
+  namespace: default
+  resourceVersion: "195642"
+  uid: 3bd65e43-b582-4764-b8c1-aa89f28fc5e2
+spec:
+  config: |-
+    {
+        "cniVersion": "1.0.0",
+        "name": "example-sriov-network-nv-ipam-ippool",
+        "type": "sriov",
+        "vlan": 0,
+        "vlanQoS": 0,
+        "logLevel": "info",
+        "ipam": {
+            "type": "nv-ipam",
+            "poolName": "my-pool"
+        }
+    },
+
+
+
+
+spec:
+  config: |-
+    {
+      "cniVersion": "1.0.0",
+      "name": "example-sriov-network-nv-ipam-ippool",
+      "plugins": [
+        {
+          "type": "sriov",
+          "name": "sriov-network",
+          "spoofchk": "off",
+          "ipam": {
+            "type": "nv-ipam",
+            "poolName": "my-pool"
+          }
+        },
+        { "type": "tuning",
+          "sysctl": {
+            "net.ipv4.conf.all.arp_announce": "2",
+            "net.ipv4.conf.all.arp_filter": "1",
+            "net.ipv4.conf.all.arp_ignore": "1",
+            "net.ipv4.conf.all.rp_filter": "0",
+            "net.ipv4.conf.all.accept_local": "1"
+          },
+          "mtu": 4220
+        },
+        { "type": "rdma" },
+        { "type": "sbr" }
+      ]
+    }
