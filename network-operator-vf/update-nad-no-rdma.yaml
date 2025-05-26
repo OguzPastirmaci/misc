@@ -13,7 +13,6 @@ spec:
       "plugins": [
         {
           "type": "sriov",
-          "name": "sriov-network",
           "spoofchk": "off",
           "ipam": {
             "type": "nv-ipam",
