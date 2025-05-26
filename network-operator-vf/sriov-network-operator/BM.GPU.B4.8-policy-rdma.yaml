@@ -1,0 +1,17 @@
+apiVersion: sriovnetwork.openshift.io/v1
+kind: SriovNetworkNodePolicy
+metadata:
+  name: bm-gpu-b4-8
+  namespace: nvidia-network-operator
+spec:
+  deviceType: netdevice
+  mtu: 4220
+  nicSelector:
+    pfNames: ["rdma*"]
+    vendor: "15b3"
+  nodeSelector:
+    node.kubernetes.io/instance-type: "BM.GPU.B4.8"
+  isRdma: true
+  numVfs: 1
+  priority: 90
+  resourceName: mlnxnics
