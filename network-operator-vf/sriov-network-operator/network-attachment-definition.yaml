@@ -29,7 +29,7 @@ spec:
           },
           "mtu": 4220
         },
-        { "type": "sbr" },
-        { "type": "rdma" }
+        { "type": "rdma" },
+        { "type": "sbr" }
       ]
     }
