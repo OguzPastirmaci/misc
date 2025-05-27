@@ -41,7 +41,25 @@ compute_client = oci.core.ComputeClient(config={}, signer=signer)
 details=oci.core.models.CreateComputeGpuMemoryClusterDetails(availability_domain="XXXX:AP-SYDNEY-1-AD-1",compartment_id="ocid1.compartment.oc1..",compute_cluster_id="ocid1.computecluster.oc1.ap-sydney-1.",instance_configuration_id="ocid1.instanceconfiguration.oc1.ap-sydney-1.",size=2,gpu_memory_fabric_id="ocid1.computegpumemoryfabric.oc1.ap-sydney-1.",display_name="memoryFabric1")
 output=compute_client.create_compute_gpu_memory_cluster(details)
 ```
+#### Manage a Memory Cluster
+Add a node
 
+```python
+import oci
+signer = oci.auth.signers.InstancePrincipalsSecurityTokenSigner()
+compute_client = oci.core.ComputeClient(config={}, signer=signer)
+update_details=oci.core.models.UpdateComputeGpuMemoryClusterDetails(size=3)
+output = compute_client.update_compute_gpu_memory_cluster("ocid1.computegpumemorycluster.oc1.....",update_details)
+```
+Remove a node Randomly
+```python
+import oci
+signer = oci.auth.signers.InstancePrincipalsSecurityTokenSigner()
+compute_client = oci.core.ComputeClient(config={}, signer=signer)
+update_details=oci.core.models.UpdateComputeGpuMemoryClusterDetails(size=1)
+output = compute_client.update_compute_gpu_memory_cluster("ocid1.computegpumemorycluster.oc1.....",update_details)
+```
+You can also delete a node from the console and the size will be automatically updated. 
 #### Install GPU Operator
 ```console
 helm repo add nvidia https://helm.ngc.nvidia.com/nvidia
