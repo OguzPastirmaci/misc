@@ -8,7 +8,7 @@ POD_SUBNET_NSG_ID=
 IMAGE_ID=ocid1.image.oc1.ap-sydney-1.aaaaaaaa24usi6houqzdjyp3eatz2sqx37vsmmjq5wdyq7z4rdxmkrmeos5a
 BASE64_ENCODED_CLOUD_INIT=$(cat cloud-init.yml| base64 -b 0)
 
-oci --region ${REGION} compute-management instance-configuration create --compartment-id ${COMPARTMENT_ID} --display-name gb200-oke --instance-details \
+oci --region ${REGION} compute-management instance-configuration create --compartment-id ${COMPARTMENT_ID} --display-name gb200-oke-test --instance-details \
 '{
   "instanceType": "compute",
   "launchDetails": {
@@ -27,7 +27,6 @@ oci --region ${REGION} compute-management instance-configuration create --compar
       "pod-subnets": "ocid1.subnet.oc1.ap-sydney-1.aaaaaaaaphfdh4jq3oxgvqb7hf7ms4xi36jei7b77bj34mawhmfwnr5ypgvq",
       "pod-nsgids": "ocid1.networksecuritygroup.oc1.ap-sydney-1.aaaaaaaanqxbsqv6itn4w4wusip4tow5kv2ltmo7lenpa2mrkqgmio6qgnaq"
     },
-    "displayName": "gb200-instance",
     "shape": "BM.GPU.GB200.4",
     "sourceDetails": {
       "sourceType": "image",
