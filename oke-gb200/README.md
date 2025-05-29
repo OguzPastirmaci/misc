@@ -4,7 +4,7 @@
 - Once it's enabled, you will need to start kubelet with `--feature-gates=DynamicResourceAllocation=true`. You can find an example [here](./cloud-init.yaml#L16).
 
 #### Create a Compute Cluster
-Can be done from the console or in python: 
+Can be done from the console or in Python.
 
 ```python
 import oci
@@ -14,7 +14,7 @@ cc_details=oci.core.models.CreateComputeClusterDetails(compartment_id="ocid1.com
 cn = compute_client.create_compute_cluster(create_compute_cluster_details=cc_details).data
 cn_id=cn.id
 ```
-#### Permisions: (any-user can be replaced by the group launching the cluster)
+#### Required policies (any-user can be replaced by the group launching the cluster)
 
 ```python
 Allow any-user to use compute-hpc-islands in tenancy
@@ -23,6 +23,7 @@ Allow any-user to use compute-local-blocks in tenancy
 Allow any-user to use compute-bare-metal-hosts in tenancy
 Allow any-user to use compute-gpu-memory-fabrics in tenancy
 ```
+
 #### Gather the memory fabric ID
 
 ```python
@@ -41,6 +42,7 @@ compute_client = oci.core.ComputeClient(config={}, signer=signer)
 details=oci.core.models.CreateComputeGpuMemoryClusterDetails(availability_domain="XXXX:AP-SYDNEY-1-AD-1",compartment_id="ocid1.compartment.oc1..",compute_cluster_id="ocid1.computecluster.oc1.ap-sydney-1.",instance_configuration_id="ocid1.instanceconfiguration.oc1.ap-sydney-1.",size=2,gpu_memory_fabric_id="ocid1.computegpumemoryfabric.oc1.ap-sydney-1.",display_name="memoryFabric1")
 output=compute_client.create_compute_gpu_memory_cluster(details)
 ```
+
 #### Manage a Memory Cluster
 Add a node
 
@@ -51,6 +53,7 @@ compute_client = oci.core.ComputeClient(config={}, signer=signer)
 update_details=oci.core.models.UpdateComputeGpuMemoryClusterDetails(size=3)
 output = compute_client.update_compute_gpu_memory_cluster("ocid1.computegpumemorycluster.oc1.....",update_details)
 ```
+
 Remove a node Randomly
 ```python
 import oci
@@ -59,7 +62,18 @@ compute_client = oci.core.ComputeClient(config={}, signer=signer)
 update_details=oci.core.models.UpdateComputeGpuMemoryClusterDetails(size=1)
 output = compute_client.update_compute_gpu_memory_cluster("ocid1.computegpumemorycluster.oc1.....",update_details)
 ```
+
 You can also delete a node from the console and the size will be automatically updated. 
+
+#### Import the image
+https://objectstorage.ca-montreal-1.oraclecloud.com/p/ts6fjAuj7hY4io5x_jfX3fyC70HRCG8-9gOFqAjuF0KE0s-6tgDZkbRRZIbMZmoN/n/hpc_limited_availability/b/images/o/Canonical-Ubuntu-22.04-aarch64-2025.01.31-1-OFED-24.10-1.1.4.0-GPU-570-OPEN-CUDA-12.8-2025.05.27-0
+
+#### Deploy an OKE cluster
+[![Deploy to Oracle Cloud](https://oci-resourcemanager-plugin.plugins.oci.oraclecloud.com/latest/deploy-to-oracle-cloud.svg)](https://cloud.oracle.com/resourcemanager/stacks/create?zipUrl=https://github.com/oracle-quickstart/oci-hpc-oke/releases/download/v25.5.0/oke-rdma-quickstart-v25.5.0.zip)
+
+- Kubernetes version must be at least v1.32
+- Choose VCN-native pod networking
+
 #### Install GPU Operator
 ```
 helm repo add nvidia https://helm.ngc.nvidia.com/nvidia
@@ -74,7 +88,7 @@ helm install --wait \
   --set driver.rdma.useHostMofed=true
 ```
 
-#### Install DRA
+#### Install Dynamic Resource Allocation driver
 ```
 helm install nvidia-dra-driver-gpu nvidia/nvidia-dra-driver-gpu \
     --version=25.3.0-rc.2 \
@@ -203,7 +217,7 @@ pod "imex-channel-injection" deleted
 kubectl create -f https://github.com/kubeflow/mpi-operator/releases/download/v0.6.0/mpi-operator.yaml
 ```
 
-#### Run NCCL-tests
+#### Single rack test
 ```yaml
 cat <<'EOF' > nccl-test-job.yaml
 ---
@@ -278,6 +292,109 @@ spec:
                 topologyKey: nvidia.com/gpu.clique
           containers:
           - name: mpi-worker
+            image: iad.ocir.io/hpc_limited_availability/nccl-tests:pytorch-25.03-nccl-2.26.6-1
+            command:
+              - /bin/bash
+              - -c
+              - mkdir -p /var/run/sshd; /usr/sbin/sshd -D;
+            resources:
+              limits:
+                nvidia.com/gpu: 4
+              claims:
+              - name: compute-domain-channel
+          resourceClaims:
+          - name: compute-domain-channel
+            resourceClaimTemplateName: nccl-test-compute-domain-channel
+EOF
+```
+
+#### Multi rack test
+
+```yaml
+cat <<'EOF' > nccl-test-job.yaml
+---
+apiVersion: resource.nvidia.com/v1beta1
+kind: ComputeDomain
+metadata:
+  name: nccl-test-compute-domain
+spec:
+  numNodes: 2
+  channel:
+    resourceClaimTemplate:
+      name: nccl-test-compute-domain-channel
+---
+apiVersion: kubeflow.org/v2beta1
+kind: MPIJob
+metadata:
+  name: nccl-test
+spec:
+  slotsPerWorker: 4
+  launcherCreationPolicy: WaitForWorkersReady
+  runPolicy:
+    cleanPodPolicy: Running
+  sshAuthMountPath: /root/.ssh
+  mpiReplicaSpecs:
+    Launcher:
+      replicas: 1
+      template:
+        metadata:
+          labels:
+            nccl-test-replica: mpi-launcher
+        spec:
+          hostNetwork: true
+          dnsPolicy: ClusterFirstWithHostNet
+          containers:
+          - name: mpi-launcher
+            image: iad.ocir.io/hpc_limited_availability/nccl-tests:pytorch-25.03-nccl-2.26.6-1
+            command: ["bash", "-c"]
+            args:
+              - |
+                NUM_GPUS=4
+                NUM_HOSTS=$(sed -n '$=' /etc/mpi/hostfile)
+                NP=$(($NUM_HOSTS*$NUM_GPUS))
+                mpirun --allow-run-as-root \
+                --bind-to none \
+                --map-by ppr:4:node \
+                --mca coll ^hcoll \
+                -x NCCL_DEBUG=WARN \
+                -x NCCL_MNNVL_ENABLE=1 \
+                -x NCCL_CUMEM_ENABLE=1 \
+                -x NCCL_NET_PLUGIN=sys \
+                -x NCCL_IB_HCA=mlx5_0,mlx5_1,mlx5_3,mlx5_4 \
+                -x NCCL_NVLS_ENABLE=1 \
+                -x NCCL_SOCKET_IFNAME=eth0 \
+                -np $NP \
+                /workspace/nccl-tests/build/all_reduce_perf -b 8 -e 32G -f 2 -g 1
+    Worker:
+      replicas: 2
+      template:
+        metadata:
+          labels:
+            nccl-test-replica: mpi-worker
+        spec:
+          hostNetwork: true
+          dnsPolicy: ClusterFirstWithHostNet
+          volumes:
+          - { name: devinf, hostPath: { path: /dev/infiniband }}
+          - { name: shm, emptyDir: { medium: Memory, sizeLimit: 32Gi }}
+          affinity:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                - matchExpressions:
+                  - key: node.kubernetes.io/instance-type
+                    operator: In
+                    values:
+                    - BM.GPU.GB200.4
+          containers:
+          - name: mpi-worker
+            securityContext:
+              privileged: true
+              capabilities:
+                add: [ "IPC_LOCK" ]
+            volumeMounts:
+            - { mountPath: /dev/infiniband, name: devinf }
+            - { mountPath: /dev/shm, name: shm }
             image: iad.ocir.io/hpc_limited_availability/nccl-tests:pytorch-25.03-nccl-2.26.6-1
             command:
               - /bin/bash
