@@ -5,7 +5,7 @@ WORKER_SUBNET_ID=ocid1.subnet.oc1.ap-sydney-1.aaaaaaaapgst6odxn7pav4o3lai64js3fy
 WORKER_SUBNET_NSG_ID=ocid1.networksecuritygroup.oc1.ap-sydney-1.aaaaaaaanqxbsqv6itn4w4wusip4tow5kv2ltmo7lenpa2mrkqgmio6qgnaq
 POD_SUBNET_ID=
 POD_SUBNET_NSG_ID=
-IMAGE_ID=ocid1.image.oc1.ap-sydney-1.aaaaaaaa24usi6houqzdjyp3eatz2sqx37vsmmjq5wdyq7z4rdxmkrmeos5a
+IMAGE_ID=ocid1.image.oc1.ap-sydney-1.aaaaaaaabskiv3fzzytqneylu2cf45d5272h4rfzzmtt42t3ardod3xflvkq
 BASE64_ENCODED_CLOUD_INIT=$(cat cloud-init.yml| base64 -b 0)
 
 oci --region ${REGION} compute-management instance-configuration create --compartment-id ${COMPARTMENT_ID} --display-name gb200-oke-test --instance-details \
