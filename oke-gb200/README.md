@@ -80,7 +80,6 @@ helm install nvidia-dra-driver-gpu nvidia/nvidia-dra-driver-gpu \
     --version=25.3.0-rc.2 \
     --create-namespace \
     --namespace nvidia-dra-driver-gpu \
-    --set nvidiaDriverRoot=/ \
     --set nvidiaCtkPath=/usr/local/nvidia/toolkit/nvidia-ctk \
     --set resources.gpus.enabled=false \
     -f https://raw.githubusercontent.com/OguzPastirmaci/misc/refs/heads/master/oke-gb200/dra-values.yaml
