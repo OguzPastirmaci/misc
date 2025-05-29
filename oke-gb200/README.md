@@ -219,7 +219,7 @@ kubectl create -f https://github.com/kubeflow/mpi-operator/releases/download/v0.
 
 #### Single rack test
 ```yaml
-cat <<'EOF' > nccl-test-job.yaml
+cat <<'EOF' > nccl-test-single-rack-job.yaml
 ---
 apiVersion: resource.nvidia.com/v1beta1
 kind: ComputeDomain
@@ -311,7 +311,7 @@ EOF
 #### Multi rack test
 
 ```yaml
-cat <<'EOF' > nccl-test-job.yaml
+cat <<'EOF' > nccl-test-multi-rack-job.yaml
 ---
 apiVersion: resource.nvidia.com/v1beta1
 kind: ComputeDomain
