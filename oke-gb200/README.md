@@ -1,9 +1,9 @@
-#### Prerequisites
+### Prerequisites
 - Your cluster needs to have v1.32+ and the `DynamicResourceAllocation` feature gate must be enabled on the cluster. Reach out to your cloud architect to enable it (needs a ticket with OKE).
 
 - Once it's enabled, you will need to start kubelet with `--feature-gates=DynamicResourceAllocation=true`. You can find an example [here](./cloud-init.yaml#L16).
 
-#### Create a Compute Cluster
+### Create a Compute Cluster
 Can be done from the console or in Python.
 
 ```python
@@ -14,7 +14,7 @@ cc_details=oci.core.models.CreateComputeClusterDetails(compartment_id="ocid1.com
 cn = compute_client.create_compute_cluster(create_compute_cluster_details=cc_details).data
 cn_id=cn.id
 ```
-#### Required policies (any-user can be replaced by the group launching the cluster)
+### Required policies (any-user can be replaced by the group launching the cluster)
 
 ```python
 Allow any-user to use compute-hpc-islands in tenancy
@@ -24,7 +24,7 @@ Allow any-user to use compute-bare-metal-hosts in tenancy
 Allow any-user to use compute-gpu-memory-fabrics in tenancy
 ```
 
-#### Gather the memory fabric ID
+### Gather the memory fabric ID
 
 ```python
 import oci
@@ -33,7 +33,7 @@ compute_client = oci.core.ComputeClient(config={}, signer=signer)
 compute_client.list_compute_gpu_memory_fabrics(compartment_id="ocid1.tenancy.oc1..").data
 ```
 
-#### Create cloud-init
+### Create cloud-init
 Follow the instructions [here](https://docs.oracle.com/en-us/iaas/Content/ContEng/Tasks/contengcloudinitforselfmanagednodes.htm#contengcloudinitforselfmanagednodes) for getting the API Server Host IP and CA cert.
 
 ```
@@ -57,7 +57,7 @@ ssh_authorized_keys:
   - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCqftxN9j+mN75JKR...
 ```
 
-#### Create an Instance Configuration
+### Create an Instance Configuration
 
 ```
 REGION=
@@ -176,7 +176,7 @@ oci --region ${REGION} compute-management instance-configuration create --compar
 }'
 ```
 
-#### Create a Memory Cluster
+### Create a Memory Cluster
 
 ```python
 import oci
@@ -186,7 +186,7 @@ details=oci.core.models.CreateComputeGpuMemoryClusterDetails(availability_domain
 output=compute_client.create_compute_gpu_memory_cluster(details)
 ```
 
-#### Manage a Memory Cluster
+### Manage a Memory Cluster
 Add a node
 
 ```python
@@ -208,16 +208,16 @@ output = compute_client.update_compute_gpu_memory_cluster("ocid1.computegpumemor
 
 You can also delete a node from the console and the size will be automatically updated. 
 
-#### Import the image
+### Import the image
 https://objectstorage.ca-montreal-1.oraclecloud.com/p/ts6fjAuj7hY4io5x_jfX3fyC70HRCG8-9gOFqAjuF0KE0s-6tgDZkbRRZIbMZmoN/n/hpc_limited_availability/b/images/o/Canonical-Ubuntu-22.04-aarch64-2025.01.31-1-OFED-24.10-1.1.4.0-GPU-570-OPEN-CUDA-12.8-2025.05.27-0
 
-#### Deploy an OKE cluster
+### Deploy an OKE cluster
 [![Deploy to Oracle Cloud](https://oci-resourcemanager-plugin.plugins.oci.oraclecloud.com/latest/deploy-to-oracle-cloud.svg)](https://cloud.oracle.com/resourcemanager/stacks/create?zipUrl=https://github.com/oracle-quickstart/oci-hpc-oke/releases/download/v25.5.0/oke-rdma-quickstart-v25.5.0.zip)
 
 - Kubernetes version must be at least v1.32
 - Choose VCN-native pod networking
 
-#### Install GPU Operator
+### Install GPU Operator
 ```
 helm repo add nvidia https://helm.ngc.nvidia.com/nvidia
 helm repo update
@@ -231,7 +231,7 @@ helm install --wait \
   --set driver.rdma.useHostMofed=true
 ```
 
-#### Install Dynamic Resource Allocation driver
+### Install Dynamic Resource Allocation driver
 ```
 helm install nvidia-dra-driver-gpu nvidia/nvidia-dra-driver-gpu \
     --version=25.3.0-rc.2 \
@@ -242,7 +242,7 @@ helm install nvidia-dra-driver-gpu nvidia/nvidia-dra-driver-gpu \
     -f https://raw.githubusercontent.com/OguzPastirmaci/misc/refs/heads/master/oke-gb200/dra-values.yaml
 ```
 
-#### Validate that the DRA driver components are running and in a Ready state
+### Validate that the DRA driver components are running and in a Ready state
 
 ```
 kubectl get pod -n nvidia-dra-driver-gpu
@@ -255,7 +255,7 @@ nvidia-dra-driver-k8s-dra-driver-kubelet-plugin-bzm6p          1/1     Running  
 nvidia-dra-driver-k8s-dra-driver-kubelet-plugin-xjm4p          1/1     Running   0          7m27s
 ```
 
-#### Confirm that all GPU nodes are labeled with clique ids
+### Confirm that all GPU nodes are labeled with clique ids
 
 ```
 kubectl get nodes -l node.kubernetes.io/instance-type=BM.GPU.GB200.4 -o custom-columns="NODE:.metadata.name,CLIQUE:.metadata.labels.nvidia\.com/gpu\.clique"
@@ -265,7 +265,7 @@ NODE            CLIQUE
 10.140.63.103   61248eac-4785-4fbf-9cbd-231635e37e9d.20663
 ```
 
-#### Run a simple test to validate IMEX daemons are started and IMEX channels are injected
+### Run a simple test to validate IMEX daemons are started and IMEX channels are injected
 
 ```yaml
 cat <<'EOF' > imex-channel-injection.yaml
