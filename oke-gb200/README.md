@@ -33,6 +33,149 @@ compute_client = oci.core.ComputeClient(config={}, signer=signer)
 compute_client.list_compute_gpu_memory_fabrics(compartment_id="ocid1.tenancy.oc1..").data
 ```
 
+#### Create cloud-init
+Follow the instructions [here](https://docs.oracle.com/en-us/iaas/Content/ContEng/Tasks/contengcloudinitforselfmanagednodes.htm#contengcloudinitforselfmanagednodes) for getting the API Server Host IP and CA cert.
+
+```
+#cloud-config
+apt:
+  sources:
+    oke-node: {source: 'deb [trusted=yes] https://objectstorage.us-sanjose-1.oraclecloud.com/p/45eOeErEDZqPGiymXZwpeebCNb5lnwzkcQIhtVf6iOF44eet_efdePaF7T8agNYq/n/odx-oke/b/okn-repositories-private/o/prod/ubuntu-jammy/kubernetes-1.32 stable main'}
+packages:
+  - oci-oke-node-all-1.32.1
+write_files:
+  - path: /etc/oke/oke-apiserver
+    permissions: '0644'
+    content: <API SERVER HOST IP>
+  - encoding: b64
+    path: /etc/kubernetes/ca.crt
+    permissions: '0644'
+    content: <CA cert>
+runcmd:
+  - oke bootstrap --apiserver-host <API SERVER HOST IP> --ca "<CA cert>" --kubelet-extra-args "--feature-gates=DynamicResourceAllocation=true"
+ssh_authorized_keys:
+  - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCqftxN9j+mN75JKR...
+```
+
+#### Create an Instance Configuration
+
+```
+REGION=
+COMPARTMENT_ID=
+AD=
+WORKER_SUBNET_ID=
+WORKER_SUBNET_NSG_ID=
+POD_SUBNET_ID=
+POD_SUBNET_NSG_ID=
+IMAGE_ID=
+BASE64_ENCODED_CLOUD_INIT=$(cat cloud-init.yml| base64 -b 0)
+
+oci --region ${REGION} compute-management instance-configuration create --compartment-id ${COMPARTMENT_ID} --display-name gb200-oke --instance-details \
+'{
+  "instanceType": "compute",
+  "launchDetails": {
+    "availabilityDomain": "$AD",
+    "compartmentId": "$COMPARTMENT_ID",
+    "createVnicDetails": {
+      "assignIpv6Ip": false,
+      "assignPublicIp": false,
+      "assignPrivateDnsRecord": true,
+      "subnetId": "$SUBNET_ID",
+      "nsgIds": [ "$SUBNET_NSG_ID" ]
+    },
+    "metadata": {
+      "user_data": "$BASE64_ENCODED_CLOUD_INIT",
+      "oke-native-pod-networking": "true", "oke-max-pods": "60",
+      "pod-subnets": "ocid1.subnet.oc1.ap-sydney-1.aaaaaaaaphfdh4jq3oxgvqb7hf7ms4xi36jei7b77bj34mawhmfwnr5ypgvq",
+      "pod-nsgids": "ocid1.networksecuritygroup.oc1.ap-sydney-1.aaaaaaaanqxbsqv6itn4w4wusip4tow5kv2ltmo7lenpa2mrkqgmio6qgnaq"
+    },
+    "displayName": "gb200-instance",
+    "shape": "BM.GPU.GB200.4",
+    "sourceDetails": {
+      "sourceType": "image",
+      "imageId": "$IMAGE_ID"
+    },
+    "agentConfig": {
+      "isMonitoringDisabled": false,
+      "isManagementDisabled": false,
+      "pluginsConfig": [
+        {
+          "name": "WebLogic Management Service",
+          "desiredState": "DISABLED"
+        },
+        {
+          "name": "Vulnerability Scanning",
+          "desiredState": "DISABLED"
+        },
+        {
+          "name": "Oracle Java Management Service",
+          "desiredState": "DISABLED"
+        },
+        {
+          "name": "Oracle Autonomous Linux",
+          "desiredState": "DISABLED"
+        },
+        {
+          "name": "OS Management Service Agent",
+          "desiredState": "DISABLED"
+        },
+        {
+          "name": "OS Management Hub Agent",
+          "desiredState": "DISABLED"
+        },
+        {
+          "name": "Management Agent",
+          "desiredState": "ENABLED"
+        },
+        {
+          "name": "Custom Logs Monitoring",
+          "desiredState": "ENABLED"
+        },
+        {
+          "name": "Compute RDMA GPU Monitoring",
+          "desiredState": "ENABLED"
+        },
+        {
+          "name": "Compute Instance Run Command",
+          "desiredState": "ENABLED"
+        },
+        {
+          "name": "Compute Instance Monitoring",
+          "desiredState": "ENABLED"
+        },
+        {
+          "name": "Compute HPC RDMA Auto-Configuration",
+          "desiredState": "ENABLED"
+        },
+        {
+          "name": "Compute HPC RDMA Authentication",
+          "desiredState": "ENABLED"
+        },
+        {
+          "name": "Cloud Guard Workload Protection",
+          "desiredState": "DISABLED"
+        },
+        {
+          "name": "Block Volume Management",
+          "desiredState": "DISABLED"
+        },
+        {
+          "name": "Bastion",
+          "desiredState": "DISABLED"
+        }
+      ]
+    },
+    "isPvEncryptionInTransitEnabled": false,
+    "instanceOptions": {
+      "areLegacyImdsEndpointsDisabled": false
+    },
+    "availabilityConfig": {
+      "recoveryAction": "RESTORE_INSTANCE"
+    }
+  }
+}'
+```
+
 #### Create a Memory Cluster
 
 ```python
