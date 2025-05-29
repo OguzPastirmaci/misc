@@ -61,7 +61,7 @@ output = compute_client.update_compute_gpu_memory_cluster("ocid1.computegpumemor
 ```
 You can also delete a node from the console and the size will be automatically updated. 
 #### Install GPU Operator
-```console
+```
 helm repo add nvidia https://helm.ngc.nvidia.com/nvidia
 helm repo update
 
@@ -75,7 +75,7 @@ helm install --wait \
 ```
 
 #### Install DRA
-```console
+```
 helm install nvidia-dra-driver-gpu nvidia/nvidia-dra-driver-gpu \
     --version=25.3.0-rc.2 \
     --create-namespace \
@@ -87,9 +87,11 @@ helm install nvidia-dra-driver-gpu nvidia/nvidia-dra-driver-gpu \
 
 #### Validate that the DRA driver components are running and in a Ready state
 
-```console
+```
 kubectl get pod -n nvidia-dra-driver-gpu
+```
 
+```
 NAME                                                           READY   STATUS    RESTARTS   AGE
 nvidia-dra-driver-k8s-dra-driver-controller-67cb99d84b-5q7kj   1/1     Running   0          7m26s
 nvidia-dra-driver-k8s-dra-driver-kubelet-plugin-7kdg9          1/1     Running   0          7m27s
@@ -100,9 +102,11 @@ nvidia-dra-driver-k8s-dra-driver-kubelet-plugin-xjm4p          1/1     Running  
 
 #### Confirm that all GPU nodes are labeled with clique ids
 
-```console
+```
 kubectl get nodes -l node.kubernetes.io/instance-type=BM.GPU.GB200.4 -o custom-columns="NODE:.metadata.name,CLIQUE:.metadata.labels.nvidia\.com/gpu\.clique"
+```
 
+```
 NODE            CLIQUE
 10.140.61.148   61248eac-4785-4fbf-9cbd-231635e37e9d.20663
 10.140.63.103   61248eac-4785-4fbf-9cbd-231635e37e9d.20663
@@ -110,7 +114,7 @@ NODE            CLIQUE
 
 #### Run a simple test to validate IMEX daemons are started and IMEX channels are injected
 
-```
+```yaml
 cat <<'EOF' > imex-channel-injection.yaml
 ---
 apiVersion: resource.nvidia.com/v1beta1
@@ -154,32 +158,40 @@ spec:
 EOF
 ```
 
-```console
+```
 kubectl apply -f imex-channel-injection.yaml
+```
 
+```
 computedomain.resource.nvidia.com/imex-channel-injection created
 pod/imex-channel-injection created
 ```
 
-```console
+```
 kubectl get pods -n nvidia-dra-driver-gpu -l resource.nvidia.com/computeDomain
+```
 
+```
 NAME                                 READY   STATUS    RESTARTS   AGE
 imex-channel-injection-vmvtq-h7wls   1/1     Running   0          75s
 ```
 
-```console
+```
 kubectl logs imex-channel-injection
+```
 
+```
 total 0
 drwxr-xr-x 2 root root     60 May 24 05:59 .
 drwxr-xr-x 6 root root    380 May 24 05:59 ..
 crw-rw-rw- 1 root root 234, 0 May 24 05:59 channel0
 ```
 
-```console
+```
 kubectl delete -f imex-channel-injection.yaml
+```
 
+```
 computedomain.resource.nvidia.com "imex-channel-injection" deleted
 pod "imex-channel-injection" deleted
 ```
@@ -187,12 +199,12 @@ pod "imex-channel-injection" deleted
 ### RUN NCCL-tests
 
 #### Install MPI Operator
-```console
+```
 kubectl create -f https://github.com/kubeflow/mpi-operator/releases/download/v0.6.0/mpi-operator.yaml
 ```
 
 #### Run NCCL-tests
-```
+```yaml
 cat <<'EOF' > nccl-test-job.yaml
 ---
 apiVersion: resource.nvidia.com/v1beta1
@@ -284,11 +296,11 @@ EOF
 
 Wait until the `nccl-test-launcher` pod is in `Running` state, it might take a couple of minutes. Seeing warnings that say `Failed to prepare dynamic resources: NodePrepareResources failed: rpc error: code = DeadlineExceeded desc = context deadline exceeded` in the `nccl-test-worker` pods is normal.
 
-```console
+```
 kubectl logs --tail=20 -f -l job-name=nccl-test-launcher
 ```
 
-```console
+```
 nccl-test-worker-0:60:109 [0] NCCL INFO Connected all rings, use ring PXN 0 GDR 1
            8             2     float     sum      -1    21.57    0.00    0.00      0    21.24    0.00    0.00      0
           16             4     float     sum      -1    21.06    0.00    0.00      0    20.90    0.00    0.00      0
