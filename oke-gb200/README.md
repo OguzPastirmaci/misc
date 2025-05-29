@@ -103,9 +103,7 @@ helm install nvidia-dra-driver-gpu nvidia/nvidia-dra-driver-gpu \
 
 ```
 kubectl get pod -n nvidia-dra-driver-gpu
-```
 
-```
 NAME                                                           READY   STATUS    RESTARTS   AGE
 nvidia-dra-driver-k8s-dra-driver-controller-67cb99d84b-5q7kj   1/1     Running   0          7m26s
 nvidia-dra-driver-k8s-dra-driver-kubelet-plugin-7kdg9          1/1     Running   0          7m27s
@@ -118,9 +116,7 @@ nvidia-dra-driver-k8s-dra-driver-kubelet-plugin-xjm4p          1/1     Running  
 
 ```
 kubectl get nodes -l node.kubernetes.io/instance-type=BM.GPU.GB200.4 -o custom-columns="NODE:.metadata.name,CLIQUE:.metadata.labels.nvidia\.com/gpu\.clique"
-```
 
-```
 NODE            CLIQUE
 10.140.61.148   61248eac-4785-4fbf-9cbd-231635e37e9d.20663
 10.140.63.103   61248eac-4785-4fbf-9cbd-231635e37e9d.20663
@@ -174,27 +170,21 @@ EOF
 
 ```
 kubectl apply -f imex-channel-injection.yaml
-```
 
-```
 computedomain.resource.nvidia.com/imex-channel-injection created
 pod/imex-channel-injection created
 ```
 
 ```
 kubectl get pods -n nvidia-dra-driver-gpu -l resource.nvidia.com/computeDomain
-```
 
-```
 NAME                                 READY   STATUS    RESTARTS   AGE
 imex-channel-injection-vmvtq-h7wls   1/1     Running   0          75s
 ```
 
 ```
 kubectl logs imex-channel-injection
-```
 
-```
 total 0
 drwxr-xr-x 2 root root     60 May 24 05:59 .
 drwxr-xr-x 6 root root    380 May 24 05:59 ..
@@ -203,9 +193,7 @@ crw-rw-rw- 1 root root 234, 0 May 24 05:59 channel0
 
 ```
 kubectl delete -f imex-channel-injection.yaml
-```
 
-```
 computedomain.resource.nvidia.com "imex-channel-injection" deleted
 pod "imex-channel-injection" deleted
 ```
