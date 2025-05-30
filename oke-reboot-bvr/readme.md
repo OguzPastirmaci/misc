@@ -30,9 +30,9 @@ spec:
       oke.oraclecloud.com/node_operation: "okereboot" ## "oke.oraclecloud.com/node_operation" is required and fixed. you may choose your own label
     matchCustomLabels: ## you may choose your own label
       deployment: "green"
-  maxParallelism: 2 ## you may choose any
+  maxParallelism: 2 ## the number of nodes to allow to be unavailable during the action
   nodeEvictionSettings: ## same as eviction settings as existing one
-    evictionGracePeriod: 10
+    evictionGracePeriod: 10 # the length of time to allow to cordon and drain worker nodes before terminating them.
     isForceActionAfterGraceDuration: true
 ```
 
