@@ -9,7 +9,7 @@ Our new image has this setting, but if you're using an earlier image, it won't h
 If you don't see that line, run:
 
 ```
-echo "options nvidia NVreg_CreateImexChannel0=1" >> /etc/modprobe.d/nvidia.conf`
+echo "options nvidia NVreg_CreateImexChannel0=1" >> /etc/modprobe.d/nvidia.conf
 
 systemctl unmask nvidia-imex.service && systemctl enable --now nvidia-imex.service
 
