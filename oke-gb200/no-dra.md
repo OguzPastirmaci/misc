@@ -140,3 +140,13 @@ spec:
               limits:
                 nvidia.com/gpu: 4
 ```
+
+### Going back to using DRA
+You don't need to remove `channel0`, but you must disable IMEX service to prevent DRA from having issues.
+
+```
+systemctl disable --now nvidia-imex.service && systemctl mask nvidia-imex.service
+```
+
+
+
