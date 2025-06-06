@@ -2,9 +2,8 @@
 > Do NOT use DRA and the static way explained here at the same time. That will cause your jobs to fail.
 
 ### Check if you configured auto creation of channel0
-Our new OS image has this setting, but if you're using an earlier image, it won't have it.
 
-`/etc/modprobe.d/nvidia.conf` should have `options nvidia NVreg_CreateImexChannel0=1`.
+Check if `/etc/modprobe.d/nvidia.conf` has `options nvidia NVreg_CreateImexChannel0=1`.
 
 If you don't see that line, run:
 
