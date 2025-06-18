@@ -32,6 +32,6 @@ spec:
             - |
               set -e -o pipefail; trap 'exit=1' SIGINT
               chroot /host /usr/bin/bash -ex <<EOF
-                curl -sL -o /var/run/oke-extend-boot-volume.sh https://raw.githubusercontent.com/OguzPastirmaci/misc/refs/heads/master/oke-extend-boot-volume.sh && (bash /var/run/oke-extend-boot-volume.sh || echo 'Error bootstrapping OKE' >&2)
+                curl -sL -o /var/run/oke-extend-boot-volume.sh https://raw.githubusercontent.com/OguzPastirmaci/misc/refs/heads/master/oke-extend-boot-volume/oke-extend-boot-volume.sh && (bash /var/run/oke-extend-boot-volume.sh || echo 'Error bootstrapping OKE' >&2)
               EOF
               while :; do { [[ $exit ]] && break; }; sleep 1; done
