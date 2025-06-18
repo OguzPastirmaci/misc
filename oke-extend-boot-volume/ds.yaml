@@ -1,0 +1,37 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: oke-extend-boot-volume
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: oke-extend-boot-volume
+  template:
+    metadata:
+      labels:
+        app: oke-extend-boot-volume
+    spec:
+      priorityClassName: system-node-critical
+      hostNetwork: true
+      tolerations: [{ operator: "Exists" }]
+      terminationGracePeriodSeconds: 0
+      volumes: [{ name: root, hostPath: { path: "/" }}]
+      containers:
+        - name: oke-extend-boot-volume
+          image: oraclelinux:9
+          imagePullPolicy: Always
+          securityContext:
+            privileged: true
+          volumeMounts: [{ name: root, mountPath: /host }]
+          resources: {}
+          command:
+            - /usr/bin/bash
+            - -c
+            - |
+              set -e -o pipefail; trap 'exit=1' SIGINT
+              chroot /host /usr/bin/bash -ex <<EOF
+                curl -sL -o /var/run/oke-extend-boot-volume.sh https://raw.githubusercontent.com/OguzPastirmaci/misc/refs/heads/master/oke-extend-boot-volume.sh && (bash /var/run/oke-extend-boot-volume.sh || echo 'Error bootstrapping OKE' >&2)
+              EOF
+              while :; do { [[ $exit ]] && break; }; sleep 1; done
