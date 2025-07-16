@@ -1,6 +1,10 @@
 
 ### Disable OKE GPU device plugin
-Add the `oci.oraclecloud.com/disable-gpu-device-plugin=true` label to your nodes via either the node pool labels or after the cluster is deployed.
+Run the OCI CLI following command from Cloud Shell:
+
+```
+oci ce cluster disable-addon --cluster-id <CLUSTER OCID> --addon-name NvidiaGpuPlugin --is-remove-existing-add-on true --region <REGION>
+```
 
 ### Install the Nvidia Container Toolkit to the instance
 ```sh
