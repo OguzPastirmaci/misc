@@ -16,9 +16,20 @@ spec:
       serviceAccountName: npd-taint
       terminationGracePeriodSeconds: 1
       tolerations: [{ operator: "Exists" }]
-      nodeSelector:
-         nvidia.com/gpu: "true"
       hostNetwork: true
+      # GPU-only nodes (NVIDIA or AMD)
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: nvidia.com/gpu
+                    operator: In
+                    values: ["true"]
+              - matchExpressions:
+                  - key: amd.com/gpu
+                    operator: In
+                    values: ["true"]
       volumes:
         - { name: bin, emptyDir: {} }
         - { name: root, hostPath: { path: "/" } }
@@ -48,14 +59,22 @@ spec:
           args:
             - "-ec"
             - |
-              NODES_WITH_ISSUES=$(/b/kubectl get nodes -o json | /b/jq -r '.items[]
-              | select (.metadata.labels."nvidia.com/gpu" == "true" or .metadata.labels."amd.com/gpu" == "true")
-              | { name: .metadata.name, ocid: .spec.providerID, serial: .metadata.labels["oci.oraclecloud.com/host.serial_number"], error: .status.conditions[]
-              | select(.reason | test("^(Gpu|Rdma|Oca).*HasIssues$")) | .message }
-              | "\(.name)\t\(.ocid)\t\(.serial)\t\(.error)"' | awk ' { print $1 }')
-              
-              /b/kubectl taint nodes $NODES_WITH_ISSUES "npd=node_has_issues:NoSchedule" || echo "Failed" >&2
-              while :; do sleep 60; done
+              while :; do
+                NODES_WITH_ISSUES=$(/b/kubectl get nodes -o json | /b/jq -r '.items[]
+                  | select (.metadata.labels."nvidia.com/gpu" == "true" or .metadata.labels."amd.com/gpu" == "true")
+                  | { name: .metadata.name, error: .status.conditions[]
+                    | select(.reason | test("^(Gpu|Rdma|Oca).*HasIssues$")) | .message }
+                  | .name' | awk '{ print $1 }')
+
+                if [ -n "$NODES_WITH_ISSUES" ]; then
+                  /b/kubectl taint nodes $NODES_WITH_ISSUES "npd=node_has_issues:NoSchedule" --overwrite \
+                    || echo "Failed to taint" >&2
+                else
+                  echo "No nodes with issues detected."
+                fi
+
+                sleep 60
+              done
   updateStrategy:
     type: RollingUpdate
     rollingUpdate:
