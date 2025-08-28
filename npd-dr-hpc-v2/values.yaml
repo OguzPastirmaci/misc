@@ -48,7 +48,6 @@ settings:
         healtcheck_error_file=/host/tmp/oke-latest-${healthcheck_type}-healthcheck-error.log
 
         chroot /host bash -c "/usr/bin/oci-dr-hpc-v2 health-checks --test=$healthcheck_type > /tmp/oke-latest-${healthcheck_type}-healthcheck.log 2>&1"
-        chroot /host bash -c "sed -i '1d' /tmp/oke-latest-${healthcheck_type}-healthcheck.log"
         chroot /host bash -c "jq -r '.recommendations[] | select(.type==\"critical\") | \"\(.fault_code): \(.issue)\"' /tmp/oke-latest-${healthcheck_type}-healthcheck.log > /tmp/oke-latest-${healthcheck_type}-healthcheck-error.log 2>&1"
 
         ERROR_MSG=$(cat $healtcheck_error_file)
