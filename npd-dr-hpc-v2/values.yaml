@@ -1,0 +1,208 @@
+
+settings:
+  # Custom monitor definitions to add to Node Problem Detector - to be
+  # mounted at /custom-config. These are in addition to pre-packaged monitor
+  # definitions provided within the default docker image available at /config:
+  # https://github.com/kubernetes/node-problem-detector/tree/master/config
+  # settings.custom_monitor_definitions -- Custom plugin monitor config files
+  custom_monitor_definitions:
+    gpu-count.json: |
+        {
+        "plugin": "custom",
+        "pluginConfig": {
+            "invoke_interval": "30s",
+            "timeout": "30s",
+            "max_output_length": 80,
+            "concurrency": 1,
+            "enable_message_change_based_condition_update": true
+        },
+        "source": "gpu-count.json",
+        "metricsReporting": true,
+        "conditions": [
+            {
+            "type": "GpuCount",
+            "reason": "GpuCountHasNoIssues",
+            "message": "Node has the expected number of GPUs"
+            }
+        ],
+        "rules": [
+            {
+            "type": "permanent",
+            "condition": "GpuCount",
+            "reason": "GpuCountHasIssues",
+            "path": "./custom-config/oke_healthcheck.sh",
+            "args": [ "gpu_count_check" ],
+            "timeout": "30s"
+            }
+        ]
+        }
+    oke_healthcheck.sh: |
+        #!/bin/bash
+        
+        readonly OK=0
+        readonly NONOK=1
+        readonly UNKNOWN=2
+        
+        healthcheck_type=$1
+        healtcheck_log_file=/host/tmp/oke-latest-${healthcheck_type}-healthcheck.log
+        healtcheck_error_file=/host/tmp/oke-latest-${healthcheck_type}-healthcheck-error.log
+
+
+        chroot /host bash -c "/usr/bin/oci-dr-hpc-v2 health-checks --test=$healthcheck_type > /tmp/oke-latest-${healthcheck_type}-healthcheck.log 2>&1"
+        chroot /host bash -c "sed -i '1d' /tmp/oke-latest-${healthcheck_type}-healthcheck.log"
+        chroot /host bash -c "jq -r '.recommendations[] | select(.type==\"critical\") | \"\(.fault_code): \(.issue)\"' /tmp/oke-latest-${healthcheck_type}-healthcheck.log > /tmp/oke-latest-${healthcheck_type}-healthcheck-error.log 2>&1"
+
+        ERROR_MSG=$(cat $healtcheck_error_file)
+        
+        if [ "$ERROR_MSG" != "" ]
+        then
+            echo $ERROR_MSG
+            exit $NONOK
+        else
+            echo "No issues detected"
+            exit $OK
+        fi    
+
+  log_monitors:
+    - /config/kernel-monitor.json
+    - /config/docker-monitor.json
+    - /config/readonly-monitor.json
+    # An example of activating a custom log monitor definition in
+    # Node Problem Detector
+    # - /custom-config/docker-monitor-filelog.json
+  custom_plugin_monitors:
+    - /custom-config/gpu-count.json
+
+  # Any extra arguments to append to node-problem-detector command
+  # - "--port 20526"
+  extraArgs: []
+
+  # settings.prometheus_address -- Prometheus exporter address
+  prometheus_address: 0.0.0.0
+  # settings.prometheus_port -- Prometheus exporter port
+  prometheus_port: 20257
+
+  # The period at which k8s-exporter does forcibly sync with apiserver
+  # settings.heartBeatPeriod -- Syncing interval with API server
+  heartBeatPeriod: 5m0s
+
+logDir:
+  # logDir.host -- log directory on k8s host
+  host: /var/log/
+  # logDir.pod -- log directory in pod (volume mount), use logDir.host if empty
+  pod: ""
+
+image:
+  repository: registry.k8s.io/node-problem-detector/node-problem-detector
+  tag: v0.8.20
+  # image.digest -- the image digest. If given it takes precedence over a given tag.
+  digest: ""
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+nameOverride: ""
+fullnameOverride: "dr-hpc-v2-npd"
+
+rbac:
+  create: true
+  pspEnabled: false
+
+# hostNetwork -- Run pod on host network
+# Flag to run Node Problem Detector on the host's network. This is typically
+# not recommended, but may be useful for certain use cases.
+hostNetwork: false
+hostPID: false
+
+volume:
+  localtime:
+    type: "FileOrCreate"
+
+priorityClassName: system-node-critical
+
+securityContext:
+  privileged: true
+
+resources: {}
+
+annotations: {}
+
+labels: {}
+
+tolerations:
+  - effect: NoSchedule
+    operator: Exists
+
+serviceAccount:
+  # Specifies whether a ServiceAccount should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # Labels to add to the service account
+  labels: {}
+  # The name of the ServiceAccount to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name:
+
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: node.kubernetes.io/instance-type
+              operator: In
+              values:
+              - BM.GPU.B200.8
+              - BM.GPU.H200.8
+
+nodeSelector: {}
+
+metrics:
+  # metrics.enabled -- Expose metrics in Prometheus format with default configuration.
+  enabled: true
+  # metrics.annotations -- Override all default annotations when `metrics.enabled=true` with specified values.
+  annotations: {}
+  serviceMonitor:
+    enabled: true
+    attachMetadata:
+      node: true
+    additionalLabels:
+      release: kube-prometheus-stack
+    additionalRelabelings:
+      - sourceLabels: [__meta_kubernetes_node_provider_id]
+        targetLabel: instance_id
+        action: replace
+      - sourceLabels: [__meta_kubernetes_node_label_oci_oraclecloud_com_host_serial_number]
+        targetLabel: host_serial_number
+        action: replace
+      - sourceLabels: [__meta_kubernetes_node_label_node_kubernetes_io_instance_type]
+        targetLabel: instance_shape
+        action: replace
+      - sourceLabels: [__meta_kubernetes_node_label_displayName]
+        targetLabel: display_name
+        action: replace        
+    metricRelabelings: [] 
+  prometheusRule:
+    enabled: false
+    defaultRules:
+      create: false
+      disabled: []
+    additionalLabels:
+      release: kube-prometheus-stack
+    additionalRules: []
+                              
+extraVolumes:
+  - name: root
+    hostPath:
+      path: /
+
+extraVolumeMounts:
+  - name: root
+    mountPath: /host
+
+extraContainers: []
+
+# updateStrategy -- Manage the daemonset update strategy
+updateStrategy: RollingUpdate
+# maxUnavailable -- The max pods unavailable during an update
+maxUnavailable: 1
