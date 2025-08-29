@@ -1,4 +1,4 @@
-### 1. Build your image with Docker and Nvidia Container Toolkit.
+### 1. Build your image with Docker and Nvidia Container Toolkit
 
 Example:
 
@@ -37,7 +37,7 @@ EXPOSE 2375
 CMD ["dockerd", "--host=unix:///var/run/docker.sock", "--host=tcp://0.0.0.0:2375"]
 ```
 
-### 2. Run a pod with the image you built.
+### 2. Run a pod with the image you built
 
 ```yaml
 apiVersion: v1
@@ -75,7 +75,7 @@ spec:
       emptyDir: {}
 ```
 
-### 3. Exec into the pod and run `nvidia-smi` inside a container running inside the pod.
+### 3. Exec into the pod and run `nvidia-smi` inside a container running inside the pod
 
 ```
 kubectl exec -it dind-gpu -- bash
