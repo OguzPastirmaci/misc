@@ -15,6 +15,13 @@ if [ ${#devices[@]} -eq 0 ]; then
   exit 0
 fi
 
+if [[ -f /etc/os-release ]]; then
+    . /etc/os-release
+else
+    echo "Cannot detect OS: /etc/os-release missing"
+    exit 0
+fi
+
 # Used for boot volume replacement - check if an array exists
 legacy_dev_paths=(/dev/md/0 /dev/md/0_0 /dev/md127)
 mdadm --assemble --scan --quiet || true
@@ -94,13 +101,6 @@ EOF
     systemd-analyze verify "${mount_unit_name}"
     systemctl enable "${mount_unit_name}" --now
 done
-
-if [[ -f /etc/os-release ]]; then
-    . /etc/os-release
-else
-    echo "Cannot detect OS: /etc/os-release missing"
-    exit 1
-fi
 
 case "$ID" in
     ubuntu)
