@@ -15,6 +15,7 @@ if [ ${#devices[@]} -eq 0 ]; then
   exit 0
 fi
 
+# Exit if cannot detect OS (Ubuntu and Oracle Linux are supported)
 if [[ -f /etc/os-release ]]; then
     . /etc/os-release
 else
