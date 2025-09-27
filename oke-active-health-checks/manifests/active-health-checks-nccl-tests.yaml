@@ -52,8 +52,8 @@ data:
     apiVersion: batch.volcano.sh/v1alpha1
     kind: Job
     metadata:
-      name: JOB_NAME_PLACEHOLDER
-      namespace: monitoring
+      annotations:
+      name: nccl-allreduce-job0
     spec:
       minAvailable: 0
       plugins:
@@ -73,9 +73,7 @@ data:
           spec:
             # NODE_AFFINITY_PLACEHOLDER
             containers:
-            - name: mpimaster
-              image: iad.ocir.io/hpc_limited_availability/nccl-tests:pytorch-24.11-nccl-2.23.4-1
-              command:
+            - command:
               - /bin/bash
               - -c
               - |
@@ -140,7 +138,7 @@ data:
                 privileged: true
                 capabilities:
                   add:
-                  - IPC_LOCK
+                    - IPC_LOCK
               volumeMounts:
               - { mountPath: /dev/infiniband, name: devinf }
               - { mountPath: /dev/shm, name: shm }
@@ -158,15 +156,14 @@ data:
         replicas: 2
         template:
           metadata:
-            labels: {}
           spec:
             containers:
-            - name: mpiworker
-              image: iad.ocir.io/hpc_limited_availability/nccl-tests:pytorch-24.11-nccl-2.23.4-1
-              command:
+            - command:
               - /bin/bash
               - -c
               - mkdir -p /var/run/sshd; /usr/sbin/sshd -D -p 2222;
+              image: iad.ocir.io/hpc_limited_availability/nccl-tests:pytorch-24.11-nccl-2.23.4-1
+              name: mpiworker
               ports:
               - { name: mpijob-port, containerPort: 2222, protocol: TCP }
               resources:
@@ -182,7 +179,7 @@ data:
                 privileged: true
                 capabilities:
                   add:
-                  - IPC_LOCK
+                    - IPC_LOCK
               volumeMounts:
               - { mountPath: /dev/infiniband, name: devinf }
               - { mountPath: /dev/shm, name: shm }
@@ -269,8 +266,8 @@ data:
                 privileged: true
                 capabilities:
                   add:
-                  - IPC_LOCK
-                  - CAP_SYS_ADMIN
+                    - IPC_LOCK
+                    - CAP_SYS_ADMIN
               volumeMounts:
               - { mountPath: /dev/infiniband, name: devinf }
               - { mountPath: /dev/shm, name: shm }
@@ -310,8 +307,8 @@ data:
                 privileged: true
                 capabilities:
                   add:
-                  - IPC_LOCK
-                  - CAP_SYS_ADMIN
+                    - IPC_LOCK
+                    - CAP_SYS_ADMIN
               volumeMounts:
               - { mountPath: /dev/infiniband, name: devinf }
               - { mountPath: /dev/shm, name: shm }
@@ -395,8 +392,8 @@ data:
                 privileged: true
                 capabilities:
                   add:
-                  - IPC_LOCK
-                  - CAP_SYS_ADMIN
+                    - IPC_LOCK
+                    - CAP_SYS_ADMIN
               volumeMounts:
               - { mountPath: /dev/infiniband, name: devinf }
               - { mountPath: /dev/shm, name: shm }
@@ -436,7 +433,7 @@ data:
                 privileged: true
                 capabilities:
                   add:
-                  - IPC_LOCK
+                    - IPC_LOCK
                   - CAP_SYS_ADMIN
               volumeMounts:
               - { mountPath: /dev/infiniband, name: devinf }
@@ -523,8 +520,8 @@ data:
                 privileged: true
                 capabilities:
                   add:
-                  - IPC_LOCK
-                  - CAP_SYS_ADMIN
+                    - IPC_LOCK
+                    - CAP_SYS_ADMIN
               volumeMounts:
               - { mountPath: /dev/infiniband, name: devinf }
               - { mountPath: /dev/shm, name: shm }
@@ -566,8 +563,8 @@ data:
                 privileged: true
                 capabilities:
                   add:
-                  - IPC_LOCK
-                  - CAP_SYS_ADMIN
+                    - IPC_LOCK
+                    - CAP_SYS_ADMIN
               volumeMounts:
               - { mountPath: /dev/infiniband, name: devinf }
               - { mountPath: /dev/shm, name: shm }
@@ -658,7 +655,7 @@ data:
                 privileged: true
                 capabilities:
                   add:
-                  - IPC_LOCK
+                    - IPC_LOCK
               volumeMounts:
               - { mountPath: /dev/infiniband, name: devinf }
               - { mountPath: /dev/shm, name: shm }
@@ -698,7 +695,7 @@ data:
                 privileged: true
                 capabilities:
                   add:
-                  - IPC_LOCK
+                    - IPC_LOCK
               volumeMounts:
               - { mountPath: /dev/infiniband, name: devinf }
               - { mountPath: /dev/shm, name: shm }
@@ -788,7 +785,7 @@ data:
                 privileged: true
                 capabilities:
                   add:
-                  - IPC_LOCK
+                    - IPC_LOCK
               volumeMounts:
               - { mountPath: /dev/infiniband, name: devinf }
               - { mountPath: /dev/shm, name: shm }
@@ -828,7 +825,7 @@ data:
                 privileged: true
                 capabilities:
                   add:
-                  - IPC_LOCK
+                    - IPC_LOCK
               volumeMounts:
               - { mountPath: /dev/infiniband, name: devinf }
               - { mountPath: /dev/shm, name: shm }
@@ -970,7 +967,7 @@ spec:
               if [ -z "$selected_shape" ]; then
                 candidate_node=$(echo "$available_nodes" | tr ' ' '\n' | grep -v '^$' | head -n1)
                 if [ -z "$candidate_node" ]; then
-          candidate_node=$(echo "$idle_candidates" | tr ' ' '\n' | grep -v '^$' | head -n1)
+                  candidate_node=$(echo "$idle_candidates" | tr ' ' '\n' | grep -v '^$' | head -n1)
                 fi
                 if [ -n "$candidate_node" ]; then
                   selected_shape=$(kubectl get node "$candidate_node" -o jsonpath='{.metadata.labels.node\.kubernetes\.io/instance-type}' 2>/dev/null || echo "")
@@ -1030,11 +1027,11 @@ spec:
                 esac
                 sleep 10
               done
-      result=${result:-fail}
-      if [ "$result" = "fail" ]; then
-        echo "[applier] Volcano job never succeeded; treating this as a handled failure"
-        exit 0
-      fi
+              result=${result:-fail}
+              if [ "$result" = "fail" ]; then
+                echo "[applier] Volcano job never succeeded; treating this as a handled failure"
+                exit 0
+              fi
               echo "[applier] Result for $JOB_NAME: $result"
               timestamp=$(date -u +%Y-%m-%dT%H-%M-%SZ)
               for n in $worker_nodes; do
