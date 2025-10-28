@@ -4,7 +4,7 @@
 helm repo add nvidia https://helm.ngc.nvidia.com/nvidia
 helm repo update
 
-helm install gpu-operator nvidia/gpu-operator \
+helm upgrade -i gpu-operator nvidia/gpu-operator \
     --version=v25.3.4 \
     --create-namespace \
     --namespace gpu-operator \
