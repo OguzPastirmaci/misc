@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: sriov-vf-configurator
+  namespace: nvidia-network-operator
+spec:
+  selector:
+    matchLabels:
+      app: sriov-vf-configurator
+  template:
+    metadata:
+      labels:
+        app: sriov-vf-configurator
+    spec:
+      hostNetwork: true
+      hostPID: true
+      nodeSelector:
+        feature.node.kubernetes.io/pci-15b3.present: "true"
+      tolerations:
+      - operator: Exists
+      containers:
+      - name: configurator
+        image: alpine:latest
+        command:
+        - /bin/sh
+        - -c
+        - |
+          set -e
+          echo "Finding Mellanox NICs with interface names starting with 'rdma'..."
+          
+          # Find all PCI devices with Mellanox vendor ID (15b3)
+          for device_path in /sys/bus/pci/devices/*; do
+            if [ -f "${device_path}/vendor" ]; then
+              vendor=$(cat ${device_path}/vendor)
+              # Check if it's Mellanox (0x15b3)
+              if [ "$vendor" = "0x15b3" ]; then
+                pci_addr=$(basename $device_path)
+                
+                # Check if device supports SR-IOV
+                if [ -f "${device_path}/sriov_numvfs" ]; then
+                  # Get the network interface name
+                  net_path="${device_path}/net"
+                  if [ -d "$net_path" ]; then
+                    for iface in ${net_path}/*; do
+                      if [ -d "$iface" ]; then
+                        iface_name=$(basename $iface)
+                        
+                        # Check if interface name starts with "rdma"
+                        case "$iface_name" in
+                          rdma*)
+                            current_vfs=$(cat ${device_path}/sriov_numvfs)
+                            total_vfs=$(cat ${device_path}/sriov_totalvfs)
+                            
+                            echo "Found interface ${iface_name} at ${pci_addr}: Current VFs=${current_vfs}, Total VFs available=${total_vfs}"
+                            
+                            # Only configure if not already set to 1
+                            if [ "$current_vfs" != "1" ]; then
+                              echo "Configuring 1 VF for ${iface_name} (${pci_addr})..."
+                              # Reset to 0 first if needed
+                              if [ "$current_vfs" != "0" ]; then
+                                echo 0 > ${device_path}/sriov_numvfs || echo "Failed to reset ${pci_addr}"
+                                sleep 1
+                              fi
+                              # Set to 1 VF
+                              echo 1 > ${device_path}/sriov_numvfs && echo "Successfully configured 1 VF for ${iface_name}" || echo "Failed to configure ${pci_addr}"
+                              sleep 1
+                            else
+                              echo "Interface ${iface_name} already has 1 VF configured"
+                            fi
+                            ;;
+                          *)
+                            echo "Skipping interface ${iface_name} at ${pci_addr} (not starting with 'rdma')"
+                            ;;
+                        esac
+                      fi
+                    done
+                  fi
+                fi
+              fi
+            fi
+          done
+          
+          echo "VF configuration complete. Sleeping to keep pod alive..."
+          # Sleep forever to keep the pod running
+          while true; do sleep 3600; done
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: sys
+          mountPath: /sys
+      volumes:
+      - name: sys
+        hostPath:
+          path: /sys
+          type: Directory
