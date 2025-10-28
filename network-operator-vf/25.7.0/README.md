@@ -12,7 +12,8 @@ helm upgrade -i gpu-operator nvidia/gpu-operator \
     --set driver.enabled=false \
     --set driver.rdma.enabled=true \
     --set driver.rdma.useHostMofed=true \
-    --set dcgmExporter.enabled=false
+    --set dcgmExporter.enabled=false \
+    --wait
 
 helm upgrade -i network-operator nvidia/network-operator \
   -n nvidia-network-operator \
