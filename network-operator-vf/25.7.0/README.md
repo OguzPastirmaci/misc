@@ -214,10 +214,10 @@ spec:
 apiVersion: sriovnetwork.openshift.io/v1
 kind: SriovNetwork
 metadata:
-  name: ethernet-sriov
+  name: sriov-rdma-vf
   namespace: nvidia-network-operator
 spec:
-  resourceName: sriov_resource
+  resourceName: sriov-rdma-vf
   spoofChk: "off"
   ipam: |
     {
