@@ -1,3 +1,28 @@
+
+### Deploy GPU Operator and Network Operator
+```yaml
+helm repo add nvidia https://helm.ngc.nvidia.com/nvidia
+helm repo update
+
+helm install gpu-operator nvidia/gpu-operator \
+    --version=v25.3.4 \
+    --create-namespace \
+    --namespace gpu-operator \
+    --set cdi.enabled=true \
+    --set driver.enabled=false \
+    --set driver.rdma.enabled=true \
+    --set driver.rdma.useHostMofed=true \
+    --set dcgmExporter.enabled=false
+
+helm upgrade -i network-operator nvidia/network-operator \
+  -n nvidia-network-operator \
+  --create-namespace \
+  --version v25.7.0 \
+  --set sriovNetworkOperator.enabled=true \
+  --set nfd.enabled=false \
+  --wait
+```
+
 ### Create NicClusterPolicy
 
 ```yaml
