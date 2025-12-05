@@ -29,29 +29,8 @@ COLUMN_MAX_WIDTHS = {
     "CLIQUE": 36,
     "GPU MEMORY CLUSTER": 60,
     "GPU MEMORY FABRIC": 60,
-    "RACK": 36,
     "NODES IN CLIQUE": 15,
     "AVAILABLE TO DEPLOY": 18,
-}
-
-
-FABRIC_TO_RACK = {
-    "ocid1.computegpumemoryfabric.oc1.ap-sydney-1.anzxsljr2472ivycwnfg5zw5h4qplota33m4v3lvcui5whybq5zdy7x7mkna": "sk-4e677e0b-7a35-46e4-a4d6-78b18fcf5ded",
-    "ocid1.computegpumemoryfabric.oc1.ap-sydney-1.anzxsljr2472ivycdsrmp4x2ln42ujtmtorrpjak5ts3fzcdmwbtse24wnea": "sk-211c85e6-ba5b-4a4e-8a33-ca218612fc20",
-    "ocid1.computegpumemoryfabric.oc1.ap-sydney-1.anzxsljr2472ivyc7inoo7s6xw2cauu5vvd4zsq6wnqz5nfw4izvjvd5r52q": "sk-280d3328-2508-48c2-8ac4-592f8e0d309e",
-    "ocid1.computegpumemoryfabric.oc1.ap-sydney-1.anzxsljr2472ivyc5fwrnzfidhs5ufdmd4ht3vvisvrkzrjucw35uiruwi2a": "sk-65179536-f2aa-4b90-9496-ff5c056a21c0",
-    "ocid1.computegpumemoryfabric.oc1.ap-sydney-1.anzxsljr2472ivyc2rf5gna5wdhmkvi4rnnhwa3xezyww6a5kvsnyali5azq": "sk-26334514-645f-45bf-b6c4-93a7643274bc",
-    "ocid1.computegpumemoryfabric.oc1.ap-sydney-1.anzxsljr2472ivyc2dmvffx3hj6kbdiwzykpmi5mdginsi4acupfcfee75jq": "sk-fb43128a-c9d7-491e-9c1d-590f8ae4d5b8",
-    "ocid1.computegpumemoryfabric.oc1.ap-sydney-1.anzxsljr2472ivycy33zajg6hzih5k2uuef34gjiyedhjjjqd2ftborf4qqq": "sk-2b7b1f67-f349-4d29-9cc8-04bedfdf32bf",
-    "ocid1.computegpumemoryfabric.oc1.ap-sydney-1.anzxsljr2472ivycwb5vg4jhwb2fwgrvrxjtnowmw4gbiq7xvbtfgwiclibq": "sk-7cb5990e-9c10-4818-8e99-e685fee5f9a6",
-    "ocid1.computegpumemoryfabric.oc1.ap-sydney-1.anzxsljr2472ivycsvcm7ht253vzwcznpiivzxjewxjippko2b7a52eb5pyq": "sk-07372e59-c18b-4d5a-97a5-776fe8b6f36d",
-    "ocid1.computegpumemoryfabric.oc1.ap-sydney-1.anzxsljr2472ivycp4npvoulonyobdchdb2otqglhbpnwi6dzykshqpxvyxa": "sk-189c29b0-73ee-4a40-b2b7-81a7de48557b",
-    "ocid1.computegpumemoryfabric.oc1.ap-sydney-1.anzxsljr2472ivycjwpjvudm7zpwv33cfnbdlda7sxgjddmmvpvtkj3zctga": "sk-d8d2f63d-7c30-4284-a59a-193575cc9f4a",
-    "ocid1.computegpumemoryfabric.oc1.ap-sydney-1.anzxsljr2472ivycbyg2nomh4qxretrc6bg6gho5dmxph7xhufqtdv2mt5iq": "sk-f4b8cd63-445f-4310-99dd-74453f9ded21",
-    "ocid1.computegpumemoryfabric.oc1.ap-sydney-1.anzxsljr2472ivyc7lzxt7l3wo2qcluekwn2hfe3pawvrhwnumgksveor6bq": "sk-e6df6e21-5b1d-492e-a5b1-145abbbdaa1b",
-    "ocid1.computegpumemoryfabric.oc1.ap-sydney-1.anzxsljr2472ivyczkz5fqbwry5gbk7frn7lo3cxdiko64pvmmzti4zu4kka": "sk-554205bf-f8e3-45c0-90e4-d45ed8b78c12",
-    "ocid1.computegpumemoryfabric.oc1.ap-sydney-1.anzxsljr2472ivycwrtzjmip45u32vr37k7fsfw2tli6qnz7ivs4mtfznt7q": "sk-61fc26f8-a4bb-472a-9d66-43f3be0530e7",
-    "ocid1.computegpumemoryfabric.oc1.ap-sydney-1.anzxsljr2472ivyc4db5tewtvdeewzlev7eucqj6rgadk4theuif4ty775ba": "sk-355dd98e-71f5-43ad-a1c8-caca1b7d1d08",
 }
 
 
@@ -104,10 +83,10 @@ def build_compute_client() -> ComputeClient:
 
 def gather_rows(
     compute_client: ComputeClient, api: k8s_client.CoreV1Api
-) -> List[Tuple[str, str, str, str, int, int]]:
-    """Gather (clique, GPU memory cluster, GPU memory fabric, rack, node count, available hosts) rows."""
+) -> List[Tuple[str, str, str, int, int]]:
+    """Gather (clique, GPU memory cluster, GPU memory fabric, node count, available hosts) rows."""
 
-    rows: List[Tuple[str, str, str, str, int, int]] = []
+    rows: List[Tuple[str, str, str, int, int]] = []
     clique_nodes = load_node_metadata(api)
 
     for clique in sorted(clique_nodes):
@@ -125,13 +104,13 @@ def gather_rows(
                 f"Warning: failed to fetch instance {provider_id} for {node_name}: {exc}",
                 file=sys.stderr,
             )
-            rows.append((clique, "", "", "", node_count, 0))
+            rows.append((clique, "", "", node_count, 0))
             continue
 
         freeform_tags = instance.freeform_tags or {}
         gmc = freeform_tags.get("oci:compute:gpumemorycluster")
         if not gmc:
-            rows.append((clique, "", "", "", node_count, 0))
+            rows.append((clique, "", "", node_count, 0))
             continue
 
         try:
@@ -143,8 +122,6 @@ def gather_rows(
                 file=sys.stderr,
             )
             gmf = ""
-
-        rack = FABRIC_TO_RACK.get(gmf, "")
         
         # Fetch available host count from GPU memory fabric
         available_hosts = 0
@@ -158,15 +135,15 @@ def gather_rows(
                     file=sys.stderr,
                 )
         
-        rows.append((clique, gmc, gmf, rack, node_count, available_hosts))
+        rows.append((clique, gmc, gmf, node_count, available_hosts))
 
     return rows
 
 
-def format_as_table(rows: Iterable[Tuple[str, str, str, str, int, int]], wrap: bool = False) -> str:
+def format_as_table(rows: Iterable[Tuple[str, str, str, int, int]], wrap: bool = False) -> str:
     """Return human-friendly table string."""
 
-    headers = ("CLIQUE", "GPU MEMORY CLUSTER", "GPU MEMORY FABRIC", "RACK", "NODES IN CLIQUE", "AVAILABLE TO DEPLOY")
+    headers = ("CLIQUE", "GPU MEMORY CLUSTER", "GPU MEMORY FABRIC", "NODES IN CLIQUE", "AVAILABLE TO DEPLOY")
     rows = list(rows)
     if not wrap:
         widths = [len(header) for header in headers]
@@ -229,8 +206,8 @@ def format_as_table(rows: Iterable[Tuple[str, str, str, str, int, int]], wrap: b
 
 
 def write_delimited(
-    rows: Iterable[Tuple[str, str, str, str, int, int]],
-    headers: Tuple[str, str, str, str, str, str],
+    rows: Iterable[Tuple[str, str, str, int, int]],
+    headers: Tuple[str, str, str, str, str],
     delimiter: str,
     output: Optional[Path] = None,
 ) -> str:
@@ -280,13 +257,13 @@ def main() -> int:
     compute_client = build_compute_client()
     k8s_api = build_kubernetes_client()
     rows = gather_rows(compute_client, k8s_api)
-    headers = ("CLIQUE", "GPU MEMORY CLUSTER", "GPU MEMORY FABRIC", "RACK", "NODES IN CLIQUE", "AVAILABLE TO DEPLOY")
+    headers = ("CLIQUE", "GPU MEMORY CLUSTER", "GPU MEMORY FABRIC", "NODES IN CLIQUE", "AVAILABLE TO DEPLOY")
 
     # Sort rows based on user preference (descending order)
     if args.sort_by == "nodes":
-        rows = sorted(rows, key=lambda r: r[4], reverse=True)
+        rows = sorted(rows, key=lambda r: r[3], reverse=True)
     elif args.sort_by == "available":
-        rows = sorted(rows, key=lambda r: r[5], reverse=True)
+        rows = sorted(rows, key=lambda r: r[4], reverse=True)
 
     if args.format == "table":
         content = format_as_table(rows, wrap=args.wrap)
