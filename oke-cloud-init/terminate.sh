@@ -1,0 +1,218 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ -f /etc/os-release ]]; then
+    . /etc/os-release
+else
+    echo "Cannot detect OS: /etc/os-release missing"
+    exit 1
+fi
+
+version_ge() {
+    local v1="$1"
+    local v2="$2"
+
+    [[ -n "$v1" ]] || return 1
+    [[ "$(printf '%s\n' "$v1" "$v2" | sort -V | tail -n1)" == "$v1" ]]
+}
+
+# Fix for CRI-O short name mode not being disabled for Kubernetes versions >= 1.34
+configure_crio_defaults() {
+    local version="$1"
+
+    if version_ge "$version" "v1.34"; then
+        echo "Configuring CRI-O defaults for Kubernetes version $version"
+        mkdir -p /etc/crio/crio.conf.d
+        cat >/etc/crio/crio.conf.d/11-default.conf <<'EOF'
+[crio.image]
+short_name_mode = "disabled"
+EOF
+    fi
+}
+
+# Terminate the current OCI instance using Python SDK
+terminate_instance() {
+    echo "Terminating instance due to bootstrap failure..." >&2
+    
+    python3 -m pip install --quiet requests oci >/dev/null 2>&1 || true
+    
+    python3 - <<'PYTHON'
+import oci
+import requests
+
+# Get instance OCID from metadata service
+response = requests.get(
+    "http://169.254.169.254/opc/v2/instance/id",
+    headers={"Authorization": "Bearer Oracle"},
+    timeout=10
+)
+instance_id = response.text.strip()
+print(f"Instance OCID: {instance_id}")
+
+# Use instance principal authentication
+signer = oci.auth.signers.InstancePrincipalsSecurityTokenSigner()
+compute_client = oci.core.ComputeClient(config={}, signer=signer)
+
+# Terminate the instance
+print("Calling terminate API...")
+compute_client.terminate_instance(instance_id, preserve_boot_volume=False)
+print("Terminate request sent successfully")
+PYTHON
+}
+
+# Retry bootstrap for up to 5 minutes, terminate instance on failure
+run_with_retry() {
+    local max_time=600  # 10 minutes
+    local interval=15   # seconds between retries
+    local start_time=$(date +%s)
+    
+    while true; do
+        if "$@"; then
+            return 0
+        fi
+        
+        local current_time=$(date +%s)
+        local elapsed=$((current_time - start_time))
+        
+        if [[ $elapsed -ge $max_time ]]; then
+            echo "Bootstrap failed after ${max_time}s of retries: $*" >&2
+            terminate_instance
+        fi
+        
+        echo "Bootstrap failed, retrying in ${interval}s... (elapsed: ${elapsed}s/${max_time}s)" >&2
+        sleep $interval
+    done
+}
+
+# Install OKE credential provider for OCIR
+download_oke_credential_provider_for_ocir() {
+    ARCH=$(uname -m)
+
+    case "$ARCH" in
+    x86_64)
+        ARCH="amd64"
+        ;;
+    aarch64 | arm64)
+        ARCH="arm64"
+        ;;
+    *)
+        return 1
+        ;;
+    
+    esac
+    
+    wget --tries=5 --waitretry=3 --retry-connrefused -O /usr/local/bin/credential-provider-oke \
+        https://github.com/oracle-devrel/oke-credential-provider-for-ocir/releases/latest/download/oke-credential-provider-for-ocir-linux-$ARCH && \
+        chmod +x /usr/local/bin/credential-provider-oke || true
+    
+    mkdir -p /etc/kubernetes/
+    wget --tries=5 --waitretry=3 --retry-connrefused -P /etc/kubernetes/ \
+        https://github.com/oracle-devrel/oke-credential-provider-for-ocir/releases/latest/download/credential-provider-config.yaml || true
+    
+    if [[ -f /usr/local/bin/credential-provider-oke && -f /etc/kubernetes/credential-provider-config.yaml ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+# Disable nvidia-imex.service for GB200 and GB300 shapes for Dynamic Resource Allocation (DRA) compatibility
+SHAPE=$(curl -H "Authorization: Bearer Oracle" -L http://169.254.169.254/opc/v2/instance/shape 2>/dev/null) || true
+if [[ -z "$SHAPE" ]]; then
+    echo "Warning: Unable to fetch instance shape from metadata service, skipping nvidia-imex check" >&2
+elif [[ "$SHAPE" == BM.GPU.GB200* ]] || [[ "$SHAPE" == BM.GPU.GB300* ]]; then
+    echo "Disabling nvidia-imex.service for shape: $SHAPE"
+    if systemctl list-unit-files | grep -q nvidia-imex.service; then
+        systemctl disable --now nvidia-imex.service && systemctl mask nvidia-imex.service
+    else
+        echo "nvidia-imex.service not found, skipping"
+    fi
+fi
+
+kubernetes_version="${1-}"
+setup_credential_provider="${2:-false}"
+
+if [[ "$setup_credential_provider" == "true" ]]; then
+    credential_provider_done=$(download_oke_credential_provider_for_ocir)
+else
+    credential_provider_done=1
+fi
+
+case "$ID" in
+    ubuntu)
+        echo "Detected Ubuntu"
+        if command -v oke >/dev/null 2>&1; then
+            echo "[Ubuntu] oke binary already present, running bootstrap only"
+            configure_crio_defaults "$kubernetes_version"
+            if [[ "$credential_provider_done" -eq 0 ]]; then
+                run_with_retry oke bootstrap --kubelet-extra-args "--image-credential-provider-bin-dir=/usr/local/bin/ --image-credential-provider-config=/etc/kubernetes/credential-provider-config.yaml"
+            else
+                run_with_retry oke bootstrap
+            fi
+        else
+            echo "[Ubuntu] oke binary not found, installing package"
+            oke_package_version="${kubernetes_version:1}"
+            oke_package_repo_version="${oke_package_version:0:4}"
+            oke_package_name="oci-oke-node-all-$oke_package_version"
+            oke_package_repo="https://odx-oke.objectstorage.us-sanjose-1.oci.customer-oci.com/n/odx-oke/b/okn-repositories/o/prod/ubuntu-$VERSION_CODENAME/kubernetes-$oke_package_repo_version"
+
+            tee /etc/apt/sources.list.d/oke-node-client.sources > /dev/null <<EOF
+Enabled: yes
+Types: deb
+URIs: $oke_package_repo
+Suites: stable
+Components: main
+Trusted: yes
+EOF
+            # Wait for apt lock and install the package
+            while fuser /var/{lib/{dpkg/{lock,lock-frontend},apt/lists},cache/apt/archives}/lock >/dev/null 2>&1; do
+                echo "Waiting for dpkg/apt lock"
+                sleep 1
+            done
+
+            apt-get -y update
+            apt-get -y install "$oke_package_name"
+
+            echo "[Ubuntu] Running bootstrap"
+            configure_crio_defaults "$kubernetes_version"
+            if [[ "$credential_provider_done" -eq 0 ]]; then
+                run_with_retry oke bootstrap --kubelet-extra-args "--image-credential-provider-bin-dir=/usr/local/bin/ --image-credential-provider-config=/etc/kubernetes/credential-provider-config.yaml"
+            else
+                run_with_retry oke bootstrap
+            fi
+        fi
+        ;;
+    ol)
+        echo "Detected Oracle Linux"
+        if command -v oke >/dev/null 2>&1; then
+            echo "[Oracle Linux] oke binary already present, running bootstrap only"
+            
+            configure_crio_defaults "$kubernetes_version"
+            if [[ "$credential_provider_done" -eq 0 ]]; then
+                run_with_retry oke bootstrap --kubelet-extra-args "--image-credential-provider-bin-dir=/usr/local/bin/ --image-credential-provider-config=/etc/kubernetes/credential-provider-config.yaml"
+            else
+                run_with_retry oke bootstrap
+            fi
+        else
+            echo "[Oracle Linux] oke binary not found, fetching init script"
+            curl --fail -H "Authorization: Bearer Oracle" \
+                 -L0 http://169.254.169.254/opc/v2/instance/metadata/oke_init_script \
+            | base64 --decode >/var/run/oke-init.sh
+
+            echo "[Oracle Linux] Running init script"
+            configure_crio_defaults "$kubernetes_version"
+            if [[ "$credential_provider_done" -eq 0 ]]; then
+                run_with_retry bash /var/run/oke-init.sh --kubelet-extra-args "--image-credential-provider-bin-dir=/usr/local/bin/ --image-credential-provider-config=/etc/kubernetes/credential-provider-config.yaml"
+            else
+                run_with_retry bash /var/run/oke-init.sh
+            fi
+            
+        fi
+        ;;
+    *)
+        echo "Unsupported OS: $ID"
+        exit 1
+        ;;
+esac
+
+echo "OKE setup completed successfully."
