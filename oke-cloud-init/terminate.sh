@@ -34,7 +34,7 @@ EOF
 terminate_instance() {
     echo "Terminating instance due to bootstrap failure..." >&2
     
-    python3 -m pip install --quiet requests oci >/dev/null 2>&1 || true
+    python3 -m pip install --quiet --break-system-packages requests oci >/dev/null 2>&1 || true
     
     python3 - <<'PYTHON'
 import oci
