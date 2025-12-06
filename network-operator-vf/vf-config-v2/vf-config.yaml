@@ -1,0 +1,423 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vf-config-scripts
+  namespace: kube-system
+data:
+  oci-create-vfs: |
+    #!/usr/bin/env bash
+    # Improved VF creation script with better error handling and logging
+    set -e -o pipefail
+
+    function log() {
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >&2
+    }
+
+    function numvfs_path_for_interface() {
+        echo "/sys/class/net/${1}/device/sriov_numvfs"
+    }
+
+    function get_totalvfs() {
+        local interface="${1}"
+        local totalvfs_path="/sys/class/net/${interface}/device/sriov_totalvfs"
+        if [[ -f "$totalvfs_path" ]]; then
+            cat "$totalvfs_path"
+        else
+            echo "0"
+        fi
+    }
+
+    function get_vf_dev_name() {
+        local interface="${1}" vf_idx="${2}"
+        local vf_net_path="/sys/class/net/${interface}/device/virtfn${vf_idx}/net"
+        if [[ -d "$vf_net_path" ]]; then
+            ls "$vf_net_path" 2>/dev/null | head -1
+        else
+            echo ""
+        fi
+    }
+
+    function get_eff_mac_addr() {
+        local interface="${1}" vf_idx="${2}"
+        local vf_dev_name
+        vf_dev_name=$(get_vf_dev_name "$interface" "$vf_idx")
+        if [[ -n "$vf_dev_name" ]]; then
+            cat "/sys/class/net/${interface}/device/virtfn${vf_idx}/net/$vf_dev_name/address" 2>/dev/null || echo ""
+        else
+            echo ""
+        fi
+    }
+
+    function get_vf_pci_addr() {
+        local interface="${1}" vf_idx="${2}"
+        local vf_dev_name
+        vf_dev_name=$(get_vf_dev_name "$interface" "$vf_idx")
+        if [[ -n "$vf_dev_name" ]]; then
+            grep PCI_SLOT_NAME "/sys/class/net/${vf_dev_name}/device/uevent" 2>/dev/null | cut -d "=" -f 2
+        else
+            echo ""
+        fi
+    }
+
+    function wait_for_vf() {
+        local interface="${1}" vf_idx="${2}" max_wait="${3:-10}"
+        local waited=0
+        while [[ $waited -lt $max_wait ]]; do
+            local vf_dev_name
+            vf_dev_name=$(get_vf_dev_name "$interface" "$vf_idx")
+            if [[ -n "$vf_dev_name" ]]; then
+                return 0
+            fi
+            sleep 1
+            ((waited++))
+        done
+        return 1
+    }
+
+    function create_vfs() {
+        local interface="${1}" num_vfs="${2}"
+        
+        log "Creating ${num_vfs} VFs for ${interface}"
+        
+        if [[ ! -d "/sys/class/net/${interface}" ]]; then
+            log "ERROR: Interface ${interface} does not exist"
+            return 1
+        fi
+        
+        local numvfs_path
+        numvfs_path=$(numvfs_path_for_interface "${interface}")
+        
+        if [[ ! -f "${numvfs_path}" ]]; then
+            log "ERROR: SRIOV not supported for interface ${interface}"
+            return 1
+        fi
+        
+        local total_vfs
+        total_vfs=$(get_totalvfs "${interface}")
+        if [[ "$num_vfs" -gt "$total_vfs" ]]; then
+            log "ERROR: Requested ${num_vfs} VFs but interface ${interface} only supports ${total_vfs}"
+            return 1
+        fi
+        
+        local current_num_of_vfs
+        current_num_of_vfs=$(cat "${numvfs_path}")
+        
+        if [[ "${current_num_of_vfs}" != "${num_vfs}" ]]; then
+            log "Creating VFs for ${interface} (current: ${current_num_of_vfs}, target: ${num_vfs})"
+            
+            if [[ "${current_num_of_vfs}" != "0" ]]; then
+                log "Resetting VFs to 0 first"
+                echo "0" | tee "${numvfs_path}" > /dev/null 2>&1 || return 1
+                sleep 2
+            fi
+            
+            echo "${num_vfs}" | tee "${numvfs_path}" > /dev/null 2>&1 || return 1
+            sleep 3
+        else
+            log "${num_vfs} VFs already created for ${interface}"
+        fi
+        
+        for (( i=0; i<num_vfs; i++ )); do
+            log "Configuring VF ${i} for ${interface}"
+            
+            if ! wait_for_vf "${interface}" ${i} 10; then
+                log "ERROR: VF ${i} did not appear for ${interface}"
+                continue
+            fi
+            
+            local mac
+            mac=$(get_eff_mac_addr "${interface}" ${i})
+            if [[ -z "$mac" ]]; then
+                log "WARNING: Could not get MAC address for VF ${i}"
+                continue
+            fi
+            
+            local vf_dev_name
+            vf_dev_name=$(get_vf_dev_name "$interface" $i)
+            log "Setting ${interface} VF ${i} (${vf_dev_name}) MAC to ${mac}"
+            
+            ip link set dev "$interface" vf ${i} mac "$mac" || log "WARNING: Failed to set MAC for VF ${i}"
+            
+            local vf_pci_addr
+            vf_pci_addr=$(get_vf_pci_addr "$interface" ${i})
+            if [[ -n "$vf_pci_addr" ]]; then
+                log "Rebinding VF ${i} PCI device ${vf_pci_addr}"
+                echo "$vf_pci_addr" > /sys/bus/pci/drivers/mlx5_core/unbind 2>/dev/null || true
+                sleep 1
+                echo "$vf_pci_addr" > /sys/bus/pci/drivers/mlx5_core/bind 2>/dev/null || true
+            fi
+        done
+        
+        log "Successfully configured ${num_vfs} VFs for ${interface}"
+    }
+
+    interface="${1}"
+    num_vfs="${2:-1}"
+
+    if [[ -z "$interface" ]]; then
+        echo "Usage: $0 <interface> [num_vfs]" >&2
+        exit 1
+    fi
+
+    create_vfs "${interface}" "${num_vfs}"
+
+  oci-vf-config: |
+    #!/usr/bin/env bash
+    # VF configuration script using PCI addresses (rootDevices)
+    set -e -o pipefail
+
+    num_vfs="${1:-1}"
+
+    get_interface_from_pci() {
+        local pci_addr="$1"
+        local net_path="/sys/bus/pci/devices/${pci_addr}/net"
+        if [[ -d "$net_path" ]]; then
+            ls "$net_path" 2>/dev/null | head -1
+        else
+            echo ""
+        fi
+    }
+
+    # Get shape from node label or metadata
+    SHAPE="${NODE_SHAPE:-}"
+    if [[ -z "$SHAPE" ]]; then
+        SHAPE=$(curl -s -H "Authorization: Bearer Oracle" -L http://169.254.169.254/opc/v2/instance/shape 2>/dev/null) || true
+    fi
+
+    if [[ -z "$SHAPE" ]]; then
+        echo "Warning: Unable to detect shape, falling back to rdma* interface discovery" >&2
+        find /sys/class/net -name "rdma*" | grep -v "v[0-9]*" | sort | \
+            xargs -n1 basename | xargs -I{} /scripts/oci-create-vfs {} "$num_vfs"
+        exit 0
+    fi
+
+    echo "Detected shape: $SHAPE"
+
+    get_rdma_pci_addresses() {
+        local shape="$1"
+        case "$shape" in
+            BM.GPU4.8)
+                echo "0000:0c:00.0 0000:0c:00.1 0000:16:00.0 0000:16:00.1 0000:48:00.0 0000:48:00.1 0000:4c:00.0 0000:4c:00.1 0000:8a:00.0 0000:8a:00.1 0000:94:00.0 0000:94:00.1 0000:c3:00.0 0000:c3:00.1 0000:d1:00.0 0000:d1:00.1"
+                ;;
+            BM.GPU.B4.8)
+                echo "0000:0c:00.0 0000:0c:00.1 0000:16:00.0 0000:16:00.1 0000:47:00.0 0000:47:00.1 0000:4b:00.0 0000:4b:00.1 0000:89:00.0 0000:89:00.1 0000:93:00.0 0000:93:00.1 0000:c3:00.0 0000:c3:00.1 0000:d1:00.0 0000:d1:00.1"
+                ;;
+            BM.GPU.A100-v2.8|BM.GPU.GM4.8)
+                echo "0000:0c:00.0 0000:0c:00.1 0000:16:00.0 0000:16:00.1 0000:47:00.0 0000:47:00.1 0000:4b:00.0 0000:4b:00.1 0000:89:00.0 0000:89:00.1 0000:93:00.0 0000:93:00.1 0000:c3:00.0 0000:c3:00.1 0000:d1:00.0 0000:d1:00.1"
+                ;;
+            BM.GPU.H100.8|BM.GPU.H100T.8)
+                echo "0000:0c:00.0 0000:0c:00.1 0000:2a:00.0 0000:2a:00.1 0000:41:00.0 0000:41:00.1 0000:58:00.0 0000:58:00.1 0000:86:00.0 0000:86:00.1 0000:a5:00.0 0000:a5:00.1 0000:bd:00.0 0000:bd:00.1 0000:d5:00.0 0000:d5:00.1"
+                ;;
+            BM.GPU.H200.8|BM.GPU.H200-NC.8|BM.GPU.B200.8)
+                echo "0000:0c:00.0 0000:2a:00.0 0000:41:00.0 0000:58:00.0 0000:86:00.0 0000:a5:00.0 0000:bd:00.0 0000:d5:00.0"
+                ;;
+            BM.GPU.L40S.4|BM.GPU.L40S-NC.4)
+                echo "0000:27:00.0 0000:97:00.0"
+                ;;
+            BM.GPU.MI300X.8)
+                echo "0000:0c:00.0 0000:2a:00.0 0000:41:00.0 0000:58:00.0 0000:86:00.0 0000:a5:00.0 0000:bd:00.0 0000:d5:00.0"
+                ;;
+            BM.GPU.MI355X-v1.8)
+                echo "0000:6d:00.0 0000:05:00.0 0000:55:00.0 0000:1e:00.0 0000:ec:00.0 0000:86:00.0 0000:d4:00.0 0000:9f:00.0"
+                ;;
+            BM.GPU.GB200.4|BM.GPU.GB200-v2.4)
+                echo "0000:03:00.0 0002:03:00.0 0010:03:00.0 0012:03:00.0"
+                ;;
+            BM.GPU.GB200-v3.4|BM.GPU.GB300.4)
+                echo "0000:03:00.0 0000:03:00.1 0002:03:00.0 0002:03:00.1 0010:03:00.0 0010:03:00.1 0012:03:00.0 0012:03:00.1"
+                ;;
+            *)
+                echo ""
+                ;;
+        esac
+    }
+
+    get_mtu_for_shape() {
+        local shape="$1"
+        case "$shape" in
+            BM.GPU.GB200-v3.4|BM.GPU.GB300.4)
+                echo "9000"
+                ;;
+            *)
+                echo "4220"
+                ;;
+        esac
+    }
+
+    pci_addresses=$(get_rdma_pci_addresses "$SHAPE")
+    mtu=$(get_mtu_for_shape "$SHAPE")
+
+    if [[ -z "$pci_addresses" ]]; then
+        echo "Unknown shape '$SHAPE', falling back to rdma* interface discovery" >&2
+        find /sys/class/net -name "rdma*" | grep -v "v[0-9]*" | sort | \
+            xargs -n1 basename | xargs -I{} /scripts/oci-create-vfs {} "$num_vfs"
+        exit 0
+    fi
+
+    echo "Configuring RDMA interfaces for $SHAPE (MTU: $mtu)"
+
+    configured=0
+    for pci_addr in $pci_addresses; do
+        iface=$(get_interface_from_pci "$pci_addr")
+        if [[ -n "$iface" ]]; then
+            echo "PCI $pci_addr -> interface $iface"
+            /scripts/oci-create-vfs "$iface" "$num_vfs"
+            ip link set dev "$iface" mtu "$mtu" 2>/dev/null || echo "Warning: Failed to set MTU for $iface"
+            ((configured++)) || true
+        else
+            echo "Warning: No interface found for PCI address $pci_addr" >&2
+        fi
+    done
+
+    echo "Configured $configured RDMA interfaces"
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: vf-config
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: vf-config
+  template:
+    metadata:
+      labels:
+        app: vf-config
+    spec:
+      priorityClassName: system-node-critical
+      hostNetwork: true
+      tolerations: [{ operator: "Exists" }]
+      terminationGracePeriodSeconds: 0
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node.kubernetes.io/instance-type
+                operator: In
+                values:
+                # ConnectX-5 shapes (16 NICs, enp* naming, MTU 4220)
+                - BM.GPU4.8
+                - BM.GPU.B4.8
+                - BM.GPU.A100-v2.8
+                - BM.GPU.GM4.8
+                # ConnectX-7 shapes (MTU 4220)
+                - BM.GPU.H100.8      # 16 NICs, rdma* naming
+                - BM.GPU.H100T.8     # 16 NICs, eth* naming
+                - BM.GPU.H200.8      # 8 NICs, rdma* naming
+                - BM.GPU.H200-NC.8   # 8 NICs, rdma* naming
+                - BM.GPU.B200.8      # 8 NICs, rdma* naming
+                - BM.GPU.L40S.4      # 2 NICs, rdma* naming
+                - BM.GPU.L40S-NC.4   # 2 NICs, rdma* naming
+                - BM.GPU.MI300X.8    # 8 NICs, enp*np0 naming
+                - BM.GPU.MI355X-v1.8 # 8 NICs, rdma* naming
+                - BM.GPU.GB200.4     # 4 NICs, rdma* naming
+                - BM.GPU.GB200-v2.4  # 4 NICs, rdma* naming
+                # ConnectX-8 shapes (8 NICs, rdma* naming, MTU 9000)
+                - BM.GPU.GB200-v3.4
+                - BM.GPU.GB300.4
+      volumes:
+        - name: root
+          hostPath:
+            path: "/"
+        - name: scripts
+          configMap:
+            name: vf-config-scripts
+            defaultMode: 0755
+      initContainers:
+        - name: wait-for-oca
+          image: oraclelinux:9-slim
+          command:
+            - /bin/bash
+            - -c
+            - |
+              echo "Waiting for OCI HPC configuration to complete..."
+              max_wait=600  # 10 minutes
+              waited=0
+              while [[ $waited -lt $max_wait ]]; do
+                if chroot /host grep -q "Fully Configured" /var/log/oracle-cloud-agent/plugins/oci-hpc/oci-hpc-configure/oci-hpc-mlx-configure.log 2>/dev/null; then
+                  echo "OCI HPC configuration complete"
+                  exit 0
+                fi
+                echo "Waiting... ($waited/$max_wait seconds)"
+                sleep 15
+                ((waited+=15))
+              done
+              echo "Warning: Timeout waiting for OCI HPC configuration, proceeding anyway"
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: root
+              mountPath: /host
+      containers:
+        - name: vf-config
+          image: oraclelinux:9-slim
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: true
+            capabilities:
+              add: [CAP_SYS_ADMIN, CAP_NET_ADMIN]
+          env:
+            - name: NODE_SHAPE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['node.kubernetes.io/instance-type']
+          volumeMounts:
+            - name: root
+              mountPath: /host
+            - name: scripts
+              mountPath: /scripts
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -e -o pipefail
+              trap 'exit 0' SIGTERM SIGINT
+
+              echo "Starting VF configuration for shape: ${NODE_SHAPE:-unknown}"
+
+              # Run configuration in host context
+              chroot /host /bin/bash -e <<'HOSTEOF'
+                # Stop OCA temporarily to avoid conflicts
+                snap stop oracle-cloud-agent 2>/dev/null || systemctl stop oracle-cloud-agent 2>/dev/null || true
+
+                # Reset existing VFs
+                for numvfs in /sys/class/net/*/device/sriov_numvfs; do
+                  [[ -f "$numvfs" ]] && echo 0 > "$numvfs" 2>/dev/null || true
+                done
+                sleep 5
+
+                # Show RDMA system status
+                rdma system show 2>/dev/null || true
+              HOSTEOF
+
+              # Run VF configuration script (runs on host via chroot with mounted scripts)
+              cp /scripts/oci-create-vfs /host/tmp/oci-create-vfs
+              cp /scripts/oci-vf-config /host/tmp/oci-vf-config
+              chmod +x /host/tmp/oci-create-vfs /host/tmp/oci-vf-config
+
+              chroot /host /bin/bash -e <<'HOSTEOF'
+                export PATH="/tmp:$PATH"
+                cd /tmp
+                ./oci-vf-config 1
+              HOSTEOF
+
+              # Restart OCA
+              chroot /host /bin/bash -c 'snap start oracle-cloud-agent 2>/dev/null || systemctl start oracle-cloud-agent 2>/dev/null || true'
+
+              # Restart sriov-device-plugin pod to pick up new VFs
+              chroot /host /bin/bash -c 'crictl rmp -f "$(crictl pods 2>/dev/null | grep sriov-device | awk "{print \$1}" | tail -1)" 2>/dev/null || true'
+
+              echo "VF configuration complete"
+
+              # Sleep forever, exit gracefully on signal
+              while true; do sleep 3600; done
