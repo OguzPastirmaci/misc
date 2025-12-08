@@ -1,0 +1,651 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vf-config-scripts
+  namespace: kube-system
+data:
+  oci-create-vfs.py: |
+    #!/usr/bin/env python3
+    """
+    VF creation script that runs in container but accesses host via /host prefix.
+    """
+
+    import os
+    import sys
+    import time
+    import subprocess
+    from datetime import datetime
+    from pathlib import Path
+
+    # Host root mount point (container mounts host root at /host)
+    HOST_ROOT = os.environ.get("HOST_ROOT", "/host")
+
+
+    def log(message: str):
+        """Print timestamped log message."""
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print(f"[{timestamp}] {message}", file=sys.stderr)
+
+
+    def host_path(path: str) -> Path:
+        """Convert a path to host-relative path."""
+        return Path(f"{HOST_ROOT}{path}")
+
+
+    def get_numvfs_path(interface: str) -> Path:
+        """Get path to sriov_numvfs for an interface."""
+        return host_path(f"/sys/class/net/{interface}/device/sriov_numvfs")
+
+
+    def get_totalvfs(interface: str) -> int:
+        """Get total number of VFs supported by an interface."""
+        totalvfs_path = host_path(f"/sys/class/net/{interface}/device/sriov_totalvfs")
+        if totalvfs_path.exists():
+            return int(totalvfs_path.read_text().strip())
+        return 0
+
+
+    def get_vf_dev_name(interface: str, vf_idx: int) -> str | None:
+        """Get VF device name for a given interface and VF index."""
+        vf_net_path = host_path(f"/sys/class/net/{interface}/device/virtfn{vf_idx}/net")
+        if vf_net_path.is_dir():
+            devices = list(vf_net_path.iterdir())
+            if devices:
+                return devices[0].name
+        return None
+
+
+    def get_eff_mac_addr(interface: str, vf_idx: int) -> str | None:
+        """Get effective MAC address for a VF."""
+        vf_dev_name = get_vf_dev_name(interface, vf_idx)
+        if vf_dev_name:
+            addr_path = host_path(
+                f"/sys/class/net/{interface}/device/virtfn{vf_idx}/net/{vf_dev_name}/address"
+            )
+            if addr_path.exists():
+                return addr_path.read_text().strip()
+        return None
+
+
+    def get_vf_pci_addr(interface: str, vf_idx: int) -> str | None:
+        """Get PCI address for a VF."""
+        vf_dev_name = get_vf_dev_name(interface, vf_idx)
+        if vf_dev_name:
+            uevent_path = host_path(f"/sys/class/net/{vf_dev_name}/device/uevent")
+            if uevent_path.exists():
+                for line in uevent_path.read_text().splitlines():
+                    if line.startswith("PCI_SLOT_NAME="):
+                        return line.split("=", 1)[1]
+        return None
+
+
+    def wait_for_vf(interface: str, vf_idx: int, max_wait: int = 10) -> bool:
+        """Wait for a VF to appear."""
+        for _ in range(max_wait):
+            if get_vf_dev_name(interface, vf_idx):
+                return True
+            time.sleep(1)
+        return False
+
+
+    def write_sysfs(path: Path, value: str) -> bool:
+        """Write a value to a sysfs file."""
+        try:
+            path.write_text(value)
+            return True
+        except OSError as e:
+            log(f"ERROR: Failed to write {value} to {path}: {e}")
+            return False
+
+
+    def run_on_host(cmd: list[str]) -> bool:
+        """Run a command on the host via chroot."""
+        try:
+            subprocess.run(
+                ["chroot", HOST_ROOT] + cmd,
+                check=True, capture_output=True
+            )
+            return True
+        except subprocess.CalledProcessError as e:
+            log(f"WARNING: Command {' '.join(cmd)} failed: {e}")
+            return False
+
+
+    def bind_driver(pci_addr: str, driver: str = "mlx5_core") -> bool:
+        """Bind a PCI device to a driver."""
+        bind_path = host_path(f"/sys/bus/pci/drivers/{driver}/bind")
+        try:
+            bind_path.write_text(pci_addr)
+            return True
+        except OSError:
+            return False
+
+
+    def unbind_driver(pci_addr: str, driver: str = "mlx5_core") -> bool:
+        """Unbind a PCI device from a driver."""
+        unbind_path = host_path(f"/sys/bus/pci/drivers/{driver}/unbind")
+        try:
+            unbind_path.write_text(pci_addr)
+            return True
+        except OSError:
+            return False
+
+
+    def create_vfs(interface: str, num_vfs: int) -> bool:
+        """Create and configure VFs for an interface."""
+        log(f"Creating {num_vfs} VFs for {interface}")
+
+        # Validate interface exists
+        if not host_path(f"/sys/class/net/{interface}").is_dir():
+            log(f"ERROR: Interface {interface} does not exist")
+            return False
+
+        numvfs_path = get_numvfs_path(interface)
+
+        if not numvfs_path.exists():
+            log(f"ERROR: SRIOV not supported for interface {interface} "
+                f"({numvfs_path} not found)")
+            return False
+
+        # Check max VFs supported
+        total_vfs = get_totalvfs(interface)
+        if num_vfs > total_vfs:
+            log(f"ERROR: Requested {num_vfs} VFs but interface {interface} "
+                f"only supports {total_vfs}")
+            return False
+
+        # Get current number of VFs
+        current_num_vfs = int(numvfs_path.read_text().strip())
+
+        if current_num_vfs != num_vfs:
+            log(f"Creating VFs for {interface} (current: {current_num_vfs}, target: {num_vfs})")
+
+            # Reset VFs to 0 first if needed
+            if current_num_vfs != 0:
+                log("Resetting VFs to 0 first")
+                if not write_sysfs(numvfs_path, "0"):
+                    log(f"ERROR: Failed to reset VFs for {interface}")
+                    return False
+                time.sleep(2)
+
+            # Create VFs
+            if not write_sysfs(numvfs_path, str(num_vfs)):
+                log(f"ERROR: Failed to create {num_vfs} VFs for {interface}")
+                return False
+
+            # Wait for VFs to be created
+            time.sleep(3)
+        else:
+            log(f"{num_vfs} VFs already created for {interface}")
+
+        # Configure the VFs
+        for i in range(num_vfs):
+            log(f"Configuring VF {i} for {interface}")
+
+            # Wait for VF to appear
+            if not wait_for_vf(interface, i, max_wait=10):
+                log(f"ERROR: VF {i} did not appear for {interface}")
+                continue
+
+            # Get MAC address
+            mac = get_eff_mac_addr(interface, i)
+            if not mac:
+                log(f"WARNING: Could not get MAC address for VF {i}")
+                continue
+
+            vf_dev_name = get_vf_dev_name(interface, i)
+            log(f"Setting {interface} VF {i} ({vf_dev_name}) MAC to {mac}")
+
+            # Set MAC address (run on host)
+            run_on_host(["ip", "link", "set", "dev", interface, "vf", str(i), "mac", mac])
+
+            # Rebind VF
+            vf_pci_addr = get_vf_pci_addr(interface, i)
+            if vf_pci_addr:
+                log(f"Rebinding VF {i} PCI device {vf_pci_addr}")
+                unbind_driver(vf_pci_addr)
+                time.sleep(1)
+                bind_driver(vf_pci_addr)
+
+        log(f"Successfully configured {num_vfs} VFs for {interface}")
+        return True
+
+
+    if __name__ == "__main__":
+        if len(sys.argv) < 2:
+            print(f"Usage: {sys.argv[0]} <interface> [num_vfs]", file=sys.stderr)
+            sys.exit(1)
+
+        interface = sys.argv[1]
+        num_vfs = int(sys.argv[2]) if len(sys.argv) > 2 else 1
+
+        success = create_vfs(interface, num_vfs)
+        sys.exit(0 if success else 1)
+
+  oci-vf-config.py: |
+    #!/usr/bin/env python3
+    """
+    VF configuration script that runs in container but accesses host via /host prefix.
+    Uses PCI addresses (rootDevices) for reliable interface detection.
+    """
+
+    import os
+    import sys
+    import time
+    import subprocess
+    import urllib.request
+    from pathlib import Path
+
+    # Host root mount point (container mounts host root at /host)
+    HOST_ROOT = os.environ.get("HOST_ROOT", "/host")
+
+    # Shape configurations from shapes.json
+    SHAPE_CONFIG = {
+        # ConnectX-5 shapes (16 NICs, enp* naming, MTU 4220)
+        "BM.GPU4.8": {
+            "pci_addresses": [
+                "0000:0c:00.0", "0000:0c:00.1", "0000:16:00.0", "0000:16:00.1",
+                "0000:48:00.0", "0000:48:00.1", "0000:4c:00.0", "0000:4c:00.1",
+                "0000:8a:00.0", "0000:8a:00.1", "0000:94:00.0", "0000:94:00.1",
+                "0000:c3:00.0", "0000:c3:00.1", "0000:d1:00.0", "0000:d1:00.1",
+            ],
+            "mtu": 4220,
+        },
+        "BM.GPU.B4.8": {
+            "pci_addresses": [
+                "0000:0c:00.0", "0000:0c:00.1", "0000:16:00.0", "0000:16:00.1",
+                "0000:47:00.0", "0000:47:00.1", "0000:4b:00.0", "0000:4b:00.1",
+                "0000:89:00.0", "0000:89:00.1", "0000:93:00.0", "0000:93:00.1",
+                "0000:c3:00.0", "0000:c3:00.1", "0000:d1:00.0", "0000:d1:00.1",
+            ],
+            "mtu": 4220,
+        },
+        "BM.GPU.A100-v2.8": {
+            "pci_addresses": [
+                "0000:0c:00.0", "0000:0c:00.1", "0000:16:00.0", "0000:16:00.1",
+                "0000:47:00.0", "0000:47:00.1", "0000:4b:00.0", "0000:4b:00.1",
+                "0000:89:00.0", "0000:89:00.1", "0000:93:00.0", "0000:93:00.1",
+                "0000:c3:00.0", "0000:c3:00.1", "0000:d1:00.0", "0000:d1:00.1",
+            ],
+            "mtu": 4220,
+        },
+        "BM.GPU.GM4.8": {
+            "pci_addresses": [
+                "0000:0c:00.0", "0000:0c:00.1", "0000:16:00.0", "0000:16:00.1",
+                "0000:47:00.0", "0000:47:00.1", "0000:4b:00.0", "0000:4b:00.1",
+                "0000:89:00.0", "0000:89:00.1", "0000:93:00.0", "0000:93:00.1",
+                "0000:c3:00.0", "0000:c3:00.1", "0000:d1:00.0", "0000:d1:00.1",
+            ],
+            "mtu": 4220,
+        },
+        # ConnectX-7 shapes (16 NICs, rdma*/eth* naming, MTU 4220)
+        "BM.GPU.H100.8": {
+            "pci_addresses": [
+                "0000:0c:00.0", "0000:0c:00.1", "0000:2a:00.0", "0000:2a:00.1",
+                "0000:41:00.0", "0000:41:00.1", "0000:58:00.0", "0000:58:00.1",
+                "0000:86:00.0", "0000:86:00.1", "0000:a5:00.0", "0000:a5:00.1",
+                "0000:bd:00.0", "0000:bd:00.1", "0000:d5:00.0", "0000:d5:00.1",
+            ],
+            "mtu": 4220,
+        },
+        "BM.GPU.H100T.8": {
+            "pci_addresses": [
+                "0000:0c:00.0", "0000:0c:00.1", "0000:2a:00.0", "0000:2a:00.1",
+                "0000:41:00.0", "0000:41:00.1", "0000:58:00.0", "0000:58:00.1",
+                "0000:86:00.0", "0000:86:00.1", "0000:a5:00.0", "0000:a5:00.1",
+                "0000:bd:00.0", "0000:bd:00.1", "0000:d5:00.0", "0000:d5:00.1",
+            ],
+            "mtu": 4220,
+        },
+        # ConnectX-7 shapes (8 NICs, rdma* naming, MTU 4220)
+        "BM.GPU.H200.8": {
+            "pci_addresses": [
+                "0000:0c:00.0", "0000:2a:00.0", "0000:41:00.0", "0000:58:00.0",
+                "0000:86:00.0", "0000:a5:00.0", "0000:bd:00.0", "0000:d5:00.0",
+            ],
+            "mtu": 4220,
+        },
+        "BM.GPU.H200-NC.8": {
+            "pci_addresses": [
+                "0000:0c:00.0", "0000:2a:00.0", "0000:41:00.0", "0000:58:00.0",
+                "0000:86:00.0", "0000:a5:00.0", "0000:bd:00.0", "0000:d5:00.0",
+            ],
+            "mtu": 4220,
+        },
+        "BM.GPU.B200.8": {
+            "pci_addresses": [
+                "0000:0c:00.0", "0000:2a:00.0", "0000:41:00.0", "0000:58:00.0",
+                "0000:86:00.0", "0000:a5:00.0", "0000:bd:00.0", "0000:d5:00.0",
+            ],
+            "mtu": 4220,
+        },
+        # ConnectX-7 shapes (2 NICs, rdma* naming, MTU 4220)
+        "BM.GPU.L40S.4": {
+            "pci_addresses": ["0000:27:00.0", "0000:97:00.0"],
+            "mtu": 4220,
+        },
+        "BM.GPU.L40S-NC.4": {
+            "pci_addresses": ["0000:27:00.0", "0000:97:00.0"],
+            "mtu": 4220,
+        },
+        # ConnectX-7 shapes (8 NICs, enp*np0 naming, MTU 4220)
+        "BM.GPU.MI300X.8": {
+            "pci_addresses": [
+                "0000:0c:00.0", "0000:2a:00.0", "0000:41:00.0", "0000:58:00.0",
+                "0000:86:00.0", "0000:a5:00.0", "0000:bd:00.0", "0000:d5:00.0",
+            ],
+            "mtu": 4220,
+        },
+        "BM.GPU.MI355X-v1.8": {
+            "pci_addresses": [
+                "0000:6d:00.0", "0000:05:00.0", "0000:55:00.0", "0000:1e:00.0",
+                "0000:ec:00.0", "0000:86:00.0", "0000:d4:00.0", "0000:9f:00.0",
+            ],
+            "mtu": 4220,
+        },
+        # ConnectX-7 shapes (4 NICs, rdma* naming, MTU 4220)
+        "BM.GPU.GB200.4": {
+            "pci_addresses": [
+                "0000:03:00.0", "0002:03:00.0", "0010:03:00.0", "0012:03:00.0",
+            ],
+            "mtu": 4220,
+        },
+        "BM.GPU.GB200-v2.4": {
+            "pci_addresses": [
+                "0000:03:00.0", "0002:03:00.0", "0010:03:00.0", "0012:03:00.0",
+            ],
+            "mtu": 4220,
+        },
+        # ConnectX-8 shapes (8 NICs, rdma* naming, MTU 9000)
+        "BM.GPU.GB200-v3.4": {
+            "pci_addresses": [
+                "0000:03:00.0", "0000:03:00.1", "0002:03:00.0", "0002:03:00.1",
+                "0010:03:00.0", "0010:03:00.1", "0012:03:00.0", "0012:03:00.1",
+            ],
+            "mtu": 9000,
+        },
+        "BM.GPU.GB300.4": {
+            "pci_addresses": [
+                "0000:03:00.0", "0000:03:00.1", "0002:03:00.0", "0002:03:00.1",
+                "0010:03:00.0", "0010:03:00.1", "0012:03:00.0", "0012:03:00.1",
+            ],
+            "mtu": 9000,
+        },
+    }
+
+
+    def host_path(path: str) -> Path:
+        """Convert a path to host-relative path."""
+        return Path(f"{HOST_ROOT}{path}")
+
+
+    def get_interface_from_pci(pci_addr: str):
+        """Get network interface name from PCI address."""
+        net_path = host_path(f"/sys/bus/pci/devices/{pci_addr}/net")
+        if net_path.is_dir():
+            interfaces = list(net_path.iterdir())
+            if interfaces:
+                return interfaces[0].name
+        return None
+
+
+    def get_shape_with_retry(max_time: int = 300, interval: int = 15):
+        """Detect shape from OCI metadata with retry."""
+        start_time = time.time()
+
+        while True:
+            try:
+                req = urllib.request.Request(
+                    "http://169.254.169.254/opc/v2/instance/shape",
+                    headers={"Authorization": "Bearer Oracle"}
+                )
+                with urllib.request.urlopen(req, timeout=10) as response:
+                    shape = response.read().decode().strip()
+                    if shape:
+                        return shape
+            except Exception:
+                pass
+
+            elapsed = time.time() - start_time
+            if elapsed >= max_time:
+                print(f"Warning: Unable to detect shape after {max_time}s", file=sys.stderr)
+                return None
+
+            print(f"Metadata service not responding, retrying in {interval}s... "
+                  f"(elapsed: {int(elapsed)}s/{max_time}s)", file=sys.stderr)
+            time.sleep(interval)
+
+
+    def discover_rdma_interfaces():
+        """Discover rdma* interfaces as fallback."""
+        interfaces = []
+        net_path = host_path("/sys/class/net")
+        if net_path.is_dir():
+            for iface in sorted(net_path.iterdir()):
+                name = iface.name
+                if name.startswith("rdma") and "v" not in name:
+                    interfaces.append(name)
+        return interfaces
+
+
+    def create_vfs(interface: str, num_vfs: int) -> bool:
+        """Create VFs for an interface using oci-create-vfs.py."""
+        script_path = Path("/scripts/oci-create-vfs.py")
+        try:
+            subprocess.run(
+                [sys.executable, str(script_path), interface, str(num_vfs)],
+                check=True,
+                env={**os.environ, "HOST_ROOT": HOST_ROOT}
+            )
+            return True
+        except subprocess.CalledProcessError as e:
+            print(f"Error creating VFs for {interface}: {e}", file=sys.stderr)
+            return False
+
+
+    def set_mtu(interface: str, mtu: int) -> bool:
+        """Set MTU for an interface (run on host)."""
+        try:
+            subprocess.run(
+                ["chroot", HOST_ROOT, "ip", "link", "set", "dev", interface, "mtu", str(mtu)],
+                check=True, capture_output=True
+            )
+            return True
+        except subprocess.CalledProcessError:
+            print(f"Warning: Failed to set MTU for {interface}", file=sys.stderr)
+            return False
+
+
+    def main():
+        num_vfs = int(sys.argv[1]) if len(sys.argv) > 1 else 1
+
+        shape = get_shape_with_retry()
+
+        if not shape:
+            print("Falling back to rdma* interface discovery", file=sys.stderr)
+            interfaces = discover_rdma_interfaces()
+            for iface in interfaces:
+                create_vfs(iface, num_vfs)
+            return
+
+        print(f"Detected shape: {shape}")
+
+        config = SHAPE_CONFIG.get(shape)
+        if not config:
+            print(f"Unknown shape '{shape}', falling back to rdma* interface discovery",
+                  file=sys.stderr)
+            interfaces = discover_rdma_interfaces()
+            for iface in interfaces:
+                create_vfs(iface, num_vfs)
+            return
+
+        pci_addresses = config["pci_addresses"]
+        mtu = config["mtu"]
+        expected_count = len(pci_addresses)
+
+        print(f"Configuring RDMA interfaces for {shape} using PCI addresses "
+              f"(MTU: {mtu}, expected: {expected_count} interfaces)")
+
+        configured = 0
+        for pci_addr in pci_addresses:
+            iface = get_interface_from_pci(pci_addr)
+            if iface:
+                print(f"PCI {pci_addr} -> interface {iface}")
+                if create_vfs(iface, num_vfs):
+                    set_mtu(iface, mtu)
+                    configured += 1
+            else:
+                print(f"Warning: No interface found for PCI address {pci_addr}",
+                      file=sys.stderr)
+
+        print(f"Configured {configured}/{expected_count} RDMA interfaces")
+
+        if configured != expected_count:
+            print(f"Warning: Expected {expected_count} interfaces but only found {configured}",
+                  file=sys.stderr)
+
+
+    if __name__ == "__main__":
+        main()
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: vf-config
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: vf-config
+  template:
+    metadata:
+      labels:
+        app: vf-config
+    spec:
+      priorityClassName: system-node-critical
+      hostNetwork: true
+      tolerations: [{ operator: "Exists" }]
+      terminationGracePeriodSeconds: 0
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node.kubernetes.io/instance-type
+                operator: In
+                values:
+                # ConnectX-5 shapes (16 NICs, enp* naming, MTU 4220)
+                - BM.GPU4.8
+                - BM.GPU.B4.8
+                - BM.GPU.A100-v2.8
+                - BM.GPU.GM4.8
+                # ConnectX-7 shapes (MTU 4220)
+                - BM.GPU.H100.8      # 16 NICs, rdma* naming
+                - BM.GPU.H100T.8     # 16 NICs, eth* naming
+                - BM.GPU.H200.8      # 8 NICs, rdma* naming
+                - BM.GPU.H200-NC.8   # 8 NICs, rdma* naming
+                - BM.GPU.B200.8      # 8 NICs, rdma* naming
+                - BM.GPU.L40S.4      # 2 NICs, rdma* naming
+                - BM.GPU.L40S-NC.4   # 2 NICs, rdma* naming
+                - BM.GPU.MI300X.8    # 8 NICs, enp*np0 naming
+                - BM.GPU.MI355X-v1.8 # 8 NICs, rdma* naming
+                - BM.GPU.GB200.4     # 4 NICs, rdma* naming
+                - BM.GPU.GB200-v2.4  # 4 NICs, rdma* naming
+                # ConnectX-8 shapes (8 NICs, rdma* naming, MTU 9000)
+                - BM.GPU.GB200-v3.4
+                - BM.GPU.GB300.4
+      volumes:
+        - name: host-root
+          hostPath:
+            path: "/"
+        - name: scripts
+          configMap:
+            name: vf-config-scripts
+            defaultMode: 0755
+      initContainers:
+        - name: wait-for-oca
+          image: container-registry.oracle.com/os/oraclelinux:10
+          command:
+            - /bin/bash
+            - -c
+            - |
+              echo "Waiting for OCA configuration to complete..."
+              max_wait=600  # 10 minutes
+              waited=0
+              while [[ $waited -lt $max_wait ]]; do
+                if grep -q "Fully Configured" /host/var/log/oracle-cloud-agent/plugins/oci-hpc/oci-hpc-configure/oci-hpc-mlx-configure.log 2>/dev/null; then
+                  echo "OCA configuration complete"
+                  exit 0
+                fi
+                echo "Waiting... ($waited/$max_wait seconds)"
+                sleep 15
+                ((waited+=15))
+              done
+              echo "Warning: Timeout waiting for OCA configuration, proceeding anyway"
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: host-root
+              mountPath: /host
+              readOnly: true
+      containers:
+        - name: vf-config
+          image: container-registry.oracle.com/os/oraclelinux:10
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: true
+            capabilities:
+              add: [CAP_SYS_ADMIN, CAP_NET_ADMIN]
+          env:
+            - name: HOST_ROOT
+              value: "/host"
+          volumeMounts:
+            - name: host-root
+              mountPath: /host
+            - name: scripts
+              mountPath: /scripts
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -e -o pipefail
+              trap 'exit 0' SIGTERM SIGINT
+
+              echo "Starting VF configuration"
+
+              # Stop OCA temporarily to avoid conflicts
+              chroot /host snap stop oracle-cloud-agent 2>/dev/null || \
+                chroot /host systemctl stop oracle-cloud-agent 2>/dev/null || true
+
+              # Reset existing VFs via host sysfs
+              for numvfs in /host/sys/class/net/*/device/sriov_numvfs; do
+                [[ -f "$numvfs" ]] && echo 0 > "$numvfs" 2>/dev/null || true
+              done
+              sleep 5
+
+              # Show RDMA system status
+              chroot /host rdma system show 2>/dev/null || true
+
+              # Run Python VF configuration script (runs in container, accesses host via /host)
+              python3 /scripts/oci-vf-config.py 1
+
+              # Restart OCA (run on host)
+              chroot /host snap start oracle-cloud-agent 2>/dev/null || \
+                chroot /host systemctl start oracle-cloud-agent 2>/dev/null || true
+
+              # Restart sriov-device-plugin pod to pick up new VFs
+              chroot /host crictl rmp -f "$(chroot /host crictl pods 2>/dev/null | grep sriov-device-plugin | awk '{print $1}' | tail -1)" 2>/dev/null || true
+
+              echo "VF configuration complete"
+
+              # Sleep forever, exit gracefully on signal
+              while true; do sleep 3600; done
+
