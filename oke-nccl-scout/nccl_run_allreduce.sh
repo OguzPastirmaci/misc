@@ -1,0 +1,175 @@
+#!/bin/bash
+set -e
+
+# number of times to run the nccl test to stress the GPUs and RDMA network. This is different from -n iterations parameter of nccl allreduce which is set below using $iter
+max=$1
+
+# This assume, the hostfile  passed is already ordered based on their rackId
+if [ -n "$2" ]; then
+  hostfile=$2
+else
+  hostfile="/etc/opt/oci-hpc/hostfile.tcp"
+fi
+
+# SSH port (default: 22)
+if [ -n "$4" ]; then
+  SSH_PORT=$4
+else
+  SSH_PORT=22
+fi
+
+
+# This script defaults to running all_reduce_perf, but can run other NCCL tests if launched with
+# EXEC=all_gather_perf sbatch -N8 ./nccl_run_allreduce_H100_200.sbatch
+
+if [[ -z "${EXEC}" ]]; then
+  export EXEC_CMD="/opt/oci-hpc/nccl-test/build/all_reduce_perf"
+else
+  export EXEC_CMD="/opt/oci-hpc/nccl-test/build/${EXEC}"
+fi
+
+if [ ! -f ${EXEC_CMD} ]; then
+    echo "Test executable ${EXEC_CMD} not found!"
+    exit 1
+fi
+
+ORDEREDMACHINEFILE="ordered_hostfile_system_name"
+ORDEREDRANKMACHINEFILE="rankfile_system_name"
+echo INPUTFILE
+cat $hostfile
+
+
+source /etc/os-release
+NODE_ORDERING_SCRIPT=""
+if [ $ID == "ol" ] || [ $ID == "centos" ] ; then
+    NODE_ORDERING_SCRIPT="/home/opc/node_ordering_by_rack.py"
+elif [ $ID == "debian" ] || [ $ID == "ubuntu" ] ; then
+    NODE_ORDERING_SCRIPT="/home/ubuntu/node_ordering_by_rack.py"
+fi
+
+if [ -n "$NODE_ORDERING_SCRIPT" ] && [ -f "$NODE_ORDERING_SCRIPT" ]; then
+    python3 $NODE_ORDERING_SCRIPT --input_file $hostfile > /dev/null
+    hostfile=$ORDEREDMACHINEFILE
+    rankfile=$ORDEREDRANKMACHINEFILE
+    echo ORDEREDMACHINEFILE
+    cat $ORDEREDMACHINEFILE
+    echo ORDEREDRANKMACHINEFILE
+    cat $ORDEREDRANKMACHINEFILE
+else
+    echo "Node ordering script not found, using original hostfile"
+    cp $hostfile $ORDEREDMACHINEFILE
+    # Create a simple rankfile (each GPU gets unique rank: host0-gpu0=rank0, host0-gpu1=rank1, etc.)
+    awk '{for(i=0;i<8;i++) print "rank " ((NR-1)*8+i) "=" $1 " slot=" i}' $hostfile > $ORDEREDRANKMACHINEFILE
+    hostfile=$ORDEREDMACHINEFILE
+    rankfile=$ORDEREDRANKMACHINEFILE
+fi
+
+# The number of GPUs to use for the test.  Has to be multiplier of 8.  If not passed, all GPUs will be used. 
+if [ -n "$3" ]; then
+  np=$3
+else
+  np=$((`less $hostfile | wc -l` * 8 ))
+fi
+logfile="nccl_run_allreduce.sh.log"
+
+for x in $(seq 1 1 $max)
+do
+
+  echo $x
+  echo $x >> $logfile
+  date >> $logfile
+
+  rankfile=$rankfile; np=$np ; iter=20;
+
+  # mpivars_path=`ls /usr/mpi/gcc/openmpi-*/bin/mpivars.sh`
+
+  # if [[ "$mpivars_path" == "" ]]; then
+  #     mpivars_path=`ls /opt/openmpi-*/bin/mpivars.sh`
+  # fi
+
+  # if [[ "$mpivars_path" == "" ]]; then
+  #     echo "Could not find MPIPATH"; exit; fi
+
+  # source $mpivars_path
+  hpcx_path=`ls /opt/hpcx/nccl_rdma_sharp_plugin/lib/libnccl-net.so 2>/dev/null || true`
+  if [[ "$hpcx_path" == "" ]]; then
+      hpcx_path=none
+  fi
+  first_node=`head $hostfile -n 1`
+
+  export NCCL_DEBUG=WARN
+
+
+  shape=`ssh -p $SSH_PORT $first_node 'curl -sH "Authorization: Bearer Oracle" -L http://169.254.169.254/opc/v2/instance/' | jq .shape`
+  if [ "$shape" == \"BM.GPU.B4.8\" ] || [ "$shape" == \"BM.GPU.A100-v2.8\" ]
+  then
+    var_UCX_NET_DEVICES=mlx5_0:1
+    var_NCCL_IB_HCA="=mlx5_5,mlx5_6,mlx5_7,mlx5_8,mlx5_1,mlx5_2,mlx5_3,mlx5_4,mlx5_14,mlx5_15,mlx5_16,mlx5_17,mlx5_9,mlx5_10,mlx5_11,mlx5_12"
+  elif [ "$shape" == \"BM.GPU4.8\" ]
+  then
+    var_UCX_NET_DEVICES=mlx5_4:1
+    var_NCCL_IB_HCA="=mlx5_0,mlx5_2,mlx5_6,mlx5_8,mlx5_10,mlx5_12,mlx5_14,mlx5_16,mlx5_1,mlx5_3,mlx5_7,mlx5_9,mlx5_11,mlx5_13,mlx5_15,mlx5_17"
+  elif [ "$shape" == \"BM.GPU.H100.8\" ]
+  then
+    var_UCX_NET_DEVICES=eth0
+    var_NCCL_IB_HCA="=mlx5_0,mlx5_1,mlx5_3,mlx5_4,mlx5_5,mlx5_6,mlx5_7,mlx5_8,mlx5_9,mlx5_10,mlx5_12,mlx5_13,mlx5_14,mlx5_15,mlx5_16,mlx5_17"
+  elif [ "$shape" == \"BM.GPU.H200.8\" ] || [ "$shape" == \"BM.GPU.B200.8\" ]
+  then
+    var_UCX_NET_DEVICES=eth0
+    var_NCCL_IB_HCA="=mlx5_0,mlx5_3,mlx5_4,mlx5_5,mlx5_6,mlx5_9,mlx5_10,mlx5_11"
+  else
+    echo "Use the appropriate nccl test run script for non A100/H100/H200/B200 nodes"
+  fi
+
+  if [ "$shape" == \"BM.GPU.B4.8\" ] || [ "$shape" == \"BM.GPU.A100-v2.8\" ] || [ "$shape" == \"BM.GPU4.8\" ]
+  then
+    mpirun --mca pml ucx \
+    --allow-run-as-root \
+    -mca plm_rsh_args "-p $SSH_PORT" \
+    --bind-to numa \
+    --mca coll ^hcoll \
+    -x NCCL_DEBUG=WARN \
+    -x NCCL_IB_SL=0 \
+    -x NCCL_IB_TC=41 \
+    -x NCCL_IB_QPS_PER_CONNECTION=4 \
+    -x UCX_TLS=ud,self,sm \
+    -x UCX_NET_DEVICES=${var_UCX_NET_DEVICES} \
+    -x HCOLL_ENABLE_MCAST_ALL=0 \
+    -x coll_hcoll_enable=0 \
+    -x NCCL_IB_GID_INDEX=3 \
+    -x NCCL_ALGO=Ring \
+    -x NCCL_IB_HCA="${var_NCCL_IB_HCA}" \
+  --np $np --rankfile $rankfile /opt/oci-hpc/nccl-test/build/all_reduce_perf -b1G -e10G -i$((1024*1024*1024*9)) -n $iter >>  $logfile
+
+  elif [ "$shape" == \"BM.GPU.H100.8\" ] || [ "$shape" == \"BM.GPU.H200.8\" ] || [ "$shape" == \"BM.GPU.B200.8\" ]
+  then
+    mpirun --mca pml ucx \
+    --allow-run-as-root \
+    -mca plm_rsh_args "-p $SSH_PORT" \
+    --bind-to numa \
+    --mca coll ^hcoll \
+    -x NCCL_DEBUG=WARN \
+    -x NCCL_CUMEM_ENABLE=0 \
+    -x NCCL_IB_SPLIT_DATA_ON_QPS=0 \
+    -x NCCL_IB_QPS_PER_CONNECTION=1 \
+    -x NCCL_IB_GID_INDEX=3 \
+    -x NCCL_IB_TC=41 \
+    -x NCCL_IB_SL=0 \
+    -x NCCL_IB_TIMEOUT=22 \
+    -x NCCL_NET_PLUGIN=${hpcx_path} \
+    -x HCOLL_ENABLE_MCAST_ALL=0 \
+    -x coll_hcoll_enable=0 \
+    -x UCX_TLS=tcp \
+    -x UCX_NET_DEVICES=${var_UCX_NET_DEVICES} \
+    -x RX_QUEUE_LEN=8192 \
+    -x IB_RX_QUEUE_LEN=8192 \
+    -x NCCL_SOCKET_IFNAME=${var_UCX_NET_DEVICES} \
+    -x NCCL_IGNORE_CPU_AFFINITY=1 \
+    -x NCCL_IB_HCA="${var_NCCL_IB_HCA}" \
+  --np $np --rankfile $rankfile /opt/oci-hpc/nccl-test/build/all_reduce_perf -b1G -e10G -i$((1024*1024*1024*9)) -n $iter >>  $logfile
+  fi
+
+  tail -n 32 $logfile
+
+
+done
