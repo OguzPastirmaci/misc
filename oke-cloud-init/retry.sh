@@ -16,7 +16,7 @@ version_ge() {
     [[ "$(printf '%s\n' "$v1" "$v2" | sort -V | tail -n1)" == "$v1" ]]
 }
 
-# Retry a command every 15 seconds for up to 5 minutes (20 attempts)
+# Retry a command every 15 seconds for up to 5 minutes
 run_with_retry() {
     local max_attempts=20
     local interval=15
