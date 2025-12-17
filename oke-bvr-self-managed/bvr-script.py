@@ -6,7 +6,7 @@
 #   "oci==2.159.0"
 # ]
 # ///
-import argparse, base64, gzip, io, json, logging, re, sys, time, traceback
+import argparse, base64, gzip, io, json, logging, re, sys, traceback
 import concurrent.futures
 
 from kubernetes import client as kubernetes_client
@@ -81,12 +81,11 @@ class BootVolumeReplacer:
                 else:
                     self.oci_config = {
                         "region": region,
-                    }           
+                    }
                 
         except Exception as e:
             logger.error(f"Failed to initialize the Instance Principal signer:\n{traceback.format_exc()}")
             sys.exit(1)
-                
 
         self.compartment_id = compartment_id
         self.interactive = interactive
@@ -102,14 +101,14 @@ class BootVolumeReplacer:
     
 
     def get_k8s_node_details(self, kubernetes_node):
-        ##  Fetch the instance details based on Kubernetes node name.
+        ##  Fetch the OCI instance details based on Kubernetes node name.
         api_instance = kubernetes_client.CoreV1Api()
         try:
             k8s_node_details = api_instance.read_node(name=kubernetes_node)
         except Exception as exc:
             raise Exception(f"Failed to fetch Kubernetes node details for {kubernetes_node}:\n{traceback.format_exc()}")
         
-        instance_display_name = k8s_node_details.metadata.labels['hostname']
+        instance_display_name = k8s_node_details.metadata.labels.get('hostname', "")
 
         core_client = ComputeClient(config = self.oci_config, signer = self.oci_signer)
         list_instances_response = core_client.list_instances(
@@ -206,12 +205,6 @@ class BootVolumeReplacer:
         except kubernetes_client.ApiException as e:
             raise Exception(f"Failed to remove pod {pod.metadata.name} in namespace {pod.metadata.namespace} from the node {kubernetes_node}:\n{traceback.format_exc()}")
 
-    # def check_image_type(self, image_ocid):
-    #     core_client = oci.core.ComputeClient(config = self.oci_config, signer = self.oci_signer)
-    #     get_image_response = core_client.get_image(
-    #         image_id=image_ocid)
-    #     print(get_image_response.data)
-
 
     def generate_new_cloud_init(self, k8s_node, instance_cloud_init, cloud_init_change_functions):
         # Modifying the base64 gziped cloud-init. Generated from the OKE TF module.
@@ -240,7 +233,8 @@ class BootVolumeReplacer:
         
 
         logger.debug(f"Cloud-init data for node {k8s_node} before changes:\n{cloud_init_data_string}")
-
+        
+        # Modify the cloud-init data using the functions provided by the user
         for func in cloud_init_change_functions:
             cloud_init_data_string = func(cloud_init_data_string)
 
@@ -248,6 +242,7 @@ class BootVolumeReplacer:
         if logger.getEffectiveLevel() == logging.DEBUG:
             response = input(f"Continue upgrade of node {k8s_node}? [y/n]: \n") if self.interactive else "y"
             if response.lower() != "y":
+                logger.info("BVR cancelled.")
                 return None
 
         new_cloud_init_zip_fileobj = io.BytesIO()
@@ -292,7 +287,6 @@ class BootVolumeReplacer:
         # wait for the node to join the Kubernetes cluster.
         api_instance = kubernetes_client.CoreV1Api()
         w = kubernetes_watch.Watch()
-        start_time = time.time()
         
         try:
             for event in w.stream(api_instance.list_node, timeout_seconds=timeout_seconds):
@@ -300,14 +294,12 @@ class BootVolumeReplacer:
                 if node.metadata.name == k8s_node:
                     for condition in node.status.conditions:
                         if condition.type == 'Ready' and condition.status == 'True':
+                            logger.info(f"None {k8s_node} is ready.")
                             w.stop()
                             return True
-                            
-                # Check if timeout exceeded
-                if time.time() - start_time > timeout_seconds:
-                    w.stop()
-                    raise Exception(f"Node {k8s_node} has not rejoined in the cluster in {timeout_seconds} seconds.")
-                    
+                        
+            logger.error("The node has not rejoined the cluster in {timeout_seconds} seconds.")
+            return False
         except Exception as e:
             raise Exception(f"Failed to wait for node {k8s_node}:\n{traceback.format_exc()}")
 
@@ -318,9 +310,9 @@ class BootVolumeReplacer:
         # Fetching the instance details associated with the kubernetes node
         instance_details = self.get_k8s_node_details(k8s_node)
         if instance_details is None:
-            raise Exception("Failed to identify the instance details for node {k8s_node}")
+            raise Exception(f"Failed to identify the instance details for node {k8s_node}")
         if instance_details is False:
-            return None
+            return False, None
         
         # Check if the image is compatible with the shape of the node
         if self.image_ocid:
@@ -340,7 +332,7 @@ class BootVolumeReplacer:
             existing_cloud_init = instance_details.metadata['user_data']
             new_cloud_init = self.generate_new_cloud_init(k8s_node, existing_cloud_init, self.cloud_init_change_functions)
             if new_cloud_init is None:
-                return None
+                return False, None
         else:
             logger.debug(f'Cloud-init is not changed.')
             new_cloud_init = instance_details.metadata['user_data']
@@ -386,29 +378,35 @@ class BootVolumeReplacer:
         wait_for_completion_result = self.wait_for_completion(k8s_node, self.timeout_seconds)
         if wait_for_completion_result:
             logger.info(f'The boot volume replacement for instance {instance_details.id} has been completed successfully.')
+            result = True
+        else:
+            logger.error(f'The boot volume replacement for instance {instance_details.id} failed.')
+            result = False
         
-        return instance_details.metadata['user_data'] != new_cloud_init
+        return result, instance_details.metadata['user_data'] != new_cloud_init
         
 
     def execute_upgrade_nodes(self):
-        cloud_init_updated = False
+        any_cloud_init_updated = []
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.parallelism) as executor:
+            
             # Start the load operations and mark each future with its URL
             bvr_replace_futures = {executor.submit(self.upgrade_node, node): node for node in self.nodes}
             for future in concurrent.futures.as_completed(bvr_replace_futures):
                 node = bvr_replace_futures[future]
                 try:
-                    result = future.result()
+                    status, node_cloud_init_updated = future.result()
                 except Exception as exc:
                     logger.error(f'The upgrade of node {node} generated an exception:\n{traceback.format_exc()}')
                     sys.exit(1)
                 else:
-                    if result is not None:
+                    if status:
                         logger.info(f"Successfuly executed Boot Volume Replacement for node {node}.")
-                    if result:
-                        cloud_init_updated = True
-
-        if cloud_init_updated:
+                        any_cloud_init_updated.append(node_cloud_init_updated)
+                    else:
+                        logger.error(f"Failed to execute Volume Replacement for node {node}.")
+                    
+        if any(any_cloud_init_updated):
             logger.info(f"Don't forget to update the terraform code to reflect the operations executed.")
 
 
@@ -465,11 +463,11 @@ if __name__ == "__main__":
     # Functions to update the cloud-init metadata (by default specific for ubuntu images)
     cloud_init_change_functions = []
     
-    # Replace the NVME mount script to be able to reuse exising raid array.
-    cloud_init_change_functions.append(lambda cloud_init_data: cloud_init_data.replace(
-        "https://raw.githubusercontent.com/oracle-quickstart/oci-hpc-oke/refs/heads/main/files/oke-nvme-raid.sh",
-        "https://raw.githubusercontent.com/OguzPastirmaci/misc/refs/heads/master/oke-nvme-provisioner/oke-nvme-bvr.sh")
-    )
+    # This is an exemple for the expected functions for cloud_init_change_functions
+    # cloud_init_change_functions.append(lambda cloud_init_data: cloud_init_data.replace(
+    #     "https://raw.githubusercontent.com/oracle-quickstart/oci-hpc-oke/refs/heads/main/files/oke-nvme-raid.sh",
+    #     "https://raw.githubusercontent.com/OguzPastirmaci/misc/refs/heads/master/oke-nvme-provisioner/oke-nvme-bvr.sh")
+    # )
     node_metadata = args.node_metadata
     
     if args.desired_k8s_version:
@@ -485,5 +483,5 @@ if __name__ == "__main__":
     bvr = BootVolumeReplacer(**args.__dict__, cloud_init_change_functions=cloud_init_change_functions)
     bvr.execute_upgrade_nodes()
     
-    logger.info("Node upgrade process completed.")
+    logger.info("Node BVR process completed.")
     sys.exit(0)
