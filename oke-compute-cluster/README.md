@@ -5,6 +5,7 @@ https://github.com/oracle-quickstart/oci-hpc-oke
 https://docs.oracle.com/en-us/iaas/Content/Compute/Tasks/create-compute-cluster.htm
 
 ## Create cloud-init
+Make sure you change the API server IP etc.
 
 ```
 cat > cloud-init.yaml << 'EOF'
