@@ -45,8 +45,10 @@ EOF
 ```
 
 ## Encode cloud-init
-USER_DATA=$(base64 -b 0 cloud-init.yaml)
 
+```
+USER_DATA=$(base64 -b 0 cloud-init.yaml)
+```
 
 ## Create node pool
 
