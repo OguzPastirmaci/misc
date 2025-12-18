@@ -13,7 +13,7 @@ cat > cloud-init.yaml << 'EOF'
 apt:
   sources:
     oke-node:
-      source: "deb [trusted=yes] https://odx-oke.objectstorage.us-sanjose-1.oci.customer-oci.com/n/odx-oke/b/okn-repositories/o/prod/ubuntu-jammy/kubernetes-1.34 stable main"
+      source: "deb [trusted=yes] https://objectstorage.us-sanjose-1.oraclecloud.com/p/_Zaa2khW3lPESEbqZ2JB3FijAd0HeKmiP-KA2eOMuWwro85dcG2WAqua2o_a-PlZ/n/odx-oke/b/okn-repositories-private/o/prod/ubuntu-jammy/kubernetes-1.34 stable main"
 
 packages:
   - oci-oke-node-all-1.34.1
