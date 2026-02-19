@@ -1,0 +1,177 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: nvidia-device-plugin
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: nvidia-device-plugin
+rules:
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: nvidia-device-plugin
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: nvidia-device-plugin
+subjects:
+  - kind: ServiceAccount
+    name: nvidia-device-plugin
+    namespace: kube-system
+---
+# ConfigMap for gpu-shared (GPUs 1-3 with time-slicing)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nvidia-device-plugin-gpu-shared
+  namespace: kube-system
+data:
+  config.yaml: |
+    version: v1
+    sharing:
+      timeSlicing:
+        renameByDefault: true
+        resources:
+          - name: nvidia.com/gpu
+            replicas: 2
+---
+# DaemonSet 1: GPU 0 - dedicated GPU, no time-slicing
+# Registers as nvidia.com/gpu (1 unit)
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: nvidia-device-plugin-gpu-full
+  namespace: kube-system
+  labels:
+    app: nvidia-device-plugin-gpu-full
+spec:
+  selector:
+    matchLabels:
+      app: nvidia-device-plugin-gpu-full
+  template:
+    metadata:
+      labels:
+        app: nvidia-device-plugin-gpu-full
+    spec:
+      serviceAccountName: nvidia-device-plugin
+      priorityClassName: system-node-critical
+      shareProcessNamespace: true
+      tolerations:
+        - operator: Exists
+          effect: NoSchedule
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: nvidia.com/gpu
+                    operator: In
+                    values:
+                      - "true"
+      containers:
+        - name: nvidia-device-plugin-ctr
+          image: nvcr.io/nvidia/k8s-device-plugin:v0.18.2
+          command: ["nvidia-device-plugin"]
+          env:
+            - name: NVIDIA_VISIBLE_DEVICES
+              value: "0"
+            - name: NVIDIA_DRIVER_CAPABILITIES
+              value: "compute,utility"
+            - name: NVIDIA_MIG_MONITOR_DEVICES
+              value: "all"
+          securityContext:
+            capabilities:
+              add:
+                - SYS_ADMIN
+          volumeMounts:
+            - name: kubelet-device-plugins-dir
+              mountPath: /var/lib/kubelet/device-plugins
+            - name: cdi-root
+              mountPath: /var/run/cdi
+      volumes:
+        - name: kubelet-device-plugins-dir
+          hostPath:
+            path: /var/lib/kubelet/device-plugins
+            type: Directory
+        - name: cdi-root
+          hostPath:
+            path: /var/run/cdi
+            type: DirectoryOrCreate
+---
+# DaemonSet 2: GPUs 1-3 - time-sliced, 2 replicas each
+# Registers as nvidia.com/gpu.shared (6 units total)
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: nvidia-device-plugin-gpu-shared
+  namespace: kube-system
+  labels:
+    app: nvidia-device-plugin-gpu-shared
+spec:
+  selector:
+    matchLabels:
+      app: nvidia-device-plugin-gpu-shared
+  template:
+    metadata:
+      labels:
+        app: nvidia-device-plugin-gpu-shared
+    spec:
+      serviceAccountName: nvidia-device-plugin
+      priorityClassName: system-node-critical
+      shareProcessNamespace: true
+      tolerations:
+        - operator: Exists
+          effect: NoSchedule
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: nvidia.com/gpu
+                    operator: In
+                    values:
+                      - "true"
+      containers:
+        - name: nvidia-device-plugin-ctr
+          image: nvcr.io/nvidia/k8s-device-plugin:v0.18.2
+          command: ["nvidia-device-plugin"]
+          env:
+            - name: CONFIG_FILE
+              value: /config/config.yaml
+            - name: NVIDIA_VISIBLE_DEVICES
+              value: "1,2,3"
+            - name: NVIDIA_DRIVER_CAPABILITIES
+              value: "compute,utility"
+            - name: NVIDIA_MIG_MONITOR_DEVICES
+              value: "all"
+          securityContext:
+            capabilities:
+              add:
+                - SYS_ADMIN
+          volumeMounts:
+            - name: kubelet-device-plugins-dir
+              mountPath: /var/lib/kubelet/device-plugins
+            - name: cdi-root
+              mountPath: /var/run/cdi
+            - name: config
+              mountPath: /config
+      volumes:
+        - name: kubelet-device-plugins-dir
+          hostPath:
+            path: /var/lib/kubelet/device-plugins
+            type: Directory
+        - name: cdi-root
+          hostPath:
+            path: /var/run/cdi
+            type: DirectoryOrCreate
+        - name: config
+          configMap:
+            name: nvidia-device-plugin-gpu-shared
