@@ -1,0 +1,16 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: test-gpu-dedicated
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: gpu-test
+          image: nvcr.io/nvidia/cuda:12.6.3-base-ubuntu24.04
+          command: ["nvidia-smi"]
+          resources:
+            limits:
+              nvidia.com/gpu: 1
+  backoffLimit: 0
