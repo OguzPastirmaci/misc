@@ -7,7 +7,7 @@ Deploys two NVIDIA device plugin instances on the same node to expose different 
 | `nvidia.com/gpu` | GPU 0 | 1 | Dedicated full GPU, no time-slicing |
 | `nvidia.com/gpu.shared` | GPUs 1-3 | 2 per GPU (6 total) | Time-sliced shared GPUs |
 
-Tested on OKE with `BM.GPU.A10.4` (4x NVIDIA A10) and `nvidia-device-plugin:v0.18.2`.
+Tested on OKE with Ubuntu 24.04, `BM.GPU.A10.4` (4x NVIDIA A10), and `nvidia-device-plugin:v0.18.2`.
 
 ## How it works
 
