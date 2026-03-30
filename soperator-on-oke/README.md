@@ -475,6 +475,26 @@ kubectl exec login-0 -n slurm1 -c sshd -- chroot /mnt/jail \
   /usr/local/nccl-tests/all_reduce_perf -b 1G -f 2 -g 1 -e 4G -c 1
 ```
 
+## Add Topology Labels to GPU Nodes
+
+The soperator topology reconciler looks for `{topologyLabelPrefix}/tier-N` labels on nodes — **not** standard `topology.kubernetes.io/zone` or `topology.kubernetes.io/region` labels.
+
+You must add tier labels to your GPU nodes:
+
+```bash
+# For each GPU node:
+kubectl label node <gpu-node-name> topology.kubernetes.io/tier-1=switch0
+```
+
+> **Note**: Use only `tier-1` (the leaf switch level). Adding `tier-0` creates a 3-level hierarchy that can cause topology validation errors in slurmctld. For a simple flat topology, a single `tier-1` label is sufficient.
+
+Verify the topology ConfigMap is populated after the operator reconciles:
+
+```bash
+kubectl get configmap topology-node-labels -n slurm1 -o jsonpath='{.data}'
+# Should show: {"<node-ip>":"{\"tier-1\":\"switch0\"}"}
+```
+
 ---
 
 ## Troubleshooting
