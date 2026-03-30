@@ -382,6 +382,34 @@ Both values files above already include the `slurmctld-pmix` image and `Propagat
 
 ---
 
+## Topology-Aware Scheduling (Optional)
+
+For multi-node NCCL jobs, topology-aware scheduling improves performance. Annotate your K8s nodes:
+
+```sh
+# Example: nodes in the same RDMA leaf switch
+kubectl annotate node <node-1> topology.slinky.slurm.net/spec="topo-switch:leaf1"
+kubectl annotate node <node-2> topology.slinky.slurm.net/spec="topo-switch:leaf1"
+kubectl annotate node <node-3> topology.slinky.slurm.net/spec="topo-switch:leaf2"
+```
+
+And add a `topology.yaml` to your configFiles:
+
+```yaml
+configFiles:
+  topology.yaml: |
+    - topology: topo-switch
+      cluster_default: true
+      tree:
+        switches:
+          - switch: spine
+            children: leaf[1-2]
+          - switch: leaf1
+            nodes: slurm-worker-gpu-h100-[0-1]
+          - switch: leaf2
+            nodes: slurm-worker-gpu-h100-[2-3]
+```
+
 ## Cleanup
 
 ```sh
