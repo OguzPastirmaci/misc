@@ -410,6 +410,35 @@ configFiles:
             nodes: slurm-worker-gpu-h100-[2-3]
 ```
 
+### Why Manual GRES (not AutoDetect)
+
+On bare-metal shapes, `AutoDetect=nvidia` in `gres.conf` will fail with:
+
+```
+gres/gpu GRES autodetected core affinity 16-31 on node doesn't match socket boundaries.
+Consider setting Parameters=l3cache_as_socket as part of the Node configuration.
+```
+
+This happens because GPU core affinity doesn't align with socket boundaries on these shapes. The fix is to use manual GRES configuration instead:
+
+```yaml
+configFiles:
+  gres.conf: |
+    Name=gpu Type=a100 File=/dev/nvidia[0-7]
+```
+
+This avoids the autodetection issue entirely. NCCL handles GPU/NIC topology at runtime, so Slurm-level core affinity isn't needed for RDMA workloads.
+
+### CPU Count Mismatch
+
+With hostNetwork, slurmd sees all host CPUs in the cgroup (e.g., 255 on a 128-core node with HT). This causes a "Node configuration differs from hardware" error. Setting `ReturnToService=2` in the controller config accepts nodes despite this mismatch:
+
+```yaml
+controller:
+  extraConfMap:
+    ReturnToService: 2
+```
+
 ## Cleanup
 
 ```sh
