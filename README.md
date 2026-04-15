@@ -49,6 +49,7 @@ misc/
 | [`oke-gpu-memory-utils/`](oke-gpu-memory-utils/) | Scripts to map GPU cliques and memory hierarchy using OCI instance principal auth |
 | [`oke-nccl-scout/`](oke-nccl-scout/) | NCCL communication pattern profiler — runs sequential allreduce tests across hosts to identify slow links |
 | [`oke-active-health-checks/`](oke-active-health-checks/) | Active health check framework using NCCL tests as liveness probes |
+| [`oke-dcgm-diag/`](oke-dcgm-diag/) | DaemonSet that runs `dcgmi diag --run 4` on every GPU node for on-demand diagnostics |
 | [`oke-mps/`](oke-mps/) | GPU Multi-Process Service (MPS) configuration for OKE on Oracle Linux |
 | [`oke-multiple-device-plugins/`](oke-multiple-device-plugins/) | Deploy multiple NVIDIA device plugin instances on the same node to expose GPU subsets as separate Kubernetes resources (with time-slicing) |
 | [`oke-topology-aware/`](oke-topology-aware/) | Network locality scheduling using RDMA topology labels (Local Block, Network Block, HPC Island). Includes Kueue and Volcano configs |

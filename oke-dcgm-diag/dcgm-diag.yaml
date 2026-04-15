@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: dcgm-diag
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: dcgm-diag
+  template:
+    metadata:
+      labels:
+        app: dcgm-diag
+    spec:
+      nodeSelector:
+        node.kubernetes.io/instance-type: BM.GPU.H100.8  # adjust to your shape
+      hostNetwork: true
+      hostPID: true
+      tolerations:
+        - operator: Exists
+      containers:
+        - name: dcgm-diag
+          image: nvcr.io/nvidia/cloud-native/dcgm:4.5.2-1-ubuntu22.04
+          command:
+            - /bin/bash
+            - -c
+            - |
+              echo "=== Node: $(hostname) ==="
+              echo "=== Starting Level 4 diag ==="
+              dcgmi diag --run 4
+              echo "=== Diag complete ==="
+              sleep infinity
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: dev
+              mountPath: /dev
+          resources:
+            limits:
+              nvidia.com/gpu: 8
+      volumes:
+        - name: dev
+          hostPath:
+            path: /dev
