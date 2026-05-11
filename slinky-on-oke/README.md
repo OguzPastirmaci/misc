@@ -123,6 +123,12 @@ nodesets:
         - { name: shm, mountPath: /dev/shm }
     logfile:
       image: { repository: docker.io/library/alpine, tag: latest }
+    # hostNetwork only: avoid colliding with the node's own sshd on port 22.
+    # Do not add this to SR-IOV/VF pod-networked workers.
+    ssh:
+      enabled: true
+      extraSshdConfig: |
+        Port 2222
     extraConfMap:
       Gres: ["gpu:a100:8"]
       Features: ["a100", "40gb", "rdma"]
